@@ -13,13 +13,13 @@ export class UIMessageStore<UI_MESSAGE extends UIMessage> {
   }
 
   public setUiMessages(
-    messages: UI_MESSAGE[] | ((prev: UI_MESSAGE[]) => UI_MESSAGE[]),
+    valueOrFn: UI_MESSAGE[] | ((prev: UI_MESSAGE[]) => UI_MESSAGE[]),
   ) {
-    this.messages$.next(
-      typeof messages === 'function'
-        ? messages(this.messages$.getValue())
-        : messages,
-    );
+    const newMessage =
+      typeof valueOrFn === 'function'
+        ? valueOrFn(this.messages$.getValue())
+        : valueOrFn;
+    this.messages$.next(newMessage);
   }
 
   public uiMessages$() {
