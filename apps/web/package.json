@@ -13,6 +13,7 @@
   "dependencies": {
     "@agentic/ai-sdk": "catalog:ai",
     "@agentic/core": "catalog:ai",
+    "@ai-sdk/google": "^2.0.26",
     "@ai-sdk/openai": "catalog:ai",
     "@ai-sdk/provider": "catalog:ai",
     "@ai-sdk/provider-utils": "catalog:ai",
