@@ -25,10 +25,11 @@ export const createOpenAiTransport = (
         model: openAIModel,
         messages: convertToModelMessages(messages),
         onError: err => {
-          console.error('Error occurred in /api/chat', err);
-        },
-        onFinish: () => {
-          console.log('finish');
+          throw new Error(
+            err instanceof Error
+              ? err.message
+              : 'Failed to fetch the chat response.',
+          );
         },
       });
 

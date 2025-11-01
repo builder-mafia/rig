@@ -68,8 +68,8 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
 
   const uiMessages = useSyncExternalStore(
     chat.subscribeMessages.bind(chat),
-    () => chat.getMessages(),
-    () => chat.getMessages(),
+    () => chat.getUiMessages(),
+    () => chat.getUiMessages(),
   );
 
   const status = useSyncExternalStore<ChatStatus>(
