@@ -21,6 +21,7 @@
     "@allin/auto-clipboard-copy-plugin": "workspace:*",
     "@allin/plugin-sdk": "workspace:*",
     "@gsap/react": "catalog:animation",
+    "@lobehub/icons": "^2.43.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",

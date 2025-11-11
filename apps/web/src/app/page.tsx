@@ -2,25 +2,18 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
-import { LeftPanel } from './main/leftPanel/LeftPanel';
-import { Main } from './main/Main';
-import {
-  initToolManager,
-  ToolManagerContext,
-} from './tools/ToolManagerContext';
+import { RootView } from './components/RootView';
 
 const queryClient = new QueryClient();
 
-export default function Home() {
+export default function MainPage() {
   return (
     <div className='flex flex-row h-0 items-center justify-center min-h-screen max-sm:h-[100dvh] font-[family-name:var(--font-geist-sans)]'>
+      <Toaster richColors duration={3000} />
       <QueryClientProvider client={queryClient}>
-        <ToolManagerContext value={initToolManager()}>
-          <LeftPanel />
-          <Main />
-          {/* <RightPanel /> */}
-          <Toaster richColors duration={3000} />
-        </ToolManagerContext>
+        <div className='w-full h-full'>
+          <RootView />
+        </div>
       </QueryClientProvider>
     </div>
   );

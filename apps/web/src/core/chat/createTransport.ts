@@ -6,7 +6,7 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { Service, ServiceModelMap } from './ai-model';
+import type { AiService, AiServiceModelMap } from './ai-model';
 
 /**
  * @description create transport
@@ -14,12 +14,12 @@ import type { Service, ServiceModelMap } from './ai-model';
  * @example
  * createTransport('api-key', 'goolge', 'gemini-2.5-pro');
  */
-export const createTransport = <S extends Service>(
+export const createTransport = <S extends AiService>(
   apiKey: string,
   service: S,
-  model: ServiceModelMap[S],
+  model: AiServiceModelMap[S],
 ): ChatTransport<UIMessage> => {
-  const createModel = (service: S, model: ServiceModelMap[S]) => {
+  const createModel = (service: S, model: AiServiceModelMap[S]) => {
     if (service === 'google') {
       return createGoogleGenerativeAI({
         apiKey,

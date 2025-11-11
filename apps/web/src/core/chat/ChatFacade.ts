@@ -2,7 +2,7 @@ import { Chat } from '@ai-sdk/react';
 import type { ChatInit, ChatStatus, UIMessage } from 'ai';
 import { BehaviorSubject } from 'rxjs';
 import { UIMessageStore } from '../UiMessageStore';
-import type { Service, ServiceModelMap } from './ai-model';
+import type { AiService, AiServiceModelMap } from './ai-model';
 import { createTransport } from './createTransport';
 
 type CreateChatOptions = Pick<
@@ -10,10 +10,10 @@ type CreateChatOptions = Pick<
   'id' | 'onData' | 'onFinish' | 'onError' | 'messages'
 >;
 
-export const createChatFacade = <S extends Service>(
+export const createChatFacade = <S extends AiService>(
   apiKey: string,
   service: S,
-  model: ServiceModelMap[S],
+  model: AiServiceModelMap[S],
   { id, messages, onData, onFinish, onError }: Required<CreateChatOptions>,
 ) => {
   const transport = createTransport(apiKey, service, model);

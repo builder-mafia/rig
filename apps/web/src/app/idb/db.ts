@@ -1,5 +1,6 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { z } from 'zod';
+import type { AiService } from '@/core/chat/ai-model';
 import type { MyMessage } from '../main/chat/Chat';
 
 export const DB_NAME = 'ALLIN';
@@ -16,6 +17,8 @@ export const ChannelSchema = z.object({
 
 export const ConfigSchema = z.object({
   lastSelectedChannelId: z.string().optional(),
+  googleApiKey: z.string().optional().describe('Google API key'),
+  openaiApiKey: z.string().optional().describe('OpenAI API key'),
 });
 
 export type DB_MESSAGE = MyMessage & { channelId: string };
@@ -26,6 +29,7 @@ export enum DB_STORE {
   CONFIG = 'config',
 }
 
+const CONFIG_KEY = 'userConfig';
 interface ALLIN_DB extends DBSchema {
   [DB_STORE.CHANNELS]: {
     key: string;
@@ -37,8 +41,8 @@ interface ALLIN_DB extends DBSchema {
     indexes: { channelId: string };
   };
   [DB_STORE.CONFIG]: {
-    key: string;
-    value: { key: string } & z.infer<typeof ConfigSchema>;
+    key: typeof CONFIG_KEY;
+    value: z.infer<typeof ConfigSchema>;
   };
 }
 
@@ -104,24 +108,33 @@ const updateChannel = async (
   await tx.done;
 };
 
-const CONFIG_KEY = 'userConfig';
-
 const getConfig = async () => {
   const db = await getDB();
   return db.get(DB_STORE.CONFIG, CONFIG_KEY);
+};
+
+const updateApiKey = async (provider: AiService, apiKey: string) => {
+  const db = await getDB();
+  const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
+  const store = tx.objectStore(DB_STORE.CONFIG);
+  const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
+  await store.put({
+    ...existingConfig,
+    [provider]: apiKey,
+  });
+  await tx.done;
 };
 
 const updateConfig = async (config: Partial<z.infer<typeof ConfigSchema>>) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);
-  const existingConfig = await store.get(CONFIG_KEY);
-  const newConfig = {
-    ...(existingConfig || {}),
+  const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
+
+  await store.put({
+    ...existingConfig,
     ...config,
-    key: CONFIG_KEY,
-  };
-  await store.put(newConfig);
+  });
   await tx.done;
 };
 
@@ -151,6 +164,7 @@ export const DB = {
   getChannels,
   createChannel,
   updateChannel,
+  updateApiKey,
   getConfig,
   updateConfig,
   getMessagesByChannelId,

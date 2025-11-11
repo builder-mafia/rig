@@ -1,11 +1,11 @@
 import type { Replace } from '@/lib/utility-type';
 
-export type ServiceModelMap = {
+export type AiServiceModelMap = {
   google: GoogleAiModel;
   openai: OpenAiModel;
 };
 
-export type Service = 'google' | 'openai';
+export type AiService = 'google' | 'openai';
 
 export type OpenAiModel =
   | 'gpt-4.1'

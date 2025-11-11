@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'ALLIN',
   description: 'Easy to use AI chatbot',
+  icons: {
+    icon: '/allin-icon.svg',
+  },
 };
 
 export default function RootLayout({
