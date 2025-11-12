@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { Textarea } from '@/components/ui/textarea';
 import { DB } from '@/idb/db';
-import { ApiKeyFormModal } from './ApiKeyFormModal';
+import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
 
 export const RootView = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { validateApiKey } from '@/core/ai/validate-apikey';
 import type { AiService } from '@/core/chat/ai-model';
-import { DB } from '../../idb/db';
+import { DB } from '../../../idb/db';
 
 export const ApiKeyFormModal = ({
   open,
