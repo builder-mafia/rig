@@ -1,7 +1,6 @@
 import { useSetAtom } from 'jotai';
 import { useLayoutEffect } from 'react';
-import { from, map } from 'rxjs';
-import { DB, DEFAULT_CHANNEL_ID } from '@/app/idb/db';
+import { DB, DEFAULT_CHANNEL_ID } from '@/idb/db';
 import { isDataBaseInitializedAtom } from '@/idb/idbStore';
 import { currentChannelIdAtom } from '../store/currentChannelStore';
 
