@@ -24,7 +24,7 @@ import { validateApiKey } from '@/core/ai/validate-apikey';
 import type { AiService } from '@/core/chat/ai-model';
 import { DB } from '../../idb/db';
 
-export const LockModal = ({
+export const ApiKeyFormModal = ({
   open,
   onOpenChange,
 }: {

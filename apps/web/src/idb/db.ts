@@ -61,12 +61,12 @@ const getDB = async () => {
           const messagesStore = db.createObjectStore(DB_STORE.MESSAGES, {
             autoIncrement: true,
           });
+          // this makes it quicker to get messages by channel id.
           messagesStore.createIndex('channelId', 'channelId');
         }
         if (!db.objectStoreNames.contains(DB_STORE.CONFIG)) {
-          db.createObjectStore(DB_STORE.CONFIG, { keyPath: 'key' });
-          db.put(
-            DB_STORE.CONFIG,
+          const configStore = db.createObjectStore(DB_STORE.CONFIG);
+          configStore.put(
             {
               lastSelectedChannelId: undefined,
               googleApiKey: undefined,
@@ -124,7 +124,8 @@ const getConfig = async () => {
    * if config is undefined, it will throw an error and it means the database is not initialized.
    * this make sure the database is always initialized.
    */
-  return ConfigSchema.parse(config);
+  const parsed = ConfigSchema.parse(config);
+  return parsed;
 };
 
 const updateApiKey = async (provider: AiService, apiKey: string) => {
@@ -132,10 +133,13 @@ const updateApiKey = async (provider: AiService, apiKey: string) => {
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);
   const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
-  await store.put({
-    ...existingConfig,
-    [provider]: apiKey,
-  });
+  await store.put(
+    {
+      ...existingConfig,
+      [`${provider}ApiKey`]: apiKey,
+    },
+    CONFIG_KEY,
+  );
   await tx.done;
 };
 
@@ -145,10 +149,13 @@ const updateConfig = async (config: Partial<z.infer<typeof ConfigSchema>>) => {
   const store = tx.objectStore(DB_STORE.CONFIG);
   const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
 
-  await store.put({
-    ...existingConfig,
-    ...config,
-  });
+  await store.put(
+    {
+      ...existingConfig,
+      ...config,
+    },
+    CONFIG_KEY,
+  );
   await tx.done;
 };
 
