@@ -2,7 +2,6 @@ import { useAtom, useAtomValue } from 'jotai';
 import { ChevronDown, Pencil, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { z } from 'zod';
-import { type ChannelSchema, DB } from '@/app/idb/db';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { type ChannelSchema, DB } from '@/idb/db';
 import { channelListRefreshAtom } from '../store/channelListStore';
 import { currentChannelIdAtom } from '../store/currentChannelStore';
 import { CreateChannelDialog } from './CreateChannelDialog';

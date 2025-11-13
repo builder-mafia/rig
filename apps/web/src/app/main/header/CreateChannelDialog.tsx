@@ -3,7 +3,6 @@ import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { DB } from '@/app/idb/db';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { DB } from '@/idb/db';
 import { channelListRefreshAtom } from '../store/channelListStore';
 import { currentChannelIdAtom } from '../store/currentChannelStore';
 

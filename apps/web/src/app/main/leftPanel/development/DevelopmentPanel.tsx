@@ -1,5 +1,5 @@
-import { DB, DB_STORE } from '@/app/idb/db';
 import { Button } from '@/components/ui/button';
+import { DB, DB_STORE } from '@/idb/db';
 
 export const DevelopmentPanel = () => {
   return (
