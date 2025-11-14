@@ -1,4 +1,5 @@
 import { Google, OpenAI } from '@lobehub/icons';
+import { randomUUID } from 'crypto';
 import {
   ChartArea,
   ChevronDown,
@@ -16,18 +17,14 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { Textarea } from '@/components/ui/textarea';
+import { createChatFacade } from '@/core/chat/ChatFacade';
+import { generateUIMessage } from '@/core/helper';
 import { DB } from '@/idb/db';
+import { ChatInput } from './ChatInput';
 import { ApiKeyConfigModal } from './modal/ApiKeyConfigModal';
 import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
 
@@ -49,6 +46,32 @@ export const RootView = () => {
       }
     });
   }, []);
+
+  const onSubmit = async (input: string) => {
+    const { googleApiKey, openaiApiKey } = await DB.getConfig();
+
+    const chatFacade = createChatFacade(
+      googleApiKey || '',
+      'google',
+      'gemini-2.5-flash',
+      {
+        id: '111',
+        messages: [],
+        onData: () => {},
+        onFinish: () => {},
+        onError: () => {},
+      },
+    );
+
+    chatFacade.getChatTransport().sendMessage(generateUIMessage('user', input));
+
+    chatFacade
+      .getUiMessageStore()
+      .uiMessages$()
+      .subscribe(uiMessages => {
+        console.log(uiMessages);
+      });
+  };
 
   return (
     <div className='w-full h-full flex flex-row'>
@@ -116,34 +139,7 @@ export const RootView = () => {
           open={isApiKeyModalOpen}
           onOpenChange={setIsApiKeyModalOpen}
         />
-        <section className='absolute bottom-8 flex flex-col items-start gap-2'>
-          <Textarea
-            className='w-[800px] min-h-[40px] max-h-[500px]'
-            placeholder='Ask AI Anything...'
-          />
-          <div className='flex flex-row'>
-            <Button
-              variant={'outline'}
-              size='xs'
-              className='py-2 px-1 gap-1 text-xs'
-            >
-              Submit
-              <KbdGroup>
-                <Kbd>⌘⏎</Kbd>
-              </KbdGroup>
-            </Button>
-            <Button
-              variant={'outline'}
-              size='xs'
-              className='py-2 px-1 gap-1 text-xs'
-            >
-              Actions
-              <KbdGroup>
-                <Kbd>⌘K</Kbd>
-              </KbdGroup>
-            </Button>
-          </div>
-        </section>
+        <ChatInput onSubmit={onSubmit} />
       </motion.div>
     </div>
   );
