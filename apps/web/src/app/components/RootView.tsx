@@ -1,16 +1,12 @@
-import { Google, OpenAI } from '@lobehub/icons';
-import { randomUUID } from 'crypto';
+import { useQuery } from '@tanstack/react-query';
 import {
-  ChartArea,
   ChevronDown,
-  Key,
   KeyRound,
-  Lock,
   MessageCirclePlus,
   Sidebar,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,11 +15,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { Textarea } from '@/components/ui/textarea';
 import { createChatFacade } from '@/core/chat/ChatFacade';
-import { generateUIMessage } from '@/core/helper';
+import { useChat } from '@/core/chat/useChat';
+import { generateUIMessage, messagesToThreads } from '@/core/helper';
 import { DB } from '@/idb/db';
+import { Thread } from '../main/chat/Thread';
 import { ChatInput } from './ChatInput';
 import { ApiKeyConfigModal } from './modal/ApiKeyConfigModal';
 import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
@@ -32,6 +28,26 @@ export const RootView = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isApiKeyConfigModalOpen, setIsApiKeyConfigModalOpen] = useState(false);
+  const { data: config } = useQuery({
+    queryKey: ['config'],
+    queryFn: async () => {
+      const { googleApiKey, openaiApiKey } = await DB.getConfig();
+      return { googleApiKey, openaiApiKey };
+    },
+  });
+  const chatFacade = useMemo(() => {
+    return createChatFacade(undefined, 'google', 'gemini-2.0-flash', {
+      id: '1234',
+      messages: [],
+      onData: () => {},
+      onFinish: () => {},
+      onError: e => {
+        console.log(e.message, e.cause, e.name);
+      },
+    });
+  }, []);
+
+  const { sendMessage, uiMessages, status } = useChat(chatFacade);
 
   useLayoutEffect(() => {
     const checkIfHasApiKey = async () => {
@@ -47,31 +63,11 @@ export const RootView = () => {
     });
   }, []);
 
-  const onSubmit = async (input: string) => {
-    const { googleApiKey, openaiApiKey } = await DB.getConfig();
-
-    const chatFacade = createChatFacade(
-      googleApiKey || '',
-      'google',
-      'gemini-2.5-flash',
-      {
-        id: '111',
-        messages: [],
-        onData: () => {},
-        onFinish: () => {},
-        onError: () => {},
-      },
-    );
-
-    chatFacade.getChatTransport().sendMessage(generateUIMessage('user', input));
-
-    chatFacade
-      .getUiMessageStore()
-      .uiMessages$()
-      .subscribe(uiMessages => {
-        console.log(uiMessages);
-      });
+  const onSubmit = (input: string) => {
+    sendMessage(generateUIMessage('user', input));
   };
+
+  const threads = messagesToThreads([...uiMessages]);
 
   return (
     <div className='w-full h-full flex flex-row'>
@@ -135,12 +131,24 @@ export const RootView = () => {
         layout={'size'}
         className='flex-1 h-full bg-background justify-center items-center flex'
       >
-        <ApiKeyFormModal
-          open={isApiKeyModalOpen}
-          onOpenChange={setIsApiKeyModalOpen}
-        />
+        <div className='w-full h-full flex flex-col'>
+          <div className='p-4 gap-4 flex flex-col'>
+            {threads.map((thread, index) => (
+              <Thread
+                key={`thread-${index}`}
+                thread={thread}
+                isLast={threads.length - 1 === index}
+                status={status}
+              ></Thread>
+            ))}
+          </div>
+        </div>
         <ChatInput onSubmit={onSubmit} />
       </motion.div>
+      <ApiKeyFormModal
+        open={isApiKeyModalOpen}
+        onOpenChange={setIsApiKeyModalOpen}
+      />
     </div>
   );
 };

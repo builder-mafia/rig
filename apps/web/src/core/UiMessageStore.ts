@@ -1,5 +1,6 @@
 import type { UIMessage } from 'ai';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, type Observable } from 'rxjs';
+import { type Setter, setValueOrFn } from '@/utils/setter';
 
 /**
  * UIMessageStore is a store that holds the UI messages to be displayed to the user.
@@ -8,21 +9,16 @@ import { BehaviorSubject } from 'rxjs';
 export class UIMessageStore<UI_MESSAGE extends UIMessage> {
   private messages$ = new BehaviorSubject<UI_MESSAGE[]>([]);
 
-  public getUiMessages() {
+  public getUiMessages(): UI_MESSAGE[] {
     return this.messages$.getValue();
   }
 
-  public setUiMessages(
-    valueOrFn: UI_MESSAGE[] | ((prev: UI_MESSAGE[]) => UI_MESSAGE[]),
-  ) {
-    const newMessage =
-      typeof valueOrFn === 'function'
-        ? valueOrFn(this.messages$.getValue())
-        : valueOrFn;
-    this.messages$.next(newMessage);
+  public getUiMessages$(): Observable<UI_MESSAGE[]> {
+    return this.messages$.asObservable();
   }
 
-  public uiMessages$() {
-    return this.messages$.asObservable();
+  public setUiMessages(setter: Setter<UI_MESSAGE[]>) {
+    const newMessages = setValueOrFn(this.messages$.getValue(), setter);
+    this.messages$.next(newMessages);
   }
 }

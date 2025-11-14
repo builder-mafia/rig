@@ -1,6 +1,6 @@
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { z } from 'zod';
-import type { AiService } from '@/core/chat/ai-model';
+import type { LLMProvider } from '@/core/chat/ai-model';
 import type { MyMessage } from '../app/main/chat/Chat';
 
 export const DB_NAME = 'ALLIN';
@@ -128,7 +128,7 @@ const getConfig = async () => {
   return parsed;
 };
 
-const updateApiKey = async (provider: AiService, apiKey: string) => {
+const updateApiKey = async (provider: LLMProvider, apiKey: string) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);

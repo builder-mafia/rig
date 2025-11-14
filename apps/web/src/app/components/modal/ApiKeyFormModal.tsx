@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { validateApiKey } from '@/core/ai/validate-apikey';
-import type { AiService } from '@/core/chat/ai-model';
+import type { LLMProvider } from '@/core/chat/ai-model';
 import { DB } from '../../../idb/db';
 
 /**
@@ -38,7 +38,7 @@ export const ApiKeyFormModal = ({
   onOpenChange: (open: boolean) => void;
 }) => {
   const [apiKey, setApiKey] = useState('');
-  const [provider, setProvider] = useState<AiService>('openai');
+  const [provider, setProvider] = useState<LLMProvider>('openai');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleValidateAndSave = async () => {
@@ -80,7 +80,7 @@ export const ApiKeyFormModal = ({
                 <Label htmlFor='provider'>Service Provider</Label>
                 <Select
                   value={provider}
-                  onValueChange={value => setProvider(value as AiService)}
+                  onValueChange={value => setProvider(value as LLMProvider)}
                 >
                   <SelectTrigger id='provider'>
                     <SelectValue placeholder='Select a provider' />
