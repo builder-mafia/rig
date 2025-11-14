@@ -19,6 +19,7 @@ import { createChatFacade } from '@/core/chat/ChatFacade';
 import { useChat } from '@/core/chat/useChat';
 import { generateUIMessage, messagesToThreads } from '@/core/helper';
 import { DB } from '@/idb/db';
+import { useConfig } from '@/idb/useConfig';
 import { Thread } from '../main/chat/Thread';
 import { ChatInput } from './ChatInput';
 import { ApiKeyConfigModal } from './modal/ApiKeyConfigModal';
@@ -28,15 +29,10 @@ export const RootView = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isApiKeyConfigModalOpen, setIsApiKeyConfigModalOpen] = useState(false);
-  const { data: config } = useQuery({
-    queryKey: ['config'],
-    queryFn: async () => {
-      const { googleApiKey, openaiApiKey } = await DB.getConfig();
-      return { googleApiKey, openaiApiKey };
-    },
-  });
+  const { data: config } = useConfig();
+
   const chatFacade = useMemo(() => {
-    return createChatFacade(undefined, 'google', 'gemini-2.0-flash', {
+    return createChatFacade(undefined, undefined, undefined, {
       id: '1234',
       messages: [],
       onData: () => {},
@@ -48,6 +44,12 @@ export const RootView = () => {
   }, []);
 
   const { sendMessage, uiMessages, status } = useChat(chatFacade);
+
+  useEffect(() => {
+    if (config?.openaiApiKey) {
+      chatFacade.setLLMModel('openai', 'gpt-4.1', config.openaiApiKey);
+    }
+  }, [config]);
 
   useLayoutEffect(() => {
     const checkIfHasApiKey = async () => {
