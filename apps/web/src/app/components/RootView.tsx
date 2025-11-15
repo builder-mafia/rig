@@ -1,33 +1,27 @@
-import { Google, OpenAI } from '@lobehub/icons';
+import { useQuery } from '@tanstack/react-query';
 import {
-  ChartArea,
   ChevronDown,
-  Key,
   KeyRound,
-  Lock,
   MessageCirclePlus,
   Sidebar,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { Textarea } from '@/components/ui/textarea';
+import { createChatFacade } from '@/core/chat/ChatFacade';
+import { useChat } from '@/core/chat/useChat';
+import { generateUIMessage, messagesToThreads } from '@/core/helper';
 import { DB } from '@/idb/db';
+import { useConfig } from '@/idb/useConfig';
+import { Thread } from '../main/chat/Thread';
+import { ChatInput } from './ChatInput';
 import { ApiKeyConfigModal } from './modal/ApiKeyConfigModal';
 import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
 
@@ -35,6 +29,27 @@ export const RootView = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isApiKeyConfigModalOpen, setIsApiKeyConfigModalOpen] = useState(false);
+  const { data: config } = useConfig();
+
+  const chatFacade = useMemo(() => {
+    return createChatFacade(undefined, undefined, undefined, {
+      id: '1234',
+      messages: [],
+      onData: () => {},
+      onFinish: () => {},
+      onError: e => {
+        console.log(e.message, e.cause, e.name);
+      },
+    });
+  }, []);
+
+  const { sendMessage, uiMessages, status } = useChat(chatFacade);
+
+  useEffect(() => {
+    if (config?.openaiApiKey) {
+      chatFacade.setLLMModel('openai', 'gpt-4.1', config.openaiApiKey);
+    }
+  }, [config]);
 
   useLayoutEffect(() => {
     const checkIfHasApiKey = async () => {
@@ -49,6 +64,12 @@ export const RootView = () => {
       }
     });
   }, []);
+
+  const onSubmit = (input: string) => {
+    sendMessage(generateUIMessage('user', input));
+  };
+
+  const threads = messagesToThreads([...uiMessages]);
 
   return (
     <div className='w-full h-full flex flex-row'>
@@ -112,39 +133,24 @@ export const RootView = () => {
         layout={'size'}
         className='flex-1 h-full bg-background justify-center items-center flex'
       >
-        <ApiKeyFormModal
-          open={isApiKeyModalOpen}
-          onOpenChange={setIsApiKeyModalOpen}
-        />
-        <section className='absolute bottom-8 flex flex-col items-start gap-2'>
-          <Textarea
-            className='w-[800px] min-h-[40px] max-h-[500px]'
-            placeholder='Ask AI Anything...'
-          />
-          <div className='flex flex-row'>
-            <Button
-              variant={'outline'}
-              size='xs'
-              className='py-2 px-1 gap-1 text-xs'
-            >
-              Submit
-              <KbdGroup>
-                <Kbd>⌘⏎</Kbd>
-              </KbdGroup>
-            </Button>
-            <Button
-              variant={'outline'}
-              size='xs'
-              className='py-2 px-1 gap-1 text-xs'
-            >
-              Actions
-              <KbdGroup>
-                <Kbd>⌘K</Kbd>
-              </KbdGroup>
-            </Button>
+        <div className='w-full h-full flex flex-col'>
+          <div className='p-4 gap-4 flex flex-col'>
+            {threads.map((thread, index) => (
+              <Thread
+                key={`thread-${index}`}
+                thread={thread}
+                isLast={threads.length - 1 === index}
+                status={status}
+              ></Thread>
+            ))}
           </div>
-        </section>
+        </div>
+        <ChatInput onSubmit={onSubmit} />
       </motion.div>
+      <ApiKeyFormModal
+        open={isApiKeyModalOpen}
+        onOpenChange={setIsApiKeyModalOpen}
+      />
     </div>
   );
 };

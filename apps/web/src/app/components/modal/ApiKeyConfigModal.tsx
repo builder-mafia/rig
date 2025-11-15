@@ -11,7 +11,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
 import { validateApiKey } from '@/core/ai/validate-apikey';
@@ -140,7 +145,10 @@ export const ApiKeyConfigModal = ({
         className='dark p-0 m-0 border-none outline-0'
         onOpenAutoFocus={e => e.preventDefault()}
       >
-        <DialogTitle className='sr-only'>My API Key</DialogTitle>
+        <DialogDescription className='sr-only'>
+          LLM Api Key Configuration
+        </DialogDescription>
+        <DialogTitle className='sr-only'>LLM Api Key Configuration</DialogTitle>
         <Card className='w-full'>
           <CardHeader>
             <CardTitle>My API Key</CardTitle>

@@ -49,7 +49,7 @@ export class Chat<UI_MESSAGE extends UIMessage> {
   }
 
   public getUiMessages$() {
-    return this.uiMessageStore.uiMessages$();
+    return this.uiMessageStore.getUiMessages$();
   }
 
   public getUiMessages() {

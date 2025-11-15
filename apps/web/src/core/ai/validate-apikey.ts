@@ -1,6 +1,8 @@
+import type { LLMProvider } from '../chat/ai-model';
+
 export interface ValidateApiKeyParams {
   apiKey: string;
-  provider: string;
+  provider: LLMProvider;
 }
 
 export const validateApiKey = async ({

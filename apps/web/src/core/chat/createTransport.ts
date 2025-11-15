@@ -6,7 +6,12 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { AiService, AiServiceModelMap } from './ai-model';
+import type { LLMModelNameMap, LLMProvider } from './ai-model';
+
+type Feature = {
+  thinking?: boolean;
+  webSearch?: boolean;
+};
 
 /**
  * @description create transport
@@ -14,12 +19,13 @@ import type { AiService, AiServiceModelMap } from './ai-model';
  * @example
  * createTransport('api-key', 'goolge', 'gemini-2.5-pro');
  */
-export const createTransport = <S extends AiService>(
+export const createTransport = <S extends LLMProvider>(
   apiKey: string,
   service: S,
-  model: AiServiceModelMap[S],
+  model: LLMModelNameMap[S],
+  features?: Feature,
 ): ChatTransport<UIMessage> => {
-  const createModel = (service: S, model: AiServiceModelMap[S]) => {
+  const createModel = (service: S, model: LLMModelNameMap[S]) => {
     if (service === 'google') {
       return createGoogleGenerativeAI({
         apiKey,
@@ -33,19 +39,35 @@ export const createTransport = <S extends AiService>(
     }
   };
 
+  const createProviderOptions = (service: S, model: LLMModelNameMap[S]) => {
+    if (
+      service === 'google' &&
+      ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'].includes(
+        model,
+      )
+    ) {
+      // thinking is only supported in gemini-2.5 series. see: https://ai.google.dev/gemini-api/docs/thinking
+      return {
+        thinkingConfig: {
+          thinkingBudget: 8192,
+          includeThoughts: true,
+        },
+      };
+    } else if (service === 'google') {
+      return undefined;
+    } else if (service === 'openai') {
+      return undefined;
+    } else {
+      throw new Error(`Invalid Parameters: ${service}, ${model}`);
+    }
+  };
+
   return {
     sendMessages: async ({ messages }) => {
       return await streamText({
         model: createModel(service, model),
         messages: convertToModelMessages(messages),
-        providerOptions: {
-          google: {
-            thinkingConfig: {
-              thinkingBudget: 8192,
-              includeThoughts: true,
-            },
-          },
-        },
+        providerOptions: createProviderOptions(service, model),
         onError: err => {
           throw new Error(
             err instanceof Error

@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { useCallback, useSyncExternalStore } from 'react';
-import type { ChatFacade } from './chat/ChatFacade';
+import type { ChatFacade } from './ChatFacade';
 
 export const useChat = <UI_MESSAGE extends UIMessage>(
   chatFacade: ChatFacade<UI_MESSAGE>,
@@ -8,18 +8,15 @@ export const useChat = <UI_MESSAGE extends UIMessage>(
   const uiMessages = useSyncExternalStore(
     useCallback(
       onChange => {
-        const subscription = chatFacade
-          .getUiMessageStore()
-          .uiMessages$()
-          .subscribe(onChange);
+        const subscription = chatFacade.getUiMessages$().subscribe(onChange);
         return () => {
           subscription.unsubscribe();
         };
       },
       [chatFacade],
     ),
-    () => chatFacade.getUiMessageStore().getUiMessages(),
-    () => chatFacade.getUiMessageStore().getUiMessages(),
+    () => chatFacade.getUiMessages(),
+    () => chatFacade.getUiMessages(),
   );
 
   const status = useSyncExternalStore(
@@ -32,16 +29,16 @@ export const useChat = <UI_MESSAGE extends UIMessage>(
       },
       [chatFacade],
     ),
-    () => chatFacade.getStatus$().getValue(),
-    () => chatFacade.getStatus$().getValue(),
+    () => chatFacade.getStatus(),
+    () => chatFacade.getStatus(),
   );
 
-  const stop = async () => {
-    await chatFacade.getChatTransport().stop();
+  const stop = () => {
+    chatFacade.stop();
   };
 
   const sendMessage = (message: UI_MESSAGE & { role: 'user' }) => {
-    return chatFacade.getChatTransport().sendMessage(message);
+    return chatFacade.sendMessage(message);
   };
 
   return {

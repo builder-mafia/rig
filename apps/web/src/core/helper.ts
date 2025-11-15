@@ -33,10 +33,6 @@ export type UserOrAssistantMessage = MyMessage & {
   role: 'user' | 'assistant';
 };
 
-/**
- * 직선으로 나열된 메세지들을 유저의 질문과 AI 의 답변으로 묶어서 배열로 반환한다.
- * 스레드: 유저의 질문과 AI 의 답변으로 묶인 독립적인 배열
- */
 export const messagesToThreads = (messages: UIMessage[]): Thread[] => {
   const threads = messages.reduce(
     (acc, message) => {
