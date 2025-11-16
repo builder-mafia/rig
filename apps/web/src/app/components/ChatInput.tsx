@@ -16,15 +16,21 @@ import {
   AiModelMap,
   assertModel,
   getProviderFromModel,
+  type LLMModel,
   type LLMModelMap,
   type LLMProvider,
 } from '@/core/chat/ai-model';
+import { useChannelMutation } from '@/idb/useChanelMutation';
 
 interface ChatInputProps {
   onSubmit: (input: string) => void;
+  onChangeSelectedModel: (model: LLMModel) => void;
 }
 
-export const ChatInput = ({ onSubmit }: ChatInputProps) => {
+export const ChatInput = ({
+  onSubmit,
+  onChangeSelectedModel,
+}: ChatInputProps) => {
   const brainGradientId = useId();
 
   const [input, setInput] = useState('');
@@ -39,10 +45,12 @@ export const ChatInput = ({ onSubmit }: ChatInputProps) => {
     setInput('');
   };
 
-  const onChange = (value: string) => {
-    assertModel(value);
-    const provider = getProviderFromModel(value);
-    setLLM({ provider, model: value });
+  const onChange = (model: string) => {
+    assertModel(model);
+
+    const provider = getProviderFromModel(model);
+    setLLM({ provider, model });
+    onChangeSelectedModel(model);
   };
 
   return (

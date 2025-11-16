@@ -13,6 +13,7 @@ import { currentChannelIdAtom } from '../store/currentChannelStore';
 import { getInitialPrompt } from './prompt';
 import { Thread } from './Thread';
 import { UserInput } from './UserInput';
+
 export type MyMessage = UIMessage<MessageMetadata>;
 
 export const Chat = () => {

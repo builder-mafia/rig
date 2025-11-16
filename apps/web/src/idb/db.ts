@@ -1,6 +1,7 @@
+import type { UIMessage } from 'ai';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { z } from 'zod';
-import type { LLMProvider } from '@/core/chat/ai-model';
+import { LLMModelSchema, type LLMProvider } from '@/core/chat/ai-model';
 import type { MyMessage } from '../app/main/chat/Chat';
 
 export const DB_NAME = 'ALLIN';
@@ -13,6 +14,13 @@ export const ChannelSchema = z.object({
   description: z.string().optional().describe('Channel description'),
   prompt: z.string().optional().describe('AI system prompt'),
   createdAt: z.number().min(0).describe('Timestamp of creation'),
+  model: LLMModelSchema.optional().describe('selected AI model'),
+  isEmpty: z
+    .boolean()
+    .default(true)
+    .describe(
+      'Whether the channel is empty. If true, it means the channel has no messages.',
+    ),
 });
 
 export const ConfigSchema = z.object({
@@ -21,7 +29,7 @@ export const ConfigSchema = z.object({
   openaiApiKey: z.string().optional().describe('OpenAI API key'),
 });
 
-export type DB_MESSAGE = MyMessage & { channelId: string };
+export type DB_MESSAGE = UIMessage & { channelId: string };
 
 export enum DB_STORE {
   CHANNELS = 'channels',
@@ -80,6 +88,18 @@ const getDB = async () => {
   }
 
   return db;
+};
+
+const getSnapshot = async () => {
+  return Promise.all([getChannels(), getMessages(), getConfig()]).then(
+    ([channels, messages, config]) => {
+      return {
+        channels,
+        messages,
+        config,
+      };
+    },
+  );
 };
 
 const getChannel = async (id: string) => {
@@ -159,19 +179,24 @@ const updateConfig = async (config: Partial<z.infer<typeof ConfigSchema>>) => {
   await tx.done;
 };
 
+const getMessages = async () => {
+  const db = await getDB();
+  return db.getAll(DB_STORE.MESSAGES);
+};
+
 const getMessagesByChannelId = async (channelId: string) => {
   const db = await getDB();
   return db.getAllFromIndex(DB_STORE.MESSAGES, 'channelId', channelId);
 };
 
-const addMessage = async (message: DB_MESSAGE) => {
+const addMessage = async (channelId: string, message: UIMessage) => {
   const db = await getDB();
-  const channel = await getChannel(message.channelId);
+  const channel = await getChannel(channelId);
   if (!channel) {
     throw new Error('Channel not found');
   }
 
-  return db.add(DB_STORE.MESSAGES, message);
+  return db.add(DB_STORE.MESSAGES, { ...message, channelId });
 };
 
 const clearStore = async (storeName: DB_STORE) => {
@@ -181,6 +206,7 @@ const clearStore = async (storeName: DB_STORE) => {
 
 export const DB = {
   getDB,
+  getSnapshot,
   getChannel,
   getChannels,
   createChannel,

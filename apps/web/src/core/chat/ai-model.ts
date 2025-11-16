@@ -136,7 +136,7 @@ export const getProviderFromModel = (model: LLMModel): LLMProvider => {
   }
 };
 
-const LLMModelSchema = z.union([OpenAiModelSchema, GoogleAiModelSchema]);
+export const LLMModelSchema = z.union([OpenAiModelSchema, GoogleAiModelSchema]);
 export type LLMModel = z.infer<typeof LLMModelSchema>;
 
 /**

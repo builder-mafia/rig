@@ -4,8 +4,9 @@ import {
   MessageCirclePlus,
   Sidebar as SidebarIcon,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, noop } from 'motion/react';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import type z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  getProviderFromModel,
+  type LLMModel,
+  LLMModelMap,
+} from '@/core/chat/ai-model';
 import { createChatFacade } from '@/core/chat/ChatFacade';
+import { ChatFacadeManager } from '@/core/chat/ChatFacadeManager';
 import { useChat } from '@/core/chat/useChat';
 import { generateUIMessage, messagesToThreads } from '@/core/helper';
 import {
@@ -24,14 +31,18 @@ import {
   DB,
   type DB_MESSAGE,
 } from '@/idb/db';
+import { useChannelMutation } from '@/idb/useChanelMutation';
 import { useChannel } from '@/idb/useChannel';
+import { useChannelCreate } from '@/idb/useChannelCreate';
 import { useConfig } from '@/idb/useConfig';
+import { useConfigMutation } from '@/idb/useConfigMutation';
 import { useMessages } from '@/idb/useMessages';
 import { cn } from '@/lib/utils';
+import type { Nullable } from '@/utils/nullable';
 import { ChatInput } from './ChatInput';
 import { Chatting } from './Chatting';
-import { ApiKeyConfigModal } from './modal/ApiKeyConfigModal';
-import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
+import { ModalRegistry } from './modal/ModalRegistry';
+import { modalManager } from './modal/modalManager';
 import { Sidebar } from './Sidebar';
 
 type RootViewProps = {
@@ -42,62 +53,100 @@ type RootViewProps = {
   };
 };
 
+const canUseChatFacade = (
+  currentChannel: Nullable<z.infer<typeof ChannelSchema>>,
+  config: Nullable<z.infer<typeof ConfigSchema>>,
+) => {
+  if (
+    currentChannel?.model &&
+    config?.lastSelectedChannelId &&
+    (config?.googleApiKey || config?.openaiApiKey)
+  ) {
+    return true;
+  }
+  return false;
+};
+
+const isValid = (
+  target: unknown,
+  validator: z.ZodSchema<unknown>,
+): {
+  success: boolean;
+  result: z.infer<typeof validator> | undefined;
+  error: string | undefined;
+} => {
+  const result = validator.safeParse(target);
+  return {
+    result: result.data,
+    success: result.success,
+    error: result.error?.message ?? undefined,
+  };
+};
+
 export const RootView = ({ initialData }: RootViewProps) => {
+  const { mutate: createChannel } = useChannelCreate();
+  const { mutate: updateConfig } = useConfigMutation();
+  useEffect(() => {
+    if (!initialData.config.lastSelectedChannelId) {
+      const id = uuidv4();
+      createChannel({
+        id,
+        createdAt: Date.now(),
+        isEmpty: true,
+      });
+
+      updateConfig({ lastSelectedChannelId: id });
+    }
+  }, [initialData.config.lastSelectedChannelId]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [isApiKeyConfigModalOpen, setIsApiKeyConfigModalOpen] = useState(false);
   const { data: config } = useConfig();
+  const { mutate: updateChannel } = useChannelMutation();
+  // if lastSelectedChannelId is empty, it will return undefined.
   const { data: currentChannel } = useChannel(
-    config?.lastSelectedChannelId || '',
+    config?.lastSelectedChannelId ?? '',
   );
-  const { data: messages } = useMessages(currentChannel?.id || '');
 
   const chatFacade = useMemo(() => {
-    return createChatFacade(undefined, undefined, undefined, {
-      id: '1234',
-      messages: [],
-      onData: () => {},
-      onFinish: () => {},
-      onError: e => {
-        console.log(e.message, e.cause, e.name);
-      },
-    });
-  }, []);
-
-  const { sendMessage, uiMessages, status } = useChat(chatFacade);
-
-  useEffect(() => {
-    if (config?.openaiApiKey) {
-      chatFacade.setLLMModel('openai', 'gpt-4.1', config.openaiApiKey);
-    }
-  }, [config]);
-
-  useLayoutEffect(() => {
-    const checkIfHasApiKey = async () => {
-      const { googleApiKey, openaiApiKey } = await DB.getConfig();
-
-      return !!(googleApiKey || openaiApiKey);
-    };
-
-    checkIfHasApiKey().then(hasApiKey => {
-      if (!hasApiKey) {
-        setIsApiKeyModalOpen(true);
+    // (TODO) L79: change to `isValid` with zod schema for more explicit error handling. (we can use description to show the error message.)
+    if (canUseChatFacade(currentChannel, config)) {
+      const provider = getProviderFromModel(currentChannel!.model!);
+      if (ChatFacadeManager.hasChatFacade(currentChannel!.id)) {
+        return ChatFacadeManager.getChatFacade(currentChannel!.id);
       }
-    });
-  }, []);
+      const facade = createChatFacade(
+        provider === 'google' ? config!.googleApiKey! : config!.openaiApiKey!,
+        provider,
+        currentChannel!.model!,
+        {
+          id: currentChannel!.id,
+          messages: [],
+          onData: noop,
+          onFinish: noop,
+          onError: noop,
+        },
+      );
+      ChatFacadeManager.setChatFacade(currentChannel!.id, facade);
+      return facade;
+    }
+    return null;
+  }, [currentChannel, config]);
+
+  const { sendMessage, uiMessages, status, isInitialized } =
+    useChat(chatFacade);
+
+  const onChangeSelectedModel = (model: LLMModel) => {
+    updateChannel({ id: currentChannel!.id, channel: { model } });
+  };
 
   const onSubmit = (input: string) => {
     sendMessage(generateUIMessage('user', input));
   };
 
-  const threads = messagesToThreads([...uiMessages]);
+  const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);
 
   return (
     <div className={cn('w-full h-full flex flex-row')}>
-      <ApiKeyConfigModal
-        open={isApiKeyConfigModalOpen}
-        onOpenChange={setIsApiKeyConfigModalOpen}
-      />
+      <ModalRegistry />
       <div className='absolute top-1 left-2 flex '>
         <Button
           variant={'outline'}
@@ -130,7 +179,7 @@ export const RootView = ({ initialData }: RootViewProps) => {
           <DropdownMenuContent className='w-56' align='start'>
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={() => setIsApiKeyConfigModalOpen(true)}
+                onClick={() => modalManager.openModal('apiKeyConfig')}
               >
                 <KeyRound />
                 My API Key
@@ -145,12 +194,11 @@ export const RootView = ({ initialData }: RootViewProps) => {
         className='flex-1 h-full bg-background justify-center items-center flex'
       >
         <Chatting threads={threads} status={status} />
-        <ChatInput onSubmit={onSubmit} />
+        <ChatInput
+          onSubmit={onSubmit}
+          onChangeSelectedModel={onChangeSelectedModel}
+        />
       </motion.div>
-      <ApiKeyFormModal
-        open={isApiKeyModalOpen}
-        onOpenChange={setIsApiKeyModalOpen}
-      />
     </div>
   );
 };
