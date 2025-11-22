@@ -1,11 +1,10 @@
 import type { Nullable } from './nullable';
 
-export const assertDefined = (
-  condition: Nullable<unknown>,
+export function assertDefined<T>(
+  condition: Nullable<T>,
   message: string,
-): condition is NonNullable<typeof condition> => {
+): asserts condition is NonNullable<T> {
   if (!condition) {
     throw new Error(message);
   }
-  return true;
-};
+}

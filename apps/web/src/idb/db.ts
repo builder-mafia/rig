@@ -2,7 +2,6 @@ import type { UIMessage } from 'ai';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { z } from 'zod';
 import { LLMModelSchema, type LLMProvider } from '@/core/chat/ai-model';
-import type { MyMessage } from '../app/main/chat/Chat';
 
 export const DB_NAME = 'ALLIN';
 export const DEFAULT_CHANNEL_ID = 'DEFAULT-CHANNEL';
@@ -10,11 +9,11 @@ const DB_VERSION = 2;
 
 export const ChannelSchema = z.object({
   id: z.string(),
+  model: LLMModelSchema.describe('selected AI model'),
+  createdAt: z.number().min(0).describe('Timestamp of creation'),
   name: z.string().optional().describe('Channel name'),
   description: z.string().optional().describe('Channel description'),
   prompt: z.string().optional().describe('AI system prompt'),
-  createdAt: z.number().min(0).describe('Timestamp of creation'),
-  model: LLMModelSchema.optional().describe('selected AI model'),
   isEmpty: z
     .boolean()
     .default(true)
@@ -215,6 +214,7 @@ export const DB = {
   getConfig,
   updateConfig,
   getMessagesByChannelId,
+  getMessages,
   addMessage,
   clearStore,
 };
