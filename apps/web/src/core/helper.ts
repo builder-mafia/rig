@@ -1,7 +1,6 @@
 import type { UIMessage } from 'ai';
 import type { Brand } from 'ts-brand';
 import { v4 as uuidv4 } from 'uuid';
-import type { MyMessage } from '../app/main/chat/Chat';
 
 /**
  * [
@@ -29,7 +28,7 @@ import type { MyMessage } from '../app/main/chat/Chat';
  */
 export type Thread = Brand<UserOrAssistantMessage[], 'thread'>;
 
-export type UserOrAssistantMessage = MyMessage & {
+export type UserOrAssistantMessage = UIMessage & {
   role: 'user' | 'assistant';
 };
 

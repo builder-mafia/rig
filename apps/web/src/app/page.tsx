@@ -26,7 +26,7 @@ export default function MainPage() {
       <Toaster richColors duration={3000} />
       <QueryClientProvider client={queryClient}>
         <div className='w-full h-full'>
-          <Suspense fallback={<MySuspense />}>
+          <Suspense fallback={<div>Loading...</div>}>
             <DynamicRootViewRenderer />
           </Suspense>
         </div>
@@ -34,8 +34,3 @@ export default function MainPage() {
     </div>
   );
 }
-
-export const MySuspense = () => {
-  console.log('susps  rerender');
-  return <div></div>;
-};

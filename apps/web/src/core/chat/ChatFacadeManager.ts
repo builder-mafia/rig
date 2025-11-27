@@ -1,5 +1,4 @@
 import type { UIMessage } from 'ai';
-import type { MyMessage } from '@/app/main/chat/Chat';
 import type { ChatFacade } from './ChatFacade';
 
 /**
