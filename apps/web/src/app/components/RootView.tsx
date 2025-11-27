@@ -77,8 +77,9 @@ export const RootView = React.memo(() => {
       </div>
       <SidebarRenderer />
       <motion.div
+        // when left panel is open, the main chatting area should be animated.
         layout={'size'}
-        className='flex-1 h-full bg-background justify-center items-center flex max-h-dvh'
+        className='flex-1 h-full bg-background justify-center flex max-h-dvh'
       >
         <Chatting />
       </motion.div>
