@@ -313,6 +313,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.0
         version: 3.3.0
+      ts-pattern:
+        specifier: ^5.9.0
+        version: 5.9.0
       usehooks-ts:
         specifier: catalog:utils
         version: 3.1.1(react@19.1.0)
@@ -6759,6 +6762,9 @@ packages:
   ts-md5@2.0.1:
     resolution: {integrity: sha512-yF35FCoEOFBzOclSkMNEUbFQZuv89KEQ+5Xz03HrMSGUGB1+r+El+JiGOFwsP4p9RFNzwlrydYoTLvPOuICl9w==}
     engines: {node: '>=18'}
+
+  ts-pattern@5.9.0:
+    resolution: {integrity: sha512-6s5V71mX8qBUmlgbrfL33xDUwO0fq48rxAu2LBE11WBeGdpCPOsXksQbZJHvHwhrd3QjUusd3mAOM5Gg0mFBLg==}
 
   tsconfck@3.1.5:
     resolution: {integrity: sha512-CLDfGgUp7XPswWnezWwsCRxNmgQjhYq3VXHM0/XIRxhVrKw0M1if9agzryh1QS3nxjCROvV+xWxoJO1YctzzWg==}
@@ -14844,6 +14850,8 @@ snapshots:
   ts-interface-checker@0.1.13: {}
 
   ts-md5@2.0.1: {}
+
+  ts-pattern@5.9.0: {}
 
   tsconfck@3.1.5(typescript@5.8.3):
     optionalDependencies:
