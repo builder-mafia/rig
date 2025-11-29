@@ -116,6 +116,9 @@ const getChannels = async () => {
   return db.getAll(DB_STORE.CHANNELS);
 };
 
+/**
+ * @returns id of the created channel
+ */
 const createChannel = async (channel: z.infer<typeof ChannelSchema>) => {
   const db = await getDB();
   return db.add(DB_STORE.CHANNELS, channel);
