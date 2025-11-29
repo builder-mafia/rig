@@ -1,7 +1,6 @@
 import type { UIMessage } from 'ai';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Brain } from 'lucide-react';
-import { type Ref, useId, useState } from 'react';
+import { useSetAtom } from 'jotai';
+import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Button } from '@/components/ui/button';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
@@ -15,18 +14,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  AiModelMap,
-  assertModel,
-  getProviderFromModel,
-  type LLMModel,
-  type LLMModelMap,
-  type LLMProvider,
-} from '@/core/chat/ai-model';
 import { generateUIMessage } from '@/core/helper';
+import {
+  type AllModelIds,
+  AllModelIdsSchema,
+  type LLMProviderName,
+  LLMProviderNameSchema,
+  MODEL_IDS_PER_PROVIDER,
+} from '@/core/provider/all-models';
 import { dbAtoms } from '@/idb/dbStore';
 import { assertDefined } from '@/utils/assertDefined';
 import { useSwrAtomValue } from '@/utils/useSwrAtomValue';
+import { canUseProvider } from '../helper/check';
 import { HotKeyList } from '../hotkey/hotkey-list';
 
 export const ChatInput = ({
@@ -35,24 +34,24 @@ export const ChatInput = ({
   sendMessage: (message: UIMessage) => void;
 }) => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
-  // This component must be rendered after selectedChannel is defined.
+  const config = useSwrAtomValue(dbAtoms.configAtom);
   assertDefined(selectedChannel, 'ChatInput: selectedChannel is not found.');
+  assertDefined(config, 'ChatInput: config is not found.');
 
   const setSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
   const [input, setInput] = useState('');
   const [LLM, setLLM] = useState<{
-    provider: LLMProvider;
-    model: LLMModelMap[keyof LLMModelMap];
+    providerName: LLMProviderName;
+    modelId: AllModelIds;
   }>({
-    provider: getProviderFromModel(selectedChannel.model),
-    model: selectedChannel.model,
+    providerName: selectedChannel.providerName,
+    modelId: selectedChannel.model,
   });
 
   const hotkeyScopeRef = useHotkeys<HTMLTextAreaElement>(
     HotKeyList.submitChat.hotkey,
     () => {
       if (!input.trim()) return;
-
       onSubmit(input);
       setInput('');
     },
@@ -79,20 +78,33 @@ export const ChatInput = ({
     setInput('');
   };
 
-  const onChange = (model: string) => {
-    assertModel(model);
+  const onChange = (modelWithProvider: string) => {
+    const [providerName, modelId] = modelWithProvider.split('|');
 
-    const provider = getProviderFromModel(model);
-    setLLM({ provider, model });
-    onChangeSelectedModel(model);
+    const parsedProviderName = LLMProviderNameSchema.parse(providerName);
+    const parsedModelId = AllModelIdsSchema.parse(modelId);
+
+    if (!canUseProvider(parsedProviderName, config)) {
+      // this error must not be thrown.
+      // because SelectItem is disabled when provider is not available.
+      throw new Error(
+        `Chatinput.tsx Provider ${parsedProviderName} is not available.`,
+      );
+    }
+
+    setLLM({ providerName: parsedProviderName, modelId: parsedModelId });
+    onChangeSelectedModel(parsedModelId, parsedProviderName);
   };
 
   const onSubmit = (input: string) => {
     sendMessage(generateUIMessage('user', input));
   };
 
-  const onChangeSelectedModel = (model: LLMModel) => {
-    setSelectedChannel({ model });
+  const onChangeSelectedModel = (
+    modelId: AllModelIds,
+    providerName: LLMProviderName,
+  ) => {
+    setSelectedChannel({ model: modelId, providerName });
   };
 
   return (
@@ -126,10 +138,13 @@ export const ChatInput = ({
         <div className='w-full bg-background pb-2 pt-1.5'>
           <div className='flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between'>
             <div className='flex flex-row'>
-              <Select value={LLM.model} onValueChange={onChange}>
+              <Select
+                value={`${LLM.providerName}|${LLM.modelId}`}
+                onValueChange={onChange}
+              >
                 <SelectTrigger
                   data-size='fit'
-                  data-provider={LLM.provider}
+                  data-provider={LLM.providerName}
                   className='border-none bg-transparent dark:bg-transparent hover:bg-transparent focus:bg-transparent h-fit p-1 text-xs
                 data-[provider=openai]:bg-gradient-to-r data-[provider=openai]:from-[#74AA9C] data-[provider=openai]:via-[#20d4c7] data-[provider=openai]:to-[#0f9775] data-[provider=openai]:bg-clip-text data-[provider=openai]:text-transparent
                 data-[provider=google]:bg-gradient-to-r data-[provider=google]:from-[#4796E3] data-[provider=google]:via-[#9177C7] data-[provider=google]:to-[#CA6673] data-[provider=google]:bg-clip-text data-[provider=google]:text-transparent
@@ -138,30 +153,47 @@ export const ChatInput = ({
                   <SelectValue placeholder='Select a model' />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(AiModelMap).map(([provider, models]) => (
-                    <SelectGroup key={provider}>
-                      <SelectLabel>{provider}</SelectLabel>
-                      {models.map(model => (
-                        <SelectItem
-                          className='gap-1.5'
-                          key={model.name}
-                          value={model.name}
-                          trailing={
-                            model.thinking ? (
-                              <span className='text-muted-foreground'>
-                                <Brain
-                                  className='size-4 stroke-1'
-                                  stroke={`url(#thinking-gradient)`}
-                                />
-                              </span>
-                            ) : undefined
+                  {Object.entries(MODEL_IDS_PER_PROVIDER).map(
+                    ([providerName, modelIds]) => (
+                      <SelectGroup key={providerName}>
+                        <SelectLabel
+                          aria-disabled={
+                            !canUseProvider(
+                              providerName as LLMProviderName,
+                              config,
+                            )
                           }
                         >
-                          {model.display}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
+                          {providerName}
+                        </SelectLabel>
+                        {modelIds.map(modelId => (
+                          <SelectItem
+                            disabled={
+                              !canUseProvider(
+                                providerName as LLMProviderName,
+                                config,
+                              )
+                            }
+                            className='gap-1.5'
+                            key={`${providerName}|${modelId}`}
+                            value={`${providerName}|${modelId}`}
+                            // trailing={
+                            //   modelId.thinking ? (
+                            //     <span className='text-muted-foreground'>
+                            //       <Brain
+                            //         className='size-4 stroke-1'
+                            //         stroke={`url(#thinking-gradient)`}
+                            //       />
+                            //     </span>
+                            //   ) : undefined
+                            // }
+                          >
+                            {modelId}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>

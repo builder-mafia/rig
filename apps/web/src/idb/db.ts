@@ -1,7 +1,11 @@
 import type { UIMessage } from 'ai';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { z } from 'zod';
-import { LLMModelSchema, type LLMProvider } from '@/core/chat/ai-model';
+import {
+  AllModelIdsSchema,
+  type LLMProviderName,
+  LLMProviderNameSchema,
+} from '@/core/provider/all-models';
 
 export const DB_NAME = 'ALLIN';
 export const DEFAULT_CHANNEL_ID = 'DEFAULT-CHANNEL';
@@ -9,7 +13,8 @@ const DB_VERSION = 2;
 
 export const ChannelSchema = z.object({
   id: z.string(),
-  model: LLMModelSchema.describe('selected AI model'),
+  model: AllModelIdsSchema.describe('selected AI model'),
+  providerName: LLMProviderNameSchema.describe('selected AI provider'),
   createdAt: z.number().min(0).describe('Timestamp of creation'),
   name: z.string().optional().describe('Channel name'),
   description: z.string().optional().describe('Channel description'),
@@ -147,7 +152,7 @@ const getConfig = async () => {
   return parsed;
 };
 
-const updateApiKey = async (provider: LLMProvider, apiKey: string) => {
+const updateApiKey = async (providerName: LLMProviderName, apiKey: string) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);
@@ -155,7 +160,7 @@ const updateApiKey = async (provider: LLMProvider, apiKey: string) => {
   await store.put(
     {
       ...existingConfig,
-      [`${provider}ApiKey`]: apiKey,
+      [`${providerName}ApiKey`]: apiKey,
     },
     CONFIG_KEY,
   );

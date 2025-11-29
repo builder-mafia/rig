@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { PasswordInput } from '@/components/ui/password-input';
-import { validateApiKey } from '@/core/ai/validate-apikey';
+import { validateApiKey } from '@/core/provider/validate-apikey';
 import { DB } from '@/idb/db';
 import { dbAtoms } from '@/idb/dbStore';
 
+// need to refactor this component.
 export const ApiKeyConfigModal = ({
   open,
   onOpenChange,
@@ -64,7 +65,7 @@ export const ApiKeyConfigModal = ({
         if (googleApiKey) {
           const isValid = await validateApiKey({
             apiKey: googleApiKey,
-            provider: 'google',
+            providerName: 'google',
           });
           setIsGoogleApiKeyValid(isValid);
         }
@@ -72,7 +73,7 @@ export const ApiKeyConfigModal = ({
         if (openaiApiKey) {
           const isValid = await validateApiKey({
             apiKey: openaiApiKey,
-            provider: 'openai',
+            providerName: 'openai',
           });
           setIsOpenaiApiKeyValid(isValid);
         }
@@ -91,7 +92,7 @@ export const ApiKeyConfigModal = ({
 
     const isValid = await validateApiKey({
       apiKey: openaiApiKey,
-      provider: 'openai',
+      providerName: 'openai',
     });
     if (isValid) {
       setConfig({ openaiApiKey });
@@ -113,7 +114,7 @@ export const ApiKeyConfigModal = ({
 
     const isValid = await validateApiKey({
       apiKey: googleApiKey,
-      provider: 'google',
+      providerName: 'google',
     });
     if (isValid) {
       setConfig({ googleApiKey });

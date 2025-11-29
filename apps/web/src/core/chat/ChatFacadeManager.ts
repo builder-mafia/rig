@@ -8,7 +8,7 @@ import type { ChatFacade } from './ChatFacade';
  */
 export class ChatFacadeManager {
   private static instance: ChatFacadeManager;
-  private static chatFacades: Map<string, ChatFacade<UIMessage>> = new Map();
+  private static chatFacades: Map<string, ChatFacade> = new Map();
 
   private constructor() {}
 
@@ -27,7 +27,7 @@ export class ChatFacadeManager {
     return ChatFacadeManager.chatFacades.get(id);
   }
 
-  public static setChatFacade(id: string, chatFacade: ChatFacade<UIMessage>) {
+  public static setChatFacade(id: string, chatFacade: ChatFacade) {
     ChatFacadeManager.chatFacades.set(id, chatFacade);
   }
 }

@@ -4,7 +4,6 @@ import { atomWithSwr } from './atomWithSwr';
 
 export const useSwrAtomValue = <T>(atom: Atom<T>) => {
   const swrAtom = useMemo(() => atomWithSwr(atom), [atom]);
-
   const value = useAtomValue(swrAtom);
 
   return value;

@@ -1,12 +1,11 @@
 import { Chat } from '@ai-sdk/react';
-import type { ChatInit, UIMessage } from 'ai';
-import type { CustomTransport } from './createTransport';
+import type { ChatInit, ChatTransport, UIMessage } from 'ai';
 
 export type CreateChatOptions = Pick<
   ChatInit<UIMessage>,
   'id' | 'onData' | 'onFinish' | 'onError' | 'messages'
 > & {
-  transport: CustomTransport;
+  transport: ChatTransport<UIMessage>;
 };
 
 export const createChat = ({

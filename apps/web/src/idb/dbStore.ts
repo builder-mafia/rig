@@ -1,4 +1,3 @@
-import { delay, timeout } from 'es-toolkit';
 import { atom } from 'jotai';
 import type z from 'zod';
 import { assertDefined } from '@/utils/assertDefined';
@@ -71,24 +70,6 @@ const configAtom = atom(
   },
 );
 
-const openAiApiKeyAtom = atom(
-  async get => {
-    return (await get(configAtom))?.openaiApiKey ?? null;
-  },
-  async (_, set, newOpenAiApiKey: string) => {
-    await set(configAtom, { openaiApiKey: newOpenAiApiKey });
-  },
-);
-
-const googleApiKeyAtom = atom(
-  async get => {
-    return (await get(configAtom))?.googleApiKey ?? null;
-  },
-  async (_, set, newGoogleApiKey: string) => {
-    await set(configAtom, { googleApiKey: newGoogleApiKey });
-  },
-);
-
 const allMessagesAtom = atom(
   async () => {
     return await DB.getMessages();
@@ -124,8 +105,6 @@ export const dbAtoms = {
   allChannelsAtom,
   selectedChannelIdAtom,
   selectedChannelAtom,
-  openAiApiKeyAtom,
-  googleApiKeyAtom,
   configAtom,
   allMessagesAtom,
   selectedChannelMessagesAtom,

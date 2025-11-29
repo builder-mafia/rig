@@ -3,6 +3,7 @@ import { useSetAtom } from 'jotai';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
+import type z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,8 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { validateApiKey } from '@/core/ai/validate-apikey';
-import type { LLMProvider } from '@/core/chat/ai-model';
+import type { LLMProviderName } from '@/core/provider/all-models';
+import { validateApiKey } from '@/core/provider/validate-apikey';
 import { dbAtoms } from '@/idb/dbStore';
 import { DB } from '../../../idb/db';
 
@@ -38,14 +39,14 @@ export const ApiKeyFormModal = ({
   onOpenChange: (open: boolean) => void;
 }) => {
   const [apiKey, setApiKey] = useState('');
-  const [provider, setProvider] = useState<LLMProvider>('openai');
+  const [providerName, setProviderName] = useState<LLMProviderName>('openai');
   const [isLoading, setIsLoading] = useState(false);
   const setConfig = useSetAtom(dbAtoms.configAtom);
 
   const handleValidateAndSave = async () => {
     setIsLoading(true);
 
-    const isValid = await validateApiKey({ apiKey, provider });
+    const isValid = await validateApiKey({ apiKey, providerName });
 
     if (!isValid) {
       toast.error('Invalid API key. Please check your key and try again.', {
@@ -59,18 +60,19 @@ export const ApiKeyFormModal = ({
     const channelId = v4();
     const createdAt = Date.now();
     const defaultModel =
-      provider === 'openai' ? 'gpt-5-nano' : 'gemini-2.5-flash';
+      providerName === 'openai' ? 'gpt-5.1' : 'gemini-2.5-flash';
 
     await DB.createChannel({
       id: channelId,
       model: defaultModel,
+      providerName: providerName,
       createdAt: createdAt,
       isEmpty: true,
     });
 
     await setConfig({
       lastSelectedChannelId: channelId,
-      [provider === 'openai' ? 'openaiApiKey' : 'googleApiKey']: apiKey,
+      [providerName === 'openai' ? 'openaiApiKey' : 'googleApiKey']: apiKey,
     });
 
     toast.success('Enjoy your AI journey! 🎉🎉🎉', {
@@ -104,8 +106,10 @@ export const ApiKeyFormModal = ({
               <div className='flex flex-col gap-2'>
                 <Label htmlFor='provider'>Service Provider</Label>
                 <Select
-                  value={provider}
-                  onValueChange={value => setProvider(value as LLMProvider)}
+                  value={providerName}
+                  onValueChange={value =>
+                    setProviderName(value as LLMProviderName)
+                  }
                 >
                   <SelectTrigger id='provider'>
                     <SelectValue placeholder='Select a provider' />

@@ -1,15 +1,12 @@
-import { useChat } from '@ai-sdk/react';
-import type { UIMessage } from 'ai';
-import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import {
   ChevronDown,
   KeyRound,
   MessageCirclePlus,
   Sidebar as SidebarIcon,
 } from 'lucide-react';
-import { AnimatePresence, motion, noop } from 'motion/react';
-import React, { useEffect, useMemo, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { motion } from 'motion/react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,10 +22,6 @@ import { modalManager } from './modal/modalManager';
 import { SidebarRenderer } from './sidebar/SidebarRenderer';
 import { sideBarAtoms } from './sidebar/sideBarStore';
 
-/**
- * We use jotai atoms for state management.
- * So, We don't need to provide props.
- */
 export const RootView = React.memo(() => {
   const setIsSidebarOpen = useSetAtom(sideBarAtoms.isSidebarOpenAtom);
 
