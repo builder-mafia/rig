@@ -27,11 +27,24 @@ export const ChannelSchema = z.object({
     ),
 });
 
+const ApiKeysSchema = z.object(
+  Object.fromEntries(
+    LLMProviderNameSchema.options.map(provider => [
+      provider,
+      z.string().optional(),
+    ]),
+  ) as Record<
+    z.infer<typeof LLMProviderNameSchema>,
+    z.ZodOptional<z.ZodString>
+  >,
+);
+
 export const ConfigSchema = z.object({
   lastSelectedChannelId: z.string().optional(),
-  googleApiKey: z.string().optional().describe('Google API key'),
-  openaiApiKey: z.string().optional().describe('OpenAI API key'),
+  apiKeys: ApiKeysSchema,
 });
+
+export type ConfigType = z.infer<typeof ConfigSchema>;
 
 export type DB_MESSAGE = UIMessage & { channelId: string };
 
@@ -81,8 +94,7 @@ const getDB = async () => {
           configStore.put(
             {
               lastSelectedChannelId: undefined,
-              googleApiKey: undefined,
-              openaiApiKey: undefined,
+              apiKeys: {},
             },
             CONFIG_KEY,
           );
@@ -159,11 +171,15 @@ const updateApiKey = async (providerName: LLMProviderName, apiKey: string) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);
-  const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
+  const existingConfig = (await store.get(CONFIG_KEY)) ?? { apiKeys: {} };
+
   await store.put(
     {
       ...existingConfig,
-      [`${providerName}ApiKey`]: apiKey,
+      apiKeys: {
+        ...existingConfig.apiKeys,
+        [providerName]: apiKey,
+      },
     },
     CONFIG_KEY,
   );
@@ -174,12 +190,16 @@ const updateConfig = async (config: Partial<z.infer<typeof ConfigSchema>>) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);
-  const existingConfig = (await store.get(CONFIG_KEY)) ?? {};
+  const existingConfig = (await store.get(CONFIG_KEY)) ?? { apiKeys: {} };
 
   await store.put(
     {
       ...existingConfig,
       ...config,
+      apiKeys: {
+        ...existingConfig.apiKeys,
+        ...config.apiKeys,
+      },
     },
     CONFIG_KEY,
   );
