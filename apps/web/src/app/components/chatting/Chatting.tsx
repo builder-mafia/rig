@@ -28,7 +28,6 @@ export const Chatting = () => {
   const transport = useMemo(() => {
     const { model } = selectedChannel;
     const { googleApiKey, openaiApiKey } = config;
-    console.log('==> useMemo: transport', model);
     const provider = getProviderFromModel(model);
     return createTransport(
       provider === 'google' ? googleApiKey! : openaiApiKey!,
