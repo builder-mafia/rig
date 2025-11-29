@@ -1,3 +1,4 @@
+import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {

@@ -6,11 +6,24 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { LLMModelMap, LLMProvider } from './ai-model';
+import type { LLMModel, LLMModelMap, LLMProvider } from './ai-model';
 
 type Feature = {
   thinking?: boolean;
   webSearch?: boolean;
+};
+
+/**
+ * @description Custom transport for the chat.
+ *
+ * we can get the metadata from the transport.
+ */
+export type CustomTransport = ChatTransport<UIMessage> & {
+  metadata: {
+    provider: LLMProvider;
+    model: LLMModel;
+    features?: Feature;
+  };
 };
 
 /**
@@ -24,7 +37,7 @@ export const createTransport = <S extends LLMProvider>(
   service: S,
   model: LLMModelMap[S],
   features?: Feature,
-): ChatTransport<UIMessage> => {
+): CustomTransport => {
   const createModel = (service: S, model: LLMModelMap[S]) => {
     if (service === 'google') {
       return createGoogleGenerativeAI({
@@ -79,6 +92,11 @@ export const createTransport = <S extends LLMProvider>(
     },
     reconnectToStream: () => {
       throw new Error('Not implemented');
+    },
+    metadata: {
+      provider: service,
+      model,
+      features,
     },
   };
 };

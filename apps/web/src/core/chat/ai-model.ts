@@ -131,6 +131,13 @@ export type AiModelMapType = {
   }>;
 };
 
+/**
+ * @example
+ * getProviderFromModel('gpt-4.1') => 'openai'
+ * getProviderFromModel('gpt-5-nano') => 'openai'
+ * getProviderFromModel('gemini-2.5-flash') => 'google'
+ * getProviderFromModel('gemini-3-pro-preview') => 'google'
+ */
 export const getProviderFromModel = (model: LLMModel): LLMProvider => {
   if (AiModelMap.openai.some(m => m.name === model)) {
     return 'openai' as const;

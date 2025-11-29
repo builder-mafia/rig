@@ -1,41 +1,23 @@
-import { Chat } from '@ai-sdk/react';
-import type { ChatInit, ChatStatus, UIMessage } from 'ai';
+import type { Chat } from '@ai-sdk/react';
+import type { ChatStatus, UIMessage } from 'ai';
 import { BehaviorSubject, type Observable, take } from 'rxjs';
 import { type Setter, setValueOrFn } from '@/utils/setter';
 import { UIMessageStore } from '../UiMessageStore';
-import type { LLMModelMap, LLMProvider } from './ai-model';
-import { createTransport } from './createTransport';
+import type { LLMModel, LLMModelMap, LLMProvider } from './ai-model';
+import { ChatFacadeManager } from './ChatFacadeManager';
+import { type CreateChatOptions, createChat } from './createChat';
+import type { CustomTransport } from './createTransport';
 
-type CreateChatOptions = Pick<
-  ChatInit<UIMessage>,
-  'id' | 'onData' | 'onFinish' | 'onError' | 'messages'
->;
-
-const createChat = <S extends LLMProvider>(
-  apiKey: string,
-  provider: S,
-  model: LLMModelMap[S],
-  { id, messages, onData, onFinish, onError }: Required<CreateChatOptions>,
-) => {
-  const transport = createTransport(apiKey, provider, model);
-  const chat = new Chat({
-    id,
-    onData,
-    onFinish,
-    onError,
+export const createChatFacade = ({
+  id,
+  messages,
+  onData,
+  onFinish,
+  onError,
+  transport,
+}: Required<CreateChatOptions>) => {
+  const chat = createChat({
     transport,
-    messages,
-  });
-  return chat;
-};
-
-export const createChatFacade = <S extends LLMProvider>(
-  apiKey: string,
-  provider: S,
-  model: LLMModelMap[S],
-  { id, messages, onData, onFinish, onError }: Required<CreateChatOptions>,
-) => {
-  const chat = createChat(apiKey, provider, model, {
     id,
     messages,
     onData,
@@ -45,18 +27,17 @@ export const createChatFacade = <S extends LLMProvider>(
 
   return new ChatFacade({
     chat,
-    apiKey,
-    provider,
-    model,
+    provider: transport.metadata.provider,
+    model: transport.metadata.model,
   });
 };
 
-export class ChatFacade<UI_MESSAGE extends UIMessage> {
-  private chat: Chat<UI_MESSAGE>;
+export class ChatFacade {
+  private chat: Chat<UIMessage>;
   /**
    * @description Set messages to Display to the user.
    */
-  private uiMessageStore: UIMessageStore<UI_MESSAGE>;
+  private uiMessageStore: UIMessageStore<UIMessage>;
   /**
    * status of the chat.
    * see: https://ai-sdk.dev/docs/ai-sdk-ui/chatbot#status
@@ -71,28 +52,27 @@ export class ChatFacade<UI_MESSAGE extends UIMessage> {
    */
   private provider: LLMProvider;
   private model: LLMModelMap[LLMProvider];
-  private apiKey: string;
 
   constructor({
     chat,
     provider,
-    apiKey,
     model,
   }: {
-    chat: Chat<UI_MESSAGE>;
+    chat: Chat<UIMessage>;
     provider: LLMProvider;
-    apiKey: string;
     model: LLMModelMap[LLMProvider];
   }) {
+    ChatFacadeManager.setChatFacade(chat.id, this);
+
     this.chat = chat;
-    this.uiMessageStore = new UIMessageStore<UI_MESSAGE>();
+    this.uiMessageStore = new UIMessageStore<UIMessage>();
     this.provider = provider;
     this.model = model;
-    this.apiKey = apiKey;
 
     this.chat['~registerStatusCallback'](() => {
       this.status$.next(this.chat.status);
     });
+
     this.chat['~registerMessagesCallback'](() => {
       if (this.chat.lastMessage) {
         const msg = this.chat.lastMessage;
@@ -105,28 +85,33 @@ export class ChatFacade<UI_MESSAGE extends UIMessage> {
         });
       }
     }, 50);
+
     this.chat['~registerErrorCallback'](() => {
       //
     });
   }
 
-  public getContextMessages(): UI_MESSAGE[] {
+  public getId(): string {
+    return this.chat.id;
+  }
+
+  public getContextMessages(): UIMessage[] {
     return this.chat.messages;
   }
 
-  public setContextMessages(setter: Setter<UI_MESSAGE[]>) {
+  public setContextMessages(setter: Setter<UIMessage[]>) {
     this.chat.messages = setValueOrFn(this.chat.messages, setter);
   }
 
-  public getUiMessages(): UI_MESSAGE[] {
+  public getUiMessages(): UIMessage[] {
     return this.uiMessageStore.getUiMessages();
   }
 
-  public getUiMessages$(): Observable<UI_MESSAGE[]> {
+  public getUiMessages$(): Observable<UIMessage[]> {
     return this.uiMessageStore.getUiMessages$();
   }
 
-  public setUiMessages(setter: Setter<UI_MESSAGE[]>) {
+  public setUiMessages(setter: Setter<UIMessage[]>) {
     this.uiMessageStore.setUiMessages(setter);
   }
 
@@ -138,31 +123,42 @@ export class ChatFacade<UI_MESSAGE extends UIMessage> {
     return this.status$.asObservable();
   }
 
-  public sendMessage(message: UI_MESSAGE & { role: 'user' }) {
+  public sendMessage(message: UIMessage & { role: 'user' }) {
     this.chat.sendMessage(message);
   }
 
-  public setLLMModel<S extends LLMProvider>(
-    provider: S,
-    model: LLMModelMap[S],
-    apiKey: string,
-  ) {
-    if (
-      this.provider === provider &&
-      this.model === model &&
-      this.apiKey === apiKey
-    ) {
-      console.warn('setLLMModel: same provider, model, and apiKey');
-      return;
+  /**
+   * @description Return the error of the chat when it is in error status.
+   *
+   * @example
+   * getError() => Error | undefined
+   */
+  public getError() {
+    return this.chat.error;
+  }
+
+  /**
+   * @example
+   * getLLM() => { provider: 'openai', model: 'gpt-4.1' }
+   * getLLM() => { provider: 'google', model: 'gemini-2.5-flash' }
+   */
+  public getLLM(): { provider: LLMProvider; model: LLMModel } {
+    return {
+      provider: this.provider,
+      model: this.model,
+    };
+  }
+
+  public stop() {
+    if (this.chat.status === 'streaming' || this.chat.status === 'submitted') {
+      this.chat.stop();
     }
-    this.provider = provider;
-    this.model = model;
-    this.apiKey = apiKey;
+  }
 
-    const transport = createTransport(this.apiKey, this.provider, this.model);
-
-    // if the chat is submitted or streaming, wait for the status to be change,
-    // and then set the new transport.
+  public setTransport(transport: CustomTransport) {
+    this.provider = transport.metadata.provider;
+    this.model = transport.metadata.model;
+    // if the chat is submitted or streaming, wait for the chat to be finished,
     if (this.chat.status === 'submitted' || this.chat.status === 'streaming') {
       this.getStatus$()
         .pipe(take(1))
@@ -175,12 +171,6 @@ export class ChatFacade<UI_MESSAGE extends UIMessage> {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error : this is a private property of the chat object
       this.chat.transport = transport;
-    }
-  }
-
-  public stop() {
-    if (this.chat.status === 'streaming' || this.chat.status === 'submitted') {
-      this.chat.stop();
     }
   }
 }
