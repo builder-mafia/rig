@@ -70,8 +70,10 @@ const configAtom = atom(
   },
 );
 
+const allMessagesRefreshAtom = atom(0);
 const allMessagesAtom = atom(
-  async () => {
+  async get => {
+    get(allMessagesRefreshAtom); // dependency
     return await DB.getMessages();
   },
   async (_, set, newMessages: DB_MESSAGE[]) => {
@@ -80,8 +82,7 @@ const allMessagesAtom = atom(
       assertDefined(channelId, 'channelId is not found');
       await DB.addMessage(channelId, message);
     }
-    const updatedMessages = await DB.getMessages();
-    await set(allMessagesAtom, updatedMessages);
+    set(allMessagesRefreshAtom, prev => prev + 1);
   },
 );
 
