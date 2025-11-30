@@ -41,24 +41,6 @@ const FormValuesSchema = z.object({
 
 type FormValuesType = z.infer<typeof FormValuesSchema>;
 
-const createDefaultChannel = async (
-  providerName: LLMProviderName,
-): Promise<string> => {
-  const channelId = v4();
-  const createdAt = Date.now();
-  // randomly select a model from the provider's model list
-  const defaultModel = sample(MODEL_IDS_PER_PROVIDER[providerName]);
-
-  // return the id of the created channel
-  return await DB.createChannel({
-    id: channelId,
-    model: defaultModel,
-    providerName: providerName,
-    createdAt: createdAt,
-    isEmpty: true,
-  });
-};
-
 /**
  * This modal should be shown when the user does not have any API key.
  */
@@ -77,6 +59,7 @@ export const ApiKeyFormModal = ({
   });
 
   const setConfig = useSetAtom(dbAtoms.configAtom);
+  const createChannel = useSetAtom(dbAtoms.createChannelAtom);
 
   const onSubmit = async (values: FormValuesType) => {
     const { apiKey, providerName } = values;
@@ -89,7 +72,13 @@ export const ApiKeyFormModal = ({
       return;
     }
 
-    const channelId = await createDefaultChannel(providerName);
+    const channelId = await createChannel({
+      id: v4(),
+      model: sample(MODEL_IDS_PER_PROVIDER[providerName]),
+      providerName: providerName,
+      createdAt: Date.now(),
+      isEmpty: true,
+    });
 
     await setConfig({
       lastSelectedChannelId: channelId,
