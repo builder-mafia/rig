@@ -1,10 +1,9 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { ChatInit, UIMessage } from 'ai';
-import { isEqual, noop } from 'es-toolkit';
+import { noop } from 'es-toolkit';
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 import type { LLMProvider } from '../provider/LLMProvider';
 import { type ChatFacade, createChatFacade } from './ChatFacade';
-import { ChatFacadeManager } from './ChatFacadeManager';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
@@ -24,6 +23,7 @@ type UseChatOptions = {
   modelId?: string;
   model?: LanguageModelV2;
   messages: UIMessage[];
+  onBeforeSend?: (message: UIMessage) => void;
   onFinish?: ChatInit<UIMessage>['onFinish'];
   onError?: ChatInit<UIMessage>['onError'];
   onData?: ChatInit<UIMessage>['onData'];
@@ -38,7 +38,8 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   model,
   modelId,
   messages,
-  ...options
+  onBeforeSend,
+  ...chatCallbacks
 }: UseChatOptions) => {
   if (!model && !modelId) {
     throw new Error('useChat: model or modelId is required');
@@ -48,30 +49,42 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   }
 
   const chatFacadeRef = useRef<ChatFacade>(
-    ChatFacadeManager.getChatFacade(id) ??
-      createChatFacade({
-        id,
-        messages,
-        provider,
-        model,
-        modelId,
-        onData: options.onData ?? noop,
-        onFinish: options.onFinish ?? noop,
-        onError: options.onError ?? noop,
-      }),
+    createChatFacade({
+      id,
+      messages,
+      provider,
+      model,
+      modelId,
+      onData: chatCallbacks.onData ?? noop,
+      onFinish: chatCallbacks.onFinish ?? noop,
+      onError: chatCallbacks.onError ?? noop,
+    }),
   );
 
-  const shouldUpdateProvider =
-    // if channel is changed
-    id !== chatFacadeRef.current.getId() ||
+  const shouldRecreateChatFacade = chatFacadeRef.current.getId() !== id;
+
+  if (shouldRecreateChatFacade) {
+    chatFacadeRef.current = createChatFacade({
+      id,
+      messages,
+      provider,
+      model,
+      modelId,
+      onData: chatCallbacks.onData ?? noop,
+      onFinish: chatCallbacks.onFinish ?? noop,
+      onError: chatCallbacks.onError ?? noop,
+    });
+  }
+
+  const shouldUpdateTransport =
     // if 'google' => 'openai'
     provider.name !== chatFacadeRef.current.getProviderName() ||
-    // if 'gpt-5.1' => 'gpt-4.1'
+    // or 'gpt-5.1' => 'gpt-4.1'
     (modelId && modelId !== chatFacadeRef.current.getModelId()) ||
-    // if new model instance
+    // or new model instance
     (model && !chatFacadeRef.current.isSameModel(model));
 
-  if (shouldUpdateProvider) {
+  if (shouldUpdateTransport) {
     chatFacadeRef.current.setProvider(provider);
     chatFacadeRef.current.setModel(
       model ? model : provider.createModel(modelId!),
@@ -112,6 +125,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   };
 
   const sendMessage = (message: UI_MESSAGE & { role: 'user' }) => {
+    onBeforeSend?.(message);
     return chatFacadeRef.current.sendMessage(message);
   };
 
