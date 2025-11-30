@@ -1,4 +1,3 @@
-import type { UIMessage } from 'ai';
 import type { ChatFacade } from './ChatFacade';
 
 /**
@@ -28,6 +27,12 @@ export class ChatFacadeManager {
   }
 
   public static setChatFacade(id: string, chatFacade: ChatFacade) {
+    const oldChatFacade = ChatFacadeManager.getChatFacade(id);
+
+    if (oldChatFacade && oldChatFacade !== chatFacade) {
+      oldChatFacade.dispose();
+    }
+
     ChatFacadeManager.chatFacades.set(id, chatFacade);
   }
 }

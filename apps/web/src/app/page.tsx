@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
+import { ModalRegistry } from './components/modal/ModalRegistry';
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ export default function MainPage() {
             <DynamicRootViewRenderer />
           </Suspense>
         </div>
+        <ModalRegistry />
       </QueryClientProvider>
     </div>
   );

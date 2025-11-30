@@ -7,7 +7,7 @@ import { RootView } from './RootView';
 export const RootViewRenderer = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   return (
-    <div>
+    <>
       {selectedChannel ? (
         <Suspense fallback={<div></div>}>
           <RootView />
@@ -18,6 +18,6 @@ export const RootViewRenderer = () => {
           <ApiKeyFormModal open={true} onOpenChange={() => {}} />
         </div>
       )}
-    </div>
+    </>
   );
 };

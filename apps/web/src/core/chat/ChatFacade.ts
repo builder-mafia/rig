@@ -18,6 +18,7 @@ export type CreateChatFacadeOptions = {
    * @example 'gpt-5.1'
    */
   modelId?: string;
+  onBeforeSend?: (message: UIMessage) => void;
   onData: Required<ChatInit<UIMessage>>['onData'];
   onFinish: Required<ChatInit<UIMessage>>['onFinish'];
   onError: Required<ChatInit<UIMessage>>['onError'];
@@ -29,6 +30,7 @@ export const createChatFacade = ({
   provider,
   model,
   modelId,
+  onBeforeSend,
   onData,
   onFinish,
   onError,
@@ -45,17 +47,23 @@ export const createChatFacade = ({
     onError,
   });
 
-  return new ChatFacade({
+  const chatFacade = new ChatFacade({
     chat,
     provider,
     model: _model,
+    onBeforeSend,
   });
+
+  ChatFacadeManager.setChatFacade(id, chatFacade);
+
+  return chatFacade;
 };
 
 type CreateChatFacadeParams = {
   chat: Chat<UIMessage>;
   provider: LLMProvider;
   model: LanguageModelV2;
+  onBeforeSend?: (message: UIMessage) => void;
 };
 
 export class ChatFacade {
@@ -78,14 +86,15 @@ export class ChatFacade {
    */
   private provider: LLMProvider;
   private model: LanguageModelV2;
+  private onBeforeSend?: (message: UIMessage) => void;
+  private _isDisposed = false;
 
-  constructor({ chat, provider, model }: CreateChatFacadeParams) {
-    // ChatFacadeManager.setChatFacade(chat.id, this);
-
+  constructor({ chat, provider, model, onBeforeSend }: CreateChatFacadeParams) {
     this.chat = chat;
     this.uiMessageStore = new UIMessageStore<UIMessage>();
     this.provider = provider;
     this.model = model;
+    this.onBeforeSend = onBeforeSend;
 
     this.uiMessageStore.setUiMessages(chat.messages);
 
@@ -144,6 +153,11 @@ export class ChatFacade {
   }
 
   public sendMessage(message: UIMessage & { role: 'user' }) {
+    if (this._isDisposed) {
+      throw new Error('ChatFacade is disposed');
+    }
+
+    this.onBeforeSend?.(message);
     this.chat.sendMessage(message);
   }
 
@@ -175,6 +189,10 @@ export class ChatFacade {
   }
 
   public stop() {
+    if (this._isDisposed) {
+      throw new Error('ChatFacade is disposed');
+    }
+
     if (this.chat.status === 'streaming' || this.chat.status === 'submitted') {
       this.chat.stop();
     }
@@ -189,6 +207,10 @@ export class ChatFacade {
   }
 
   public updateTransport() {
+    if (this._isDisposed) {
+      throw new Error('ChatFacade is disposed');
+    }
+
     const newTransport = this.provider.createTransport(this.model);
 
     // if the chat is submitted or streaming, wait for the chat to be finished,
@@ -205,5 +227,9 @@ export class ChatFacade {
       // @ts-expect-error : this is a private property of the chat object
       this.chat.transport = newTransport;
     }
+  }
+
+  public dispose() {
+    this._isDisposed = true;
   }
 }

@@ -1,9 +1,10 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { ChatInit, UIMessage } from 'ai';
 import { noop } from 'es-toolkit';
-import { useCallback, useRef, useSyncExternalStore } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import type { LLMProvider } from '../provider/LLMProvider';
 import { type ChatFacade, createChatFacade } from './ChatFacade';
+import { ChatFacadeManager } from './ChatFacadeManager';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
@@ -49,19 +50,21 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   }
 
   const chatFacadeRef = useRef<ChatFacade>(
-    createChatFacade({
-      id,
-      messages,
-      provider,
-      model,
-      modelId,
-      onData: chatCallbacks.onData ?? noop,
-      onFinish: chatCallbacks.onFinish ?? noop,
-      onError: chatCallbacks.onError ?? noop,
-    }),
+    ChatFacadeManager.getChatFacade(id) ??
+      createChatFacade({
+        id,
+        messages,
+        provider,
+        model,
+        modelId,
+        onBeforeSend,
+        onData: chatCallbacks.onData ?? noop,
+        onFinish: chatCallbacks.onFinish ?? noop,
+        onError: chatCallbacks.onError ?? noop,
+      }),
   );
 
-  const shouldRecreateChatFacade = chatFacadeRef.current.getId() !== id;
+  const shouldRecreateChatFacade = chatFacadeRef.current?.getId() !== id;
 
   if (shouldRecreateChatFacade) {
     chatFacadeRef.current = createChatFacade({
@@ -70,6 +73,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
       provider,
       model,
       modelId,
+      onBeforeSend,
       onData: chatCallbacks.onData ?? noop,
       onFinish: chatCallbacks.onFinish ?? noop,
       onError: chatCallbacks.onError ?? noop,
@@ -92,14 +96,14 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     chatFacadeRef.current.updateTransport();
   }
 
-  const subscribeToMessages = useCallback((onChange: () => void) => {
+  const subscribeToMessages = (onChange: () => void) => {
     const subscription = chatFacadeRef.current
       .getUiMessages$()
       .subscribe(onChange);
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  };
 
   const uiMessages = useSyncExternalStore(
     subscribeToMessages,
@@ -107,12 +111,12 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     () => chatFacadeRef.current.getUiMessages() ?? EMPTY_MESSAGES,
   );
 
-  const subscribeToStatus = useCallback((onChange: () => void) => {
+  const subscribeToStatus = (onChange: () => void) => {
     const subscription = chatFacadeRef.current.getStatus$().subscribe(onChange);
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  };
 
   const status = useSyncExternalStore(
     subscribeToStatus,
@@ -125,7 +129,6 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   };
 
   const sendMessage = (message: UI_MESSAGE & { role: 'user' }) => {
-    onBeforeSend?.(message);
     return chatFacadeRef.current.sendMessage(message);
   };
 
