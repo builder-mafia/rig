@@ -74,12 +74,11 @@ const allMessagesAtom = atom(
   async () => {
     return await DB.getMessages();
   },
-  async (get, set, newMessages: DB_MESSAGE[]) => {
-    const selectedChannelId = await get(selectedChannelIdAtom);
-
-    assertDefined(selectedChannelId, 'selectedChannelId is not found');
+  async (_, set, newMessages: DB_MESSAGE[]) => {
     for (const message of newMessages) {
-      await DB.addMessage(selectedChannelId, message);
+      const channelId = message.channelId;
+      assertDefined(channelId, 'channelId is not found');
+      await DB.addMessage(channelId, message);
     }
     const updatedMessages = await DB.getMessages();
     await set(allMessagesAtom, updatedMessages);
