@@ -80,12 +80,14 @@ export class ChatFacade {
   private model: LanguageModelV2;
 
   constructor({ chat, provider, model }: CreateChatFacadeParams) {
-    ChatFacadeManager.setChatFacade(chat.id, this);
+    // ChatFacadeManager.setChatFacade(chat.id, this);
 
     this.chat = chat;
     this.uiMessageStore = new UIMessageStore<UIMessage>();
     this.provider = provider;
     this.model = model;
+
+    this.uiMessageStore.setUiMessages(chat.messages);
 
     this.chat['~registerStatusCallback'](() => {
       this.status$.next(this.chat.status);
@@ -93,12 +95,12 @@ export class ChatFacade {
 
     this.chat['~registerMessagesCallback'](() => {
       if (this.chat.lastMessage) {
-        const msg = this.chat.lastMessage;
+        const lastMessage = this.chat.lastMessage;
         this.uiMessageStore.setUiMessages(prev => {
-          if (prev.at(-1)?.id === msg.id) {
-            return [...prev.slice(0, -1), msg];
+          if (prev.at(-1)?.id === lastMessage.id) {
+            return [...prev.slice(0, -1), lastMessage];
           } else {
-            return [...prev, msg];
+            return [...prev, lastMessage];
           }
         });
       }
