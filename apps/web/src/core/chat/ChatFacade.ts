@@ -80,7 +80,7 @@ export class ChatFacade {
   private model: LanguageModelV2;
 
   constructor({ chat, provider, model }: CreateChatFacadeParams) {
-    // ChatFacadeManager.setChatFacade(chat.id, this);
+    ChatFacadeManager.setChatFacade(chat.id, this);
 
     this.chat = chat;
     this.uiMessageStore = new UIMessageStore<UIMessage>();

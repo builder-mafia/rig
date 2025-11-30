@@ -4,6 +4,7 @@ import { noop } from 'es-toolkit';
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 import type { LLMProvider } from '../provider/LLMProvider';
 import { type ChatFacade, createChatFacade } from './ChatFacade';
+import { ChatFacadeManager } from './ChatFacadeManager';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
@@ -64,6 +65,8 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   const shouldRecreateChatFacade = chatFacadeRef.current.getId() !== id;
 
   if (shouldRecreateChatFacade) {
+    const oldId = chatFacadeRef.current.getId();
+
     chatFacadeRef.current = createChatFacade({
       id,
       messages,
@@ -74,6 +77,8 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
       onFinish: chatCallbacks.onFinish ?? noop,
       onError: chatCallbacks.onError ?? noop,
     });
+
+    ChatFacadeManager.disposeChatFacade(oldId);
   }
 
   const shouldUpdateTransport =

@@ -30,4 +30,8 @@ export class ChatFacadeManager {
   public static setChatFacade(id: string, chatFacade: ChatFacade) {
     ChatFacadeManager.chatFacades.set(id, chatFacade);
   }
+
+  public static disposeChatFacade(id: string) {
+    ChatFacadeManager.chatFacades.delete(id);
+  }
 }
