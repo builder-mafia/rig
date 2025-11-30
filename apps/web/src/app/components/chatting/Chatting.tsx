@@ -65,10 +65,5 @@ export const Chatting = () => {
 
   const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);
 
-  return (
-    <>
-      <ChatList threads={threads} status={status} />
-      <ChatInput sendMessage={sendMessage as (message: UIMessage) => void} />
-    </>
-  );
+  return <ChatList threads={threads} status={status} />;
 };
