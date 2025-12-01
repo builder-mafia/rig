@@ -28,7 +28,7 @@ import {
 import { validateApiKey } from '@/core/provider/validate-apikey';
 import { DB } from '@/idb/db';
 import { dbAtoms } from '@/idb/db-store';
-import { getProviderLogo } from '../helper/providerLogo';
+import { getLogoByProvider } from '../helper/get-logo-by-provider';
 
 const FormValuesSchema = z.object(
   Object.fromEntries(
@@ -184,7 +184,7 @@ export const ApiKeyConfigModal = ({
                     <div key={providerName} className='flex flex-col gap-2'>
                       <div className='flex flex-row gap-2'>
                         <Label htmlFor={`${providerName}-api-key`}>
-                          {getProviderLogo(
+                          {getLogoByProvider(
                             providerName as LLMProviderName,
                             'size-4',
                           )}

@@ -32,7 +32,7 @@ import {
 import { validateApiKey } from '@/core/provider/validate-apikey';
 import { dbAtoms } from '@/idb/db-store';
 import { DB } from '../../../idb/db';
-import { getProviderLogo } from '../helper/providerLogo';
+import { getLogoByProvider } from '../helper/get-logo-by-provider';
 
 const FormValuesSchema = z.object({
   apiKey: z.string(),
@@ -132,7 +132,7 @@ export const ApiKeyFormModal = ({
                       <SelectContent>
                         {LLMProviderNameSchema.options.map(providerName => (
                           <SelectItem key={providerName} value={providerName}>
-                            {getProviderLogo(providerName, 'size-4')}
+                            {getLogoByProvider(providerName, 'size-4')}
                             {` ${providerName}`}
                           </SelectItem>
                         ))}

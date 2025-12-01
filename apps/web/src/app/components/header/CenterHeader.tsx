@@ -9,12 +9,12 @@ import {
 } from '@/components/ui/popover';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assertDefined } from '@/utils/assert';
+import { assert } from '@/utils/assert';
 
 export const CenterHeader = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const updateSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
-  assertDefined(selectedChannel, 'CenterHeader: selectedChannel is not found.');
+  assert(selectedChannel, 'CenterHeader: selectedChannel is not found.');
 
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

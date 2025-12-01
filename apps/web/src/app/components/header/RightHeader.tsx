@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assertDefined } from '@/utils/assert';
+import { assert } from '@/utils/assert';
 import { modalManager } from '../modal/modalManager';
 
 export const RightHeader = () => {
@@ -21,7 +21,7 @@ export const RightHeader = () => {
   const setConfig = useSetAtom(dbAtoms.configAtom);
   const createChannel = useSetAtom(dbAtoms.createChannelAtom);
 
-  assertDefined(selectedChannel, 'RightHeader: selectedChannel is not found');
+  assert(selectedChannel, 'RightHeader: selectedChannel is not found');
 
   const onClickNewChannel = useCallback(async () => {
     const channelId = v4();

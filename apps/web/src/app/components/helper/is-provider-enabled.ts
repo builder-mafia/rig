@@ -5,10 +5,10 @@ import type { ConfigSchema } from '@/idb/db';
 
 /**
  * @example
- * canUseProvider('openai', config) => true // when openai api key is set
- * canUseProvider('google', config) => false // when google api key is not set
+ * isProviderEnabled('openai', config) => true // when openai api key is set
+ * isProviderEnabled('google', config) => false // when google api key is not set
  */
-export const canUseProvider = (
+export const isProviderEnabled = (
   providerName: LLMProviderName,
   config: z.infer<typeof ConfigSchema>,
 ) => {

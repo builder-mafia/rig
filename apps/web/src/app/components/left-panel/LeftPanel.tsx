@@ -12,15 +12,15 @@ import {
 } from '@/components/ui/sidebar';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assertDefined } from '@/utils/assert';
+import { assert } from '@/utils/assert';
 
 export const LeftPanel = () => {
   const allChannels = useSwrAtomValue(dbAtoms.allChannelsAtom);
   const selectedChannelId = useSwrAtomValue(dbAtoms.selectedChannelIdAtom);
   const setSelectedChannelId = useSetAtom(dbAtoms.selectedChannelIdAtom);
 
-  assertDefined(allChannels, 'LeftPanel: allChannels is not found.');
-  assertDefined(selectedChannelId, 'LeftPanel: selectedChannel is not found.');
+  assert(allChannels, 'LeftPanel: allChannels is not found.');
+  assert(selectedChannelId, 'LeftPanel: selectedChannel is not found.');
 
   const onClick = (channelId: string) => {
     setSelectedChannelId(channelId);

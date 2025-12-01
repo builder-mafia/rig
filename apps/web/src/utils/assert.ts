@@ -1,9 +1,4 @@
-import type { Nullable } from './types';
-
-export function assertDefined<T>(
-  condition: Nullable<T>,
-  message: string,
-): asserts condition is NonNullable<T> {
+export function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
   }

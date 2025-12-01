@@ -2,7 +2,7 @@ import { Google, OpenAI } from '@lobehub/icons';
 import { match } from 'ts-pattern';
 import type { LLMProviderName } from '@/core/provider/all-models';
 
-export const getProviderLogo = (
+export const getLogoByProvider = (
   providerName: LLMProviderName,
   className: string,
 ) => {

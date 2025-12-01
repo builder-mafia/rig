@@ -11,7 +11,7 @@ type ThreadProps = {
   status: ReturnType<typeof useChat>['status'];
 };
 
-const GENERATING_TEXT = '대답 중...';
+const GENERATING_TEXT = 'answering...';
 
 export const Thread = ({ thread, isLast, status }: ThreadProps) => {
   const ref = useRef<HTMLDivElement>(null);

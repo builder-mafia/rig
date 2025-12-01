@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import type z from 'zod';
-import { assertDefined } from '@/utils/assert';
+import { assert } from '@/utils/assert';
 import {
   type ChannelSchema,
   type ConfigSchema,
@@ -48,7 +48,7 @@ const selectedChannelAtom = atom(
       channel => channel.id === selectedChannelId,
     );
 
-    assertDefined(
+    assert(
       channel,
       `channel is not found, selectedChannelId: ${selectedChannelId}`,
     );
@@ -92,7 +92,7 @@ const allMessagesAtom = atom(
   async (_, set, newMessages: DB_MESSAGE[]) => {
     for (const message of newMessages) {
       const channelId = message.channelId;
-      assertDefined(channelId, 'channelId is not found');
+      assert(channelId, 'channelId is not found');
       await DB.addMessage(channelId, message);
     }
     set(allMessagesRefreshAtom, prev => prev + 1);

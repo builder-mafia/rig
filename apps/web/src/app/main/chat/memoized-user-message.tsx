@@ -1,7 +1,7 @@
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { memo } from 'react';
 
-export const MemoizedUserMessage = memo(
+export const MemoizedUserMessage = React.memo(
   ({
     content,
     ref,

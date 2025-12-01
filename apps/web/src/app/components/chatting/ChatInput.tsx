@@ -26,15 +26,15 @@ import {
 } from '@/core/provider/all-models';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assertDefined } from '@/utils/assert';
-import { canUseProvider } from '../helper/check';
+import { assert } from '@/utils/assert';
+import { isProviderEnabled } from '../helper/is-provider-enabled';
 import { HotKeyList } from '../hotkey/hotkey-list';
 
 export const ChatInput = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
-  assertDefined(selectedChannel, 'ChatInput: selectedChannel is not found.');
-  assertDefined(config, 'ChatInput: config is not found.');
+  assert(selectedChannel, 'ChatInput: selectedChannel is not found.');
+  assert(config, 'ChatInput: config is not found.');
 
   const setSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
   const [input, setInput] = useState('');
@@ -96,7 +96,7 @@ export const ChatInput = () => {
     const parsedProviderName = LLMProviderNameSchema.parse(providerName);
     const parsedModelId = AllModelIdsSchema.parse(modelId);
 
-    if (!canUseProvider(parsedProviderName, config)) {
+    if (!isProviderEnabled(parsedProviderName, config)) {
       // this error must not be thrown.
       // because SelectItem is disabled when provider is not available.
       throw new Error(
@@ -147,7 +147,7 @@ export const ChatInput = () => {
                     <SelectGroup key={providerName}>
                       <SelectLabel
                         aria-disabled={
-                          !canUseProvider(
+                          !isProviderEnabled(
                             providerName as LLMProviderName,
                             config,
                           )
@@ -158,7 +158,7 @@ export const ChatInput = () => {
                       {modelIds.map(modelId => (
                         <SelectItem
                           disabled={
-                            !canUseProvider(
+                            !isProviderEnabled(
                               providerName as LLMProviderName,
                               config,
                             )

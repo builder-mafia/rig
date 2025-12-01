@@ -7,8 +7,8 @@ import { messagesToThreads } from '@/core/helper';
 import { providerRegistry } from '@/core/provider/providerRegistry';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assertDefined } from '@/utils/assert';
-import { registerProvider } from '../helper/registerProvider';
+import { assert } from '@/utils/assert';
+import { registerProvider } from '../helper/register-provider';
 import { ChatList } from './ChatList';
 
 export const Chatting = () => {
@@ -17,9 +17,9 @@ export const Chatting = () => {
   const messages = useSwrAtomValue(dbAtoms.selectedChannelMessagesAtom);
   const saveMessages = useSetAtom(dbAtoms.selectedChannelMessagesAtom);
 
-  assertDefined(selectedChannel, 'Chatting: selectedChannel is not found.');
-  assertDefined(config, 'Chatting: config is not found.');
-  assertDefined(messages, 'Chatting: messages is not found.');
+  assert(selectedChannel, 'Chatting: selectedChannel is not found.');
+  assert(config, 'Chatting: config is not found.');
+  assert(messages, 'Chatting: messages is not found.');
 
   registerProvider(config);
 
@@ -27,7 +27,7 @@ export const Chatting = () => {
     () => providerRegistry.get(selectedChannel.providerName),
     [selectedChannel.providerName],
   );
-  assertDefined(provider, 'Chatting: provider is not found.');
+  assert(provider, 'Chatting: provider is not found.');
   const modelId = useMemo(() => selectedChannel.model, [selectedChannel.model]);
 
   const onBeforeSend = useCallback(
