@@ -49,6 +49,7 @@
     "gsap": "catalog:animation",
     "idb": "^8.0.3",
     "jotai": "^2.15.0",
+    "jotai-effect": "^2.1.5",
     "jsdom": "^26.1.0",
     "ky": "catalog:utils",
     "lucide-react": "^0.513.0",
