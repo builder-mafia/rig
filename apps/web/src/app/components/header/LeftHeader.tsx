@@ -7,7 +7,8 @@ export const LeftHeader = () => {
   const setIsSidebarOpen = useSetAtom(leftPanelAtoms.isOpen);
 
   return (
-    <div className='fixed top-1 left-2 flex '>
+    // LeftPanel Sidebar has z-10, so we need to set z-20 to make it above the LeftPanel Sidebar.
+    <div className='fixed top-1 left-2 flex z-20'>
       <Button
         variant={'outline'}
         size={'icon'}
