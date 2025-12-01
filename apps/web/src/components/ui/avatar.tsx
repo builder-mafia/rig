@@ -3,7 +3,7 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { cva } from 'class-variance-authority';
 import type * as React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 
 const AvatarSizeVariants = cva(
   'relative flex size-8 shrink-0 overflow-hidden rounded-full',

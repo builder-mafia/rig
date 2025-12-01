@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import type z from 'zod';
-import { assertDefined } from '@/utils/assertDefined';
+import { assertDefined } from '@/utils/assert';
 import {
   type ChannelSchema,
   type ConfigSchema,

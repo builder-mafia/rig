@@ -5,9 +5,9 @@ import { useCallback, useMemo } from 'react';
 import { useChat } from '@/core/chat/useChat';
 import { messagesToThreads } from '@/core/helper';
 import { providerRegistry } from '@/core/provider/providerRegistry';
-import { dbAtoms } from '@/idb/dbStore';
-import { assertDefined } from '@/utils/assertDefined';
-import { useSwrAtomValue } from '@/utils/useSwrAtomValue';
+import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
+import { dbAtoms } from '@/idb/db-store';
+import { assertDefined } from '@/utils/assert';
 import { registerProvider } from '../helper/registerProvider';
 import { ChatList } from './ChatList';
 

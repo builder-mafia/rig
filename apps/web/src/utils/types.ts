@@ -1,3 +1,9 @@
+export type Nullable<T> = T | null | undefined;
+
+/**
+ * @example
+ * type HelloWorld = ElementType<string[]>; // string
+ */
 export type ElementType<T> = T extends (infer U)[] ? U : T;
 
 /**

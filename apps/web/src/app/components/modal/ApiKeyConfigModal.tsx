@@ -27,7 +27,7 @@ import {
 } from '@/core/provider/all-models';
 import { validateApiKey } from '@/core/provider/validate-apikey';
 import { DB } from '@/idb/db';
-import { dbAtoms } from '@/idb/dbStore';
+import { dbAtoms } from '@/idb/db-store';
 import { getProviderLogo } from '../helper/providerLogo';
 
 const FormValuesSchema = z.object(

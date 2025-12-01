@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { dbAtoms } from '@/idb/dbStore';
-import { useSwrAtomValue } from '@/utils/useSwrAtomValue';
+import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
+import { dbAtoms } from '@/idb/db-store';
 import { ApiKeyFormModal } from './modal/ApiKeyFormModal';
 import { RootView } from './RootView';
 

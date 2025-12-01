@@ -11,9 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { dbAtoms } from '@/idb/dbStore';
-import { assertDefined } from '@/utils/assertDefined';
-import { useSwrAtomValue } from '@/utils/useSwrAtomValue';
+import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
+import { dbAtoms } from '@/idb/db-store';
+import { assertDefined } from '@/utils/assert';
 import { modalManager } from '../modal/modalManager';
 
 export const RightHeader = () => {

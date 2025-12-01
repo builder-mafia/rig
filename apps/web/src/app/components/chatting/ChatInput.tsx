@@ -24,9 +24,9 @@ import {
   LLMProviderNameSchema,
   MODEL_IDS_PER_PROVIDER,
 } from '@/core/provider/all-models';
-import { dbAtoms } from '@/idb/dbStore';
-import { assertDefined } from '@/utils/assertDefined';
-import { useSwrAtomValue } from '@/utils/useSwrAtomValue';
+import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
+import { dbAtoms } from '@/idb/db-store';
+import { assertDefined } from '@/utils/assert';
 import { canUseProvider } from '../helper/check';
 import { HotKeyList } from '../hotkey/hotkey-list';
 

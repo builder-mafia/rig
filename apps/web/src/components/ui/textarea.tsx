@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { mergeRefs } from '@/lib/mergeRefs';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
+import { mergeRefs } from '@/utils/merge-refs';
 
 function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   const ref = useRef<HTMLTextAreaElement>(null);

@@ -1,6 +1,6 @@
 import { type Atom, useAtomValue } from 'jotai';
 import { useMemo } from 'react';
-import { atomWithSwr } from './atomWithSwr';
+import { atomWithSwr } from '../utils/atom-with-swr';
 
 export const useSwrAtomValue = <T>(atom: Atom<T>) => {
   const swrAtom = useMemo(() => atomWithSwr(atom), [atom]);

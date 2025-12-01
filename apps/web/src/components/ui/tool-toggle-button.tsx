@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import type { Ref } from 'react';
+import { cn } from '@/utils/cn';
 
 type ToolToggleButtonProps = {
   value: boolean;
@@ -9,7 +9,12 @@ type ToolToggleButtonProps = {
   ref?: Ref<HTMLButtonElement>;
 };
 
-export const ToolToggleButton = ({ className, value, ref, ...props }: ToolToggleButtonProps) => {
+export const ToolToggleButton = ({
+  className,
+  value,
+  ref,
+  ...props
+}: ToolToggleButtonProps) => {
   return (
     <button
       ref={ref}

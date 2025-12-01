@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 
-export const Sidebar = () => {
+export const LeftPanel = () => {
   return (
     <motion.div
       initial={{ width: 0 }}

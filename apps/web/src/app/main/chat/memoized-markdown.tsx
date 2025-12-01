@@ -1,21 +1,29 @@
+import { marked } from 'marked';
+import {
+  type ClassAttributes,
+  type HTMLAttributes,
+  memo,
+  useDeferredValue,
+  useMemo,
+} from 'react';
+import type { ExtraProps } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
 import { isInlineCode, ShikiHighlighter } from 'react-shiki';
-import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { memo, useDeferredValue, useMemo } from 'react';
-import { marked } from 'marked';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 import './shiki.css';
 
-const CodeHighlight: Components['code'] = ({
+type CodeProps = ClassAttributes<HTMLElement> &
+  HTMLAttributes<HTMLElement> &
+  ExtraProps;
+
+const CodeHighlight = ({
   className,
   children,
   node,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   isLastBlock,
   ...props
-}) => {
+}: CodeProps & { isLastBlock?: boolean }) => {
   const code = String(children).trim();
   const match = className?.match(/language-(\w+)/);
   const language = match ? match[1] : undefined;
@@ -38,7 +46,9 @@ const CodeHighlight: Components['code'] = ({
   );
 };
 
-function parseMarkdownIntoBlocks(markdown: string): Array<{ content: string; type: string }> {
+function parseMarkdownIntoBlocks(
+  markdown: string,
+): Array<{ content: string; type: string }> {
   const tokens = marked.lexer(markdown);
 
   return tokens.map(token => ({
@@ -63,11 +73,13 @@ const MemoizedMarkdownBlock = memo(
           ],
         ]}
         components={{
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          code: props => <CodeHighlight {...props} isLastBlock={isLastBlock}></CodeHighlight>,
+          code: props => (
+            <CodeHighlight {...props} isLastBlock={isLastBlock}></CodeHighlight>
+          ),
           pre: ({ children }) => <div className='not-prose'>{children}</div>,
-          a: ({ ...props }) => <a {...props} target='_blank' rel='noopener noreferrer' />,
+          a: ({ ...props }) => (
+            <a {...props} target='_blank' rel='noopener noreferrer' />
+          ),
         }}
       >
         {deferredContent}
@@ -78,16 +90,18 @@ const MemoizedMarkdownBlock = memo(
 
 MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock';
 
-export const MemoizedMarkdown = memo(({ content, id }: { content: string; id: string }) => {
-  const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
+export const MemoizedMarkdown = memo(
+  ({ content, id }: { content: string; id: string }) => {
+    const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
 
-  return blocks.map(({ content, type }, index) => (
-    <MemoizedMarkdownBlock
-      content={content}
-      key={`${id}-block-${index}`}
-      isLastBlock={index === blocks.length - 1}
-    />
-  ));
-});
+    return blocks.map(({ content }, index) => (
+      <MemoizedMarkdownBlock
+        content={content}
+        key={`${id}-block-${index}`}
+        isLastBlock={index === blocks.length - 1}
+      />
+    ));
+  },
+);
 
 MemoizedMarkdown.displayName = 'MemoizedMarkdown';

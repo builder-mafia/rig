@@ -30,7 +30,7 @@ import {
   MODEL_IDS_PER_PROVIDER,
 } from '@/core/provider/all-models';
 import { validateApiKey } from '@/core/provider/validate-apikey';
-import { dbAtoms } from '@/idb/dbStore';
+import { dbAtoms } from '@/idb/db-store';
 import { DB } from '../../../idb/db';
 import { getProviderLogo } from '../helper/providerLogo';
 

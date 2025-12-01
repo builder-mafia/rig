@@ -1,10 +1,10 @@
 import { useSetAtom } from 'jotai';
 import { SidebarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { sideBarAtoms } from '../sidebar/sideBarStore';
+import { leftPanelAtoms } from '../left-panel/left-panel-store';
 
 export const LeftHeader = () => {
-  const setIsSidebarOpen = useSetAtom(sideBarAtoms.isSidebarOpenAtom);
+  const setIsSidebarOpen = useSetAtom(leftPanelAtoms.isOpen);
 
   return (
     <div className='fixed top-1 left-2 flex '>

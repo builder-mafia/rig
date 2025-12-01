@@ -5,7 +5,6 @@ import {
   type ToolSet,
   type UIMessage,
 } from 'ai';
-import type { ElementType } from '@/lib/utility-type';
 import type { MessageMetadata } from './messageMetadata';
 
 export const maxDuration = 30;

@@ -1,4 +1,4 @@
-import type { Nullable } from './nullable';
+import type { Nullable } from './types';
 
 export function assertDefined<T>(
   condition: Nullable<T>,

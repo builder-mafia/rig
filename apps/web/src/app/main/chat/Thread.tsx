@@ -1,7 +1,7 @@
 import type { UIMessage, useChat } from '@ai-sdk/react';
 import { useEffect, useRef } from 'react';
 import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/cn';
 import { Message } from './Message';
 import styles from './Thread.module.css';
 
