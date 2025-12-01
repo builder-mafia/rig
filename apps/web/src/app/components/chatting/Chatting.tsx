@@ -64,5 +64,17 @@ export const Chatting = () => {
 
   const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);
 
-  return <ChatList threads={threads} status={status} />;
+  return (
+    <>
+      <div
+        className={
+          'bg-background grow justify-center flex max-h-dvh overflow-y-auto mb-[-36px] '
+        }
+      >
+        <ChatList threads={threads} status={status} />
+      </div>
+      {/* scroll shadow to top of the container */}
+      <div className='w-full from-background via-background/80 to-background/50 -top-2 absolute h-8 shrink-0 bg-gradient-to-b blur-sm'></div>
+    </>
+  );
 };

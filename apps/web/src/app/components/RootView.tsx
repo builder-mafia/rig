@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import React, { Suspense } from 'react';
-import { cn } from '@/utils/cn';
 import { ChatInput } from './chatting/ChatInput';
 import { Chatting } from './chatting/Chatting';
+import { CenterHeader } from './header/CenterHeader';
 import { LeftHeader } from './header/LeftHeader';
 import { RightHeader } from './header/RightHeader';
 import { LeftPanelRenderer } from './left-panel/LeftPanelRenderer';
@@ -16,24 +16,13 @@ export const RootView = React.memo(() => {
       </Suspense>
       <LeftPanelRenderer />
       <motion.div
-        id='thread-list-container'
         // when left panel is open, the main chatting area should be animated.
         layout={'size'}
-        className='flex-1 flex h-full w-full flex-col'
+        className='flex-1 flex h-full w-full flex-col relative'
       >
-        <div
-          className={
-            'bg-background grow justify-center flex max-h-dvh overflow-y-auto mb-[-36px]'
-          }
-        >
-          <Chatting />
-        </div>
-        <div
-          id='thread-bottom-container'
-          className='relative flex flex-col isolate z-10 w-full mx-auto'
-        >
-          <ChatInput />
-        </div>
+        <CenterHeader />
+        <Chatting />
+        <ChatInput />
       </motion.div>
     </div>
   );

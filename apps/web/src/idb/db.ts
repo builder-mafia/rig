@@ -16,7 +16,7 @@ export const ChannelSchema = z.object({
   model: AllModelIdsSchema.describe('selected AI model'),
   providerName: LLMProviderNameSchema.describe('selected AI provider'),
   createdAt: z.number().min(0).describe('Timestamp of creation'),
-  name: z.string().optional().describe('Channel name'),
+  title: z.string().optional().describe('Channel title'),
   description: z.string().optional().describe('Channel description'),
   prompt: z.string().optional().describe('AI system prompt'),
   isEmpty: z

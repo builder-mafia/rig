@@ -16,4 +16,6 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   );
 }
 
+Input.displayName = 'Input';
+
 export { Input };

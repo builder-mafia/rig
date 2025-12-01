@@ -116,87 +116,92 @@ export const ChatInput = () => {
   };
 
   return (
-    <section className='w-full flex flex-col items-start'>
-      <Textarea
-        ref={textAreaRef}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        className='mx-auto max-w-2xl lg:max-w-4xl min-h-[40px] max-h-[500px] backdrop-blur-lg'
-        placeholder='Ask AI Anything...'
-      />
-      <div className='w-full flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between mt-1.5 mb-2'>
-        <div className='flex flex-row'>
-          <Select
-            value={`${LLM.providerName}|${LLM.modelId}`}
-            onValueChange={onChange}
-          >
-            <SelectTrigger
-              data-size='fit'
-              data-provider={LLM.providerName}
-              className='border-none bg-transparent dark:bg-transparent hover:bg-transparent focus:bg-transparent h-fit p-1 text-xs
+    <div className='relative flex flex-col isolate z-10 w-full mx-auto'>
+      <section className='w-full flex flex-col items-start'>
+        <Textarea
+          ref={textAreaRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          className='mx-auto max-w-2xl lg:max-w-4xl min-h-[40px] max-h-[500px] backdrop-blur-lg'
+          placeholder='Ask AI Anything...'
+        />
+        <div className='w-full flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between mt-1.5 mb-2'>
+          <div className='flex flex-row'>
+            <Select
+              value={`${LLM.providerName}|${LLM.modelId}`}
+              onValueChange={onChange}
+            >
+              <SelectTrigger
+                data-size='fit'
+                data-provider={LLM.providerName}
+                className='border-none bg-transparent dark:bg-transparent hover:bg-transparent focus:bg-transparent h-fit p-1 text-xs
                 data-[provider=openai]:bg-gradient-to-r data-[provider=openai]:from-[#74AA9C] data-[provider=openai]:via-[#20d4c7] data-[provider=openai]:to-[#0f9775] data-[provider=openai]:bg-clip-text data-[provider=openai]:text-transparent
                 data-[provider=google]:bg-gradient-to-r data-[provider=google]:from-[#4796E3] data-[provider=google]:via-[#9177C7] data-[provider=google]:to-[#CA6673] data-[provider=google]:bg-clip-text data-[provider=google]:text-transparent
                 '
-            >
-              <SelectValue placeholder='Select a model' />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(MODEL_IDS_PER_PROVIDER).map(
-                ([providerName, modelIds]) => (
-                  <SelectGroup key={providerName}>
-                    <SelectLabel
-                      aria-disabled={
-                        !canUseProvider(providerName as LLMProviderName, config)
-                      }
-                    >
-                      {providerName}
-                    </SelectLabel>
-                    {modelIds.map(modelId => (
-                      <SelectItem
-                        disabled={
+              >
+                <SelectValue placeholder='Select a model' />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(MODEL_IDS_PER_PROVIDER).map(
+                  ([providerName, modelIds]) => (
+                    <SelectGroup key={providerName}>
+                      <SelectLabel
+                        aria-disabled={
                           !canUseProvider(
                             providerName as LLMProviderName,
                             config,
                           )
                         }
-                        className='gap-1.5'
-                        key={`${providerName}|${modelId}`}
-                        value={`${providerName}|${modelId}`}
                       >
-                        {modelId}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ),
-              )}
-            </SelectContent>
-          </Select>
+                        {providerName}
+                      </SelectLabel>
+                      {modelIds.map(modelId => (
+                        <SelectItem
+                          disabled={
+                            !canUseProvider(
+                              providerName as LLMProviderName,
+                              config,
+                            )
+                          }
+                          className='gap-1.5'
+                          key={`${providerName}|${modelId}`}
+                          value={`${providerName}|${modelId}`}
+                        >
+                          {modelId}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ),
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className='flex flex-row gap-2'>
+            <Button
+              variant={'outline'}
+              size='xs'
+              className='py-2 px-1 pr-0 text-xs gap-1'
+              onClick={handleSubmit}
+              disabled={input.trim().length === 0}
+            >
+              Submit
+              <KbdGroup>
+                <Kbd>⌘⏎</Kbd>
+              </KbdGroup>
+            </Button>
+            <Button
+              variant={'outline'}
+              size='xs'
+              className='py-2 px-1 pr-0 text-xs gap-1'
+            >
+              Actions
+              <KbdGroup>
+                <Kbd>⌘K</Kbd>
+              </KbdGroup>
+            </Button>
+          </div>
         </div>
-        <div className='flex flex-row gap-2'>
-          <Button
-            variant={'outline'}
-            size='xs'
-            className='py-2 px-1 pr-0 text-xs gap-1'
-            onClick={handleSubmit}
-            disabled={input.trim().length === 0}
-          >
-            Submit
-            <KbdGroup>
-              <Kbd>⌘⏎</Kbd>
-            </KbdGroup>
-          </Button>
-          <Button
-            variant={'outline'}
-            size='xs'
-            className='py-2 px-1 pr-0 text-xs gap-1'
-          >
-            Actions
-            <KbdGroup>
-              <Kbd>⌘K</Kbd>
-            </KbdGroup>
-          </Button>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
