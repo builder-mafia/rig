@@ -5,7 +5,7 @@ import { ChatInput } from './chatting/ChatInput';
 import { Chatting } from './chatting/Chatting';
 import { LeftHeader } from './header/LeftHeader';
 import { RightHeader } from './header/RightHeader';
-import { SidebarRenderer } from './sidebar/SidebarRenderer';
+import { LeftPanelRenderer } from './left-panel/LeftPanelRenderer';
 
 export const RootView = React.memo(() => {
   return (
@@ -14,7 +14,7 @@ export const RootView = React.memo(() => {
       <Suspense fallback={<div>Loading...</div>}>
         <RightHeader />
       </Suspense>
-      <SidebarRenderer />
+      <LeftPanelRenderer />
       <motion.div
         id='thread-list-container'
         // when left panel is open, the main chatting area should be animated.
