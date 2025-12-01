@@ -43,7 +43,7 @@ export const LeftPanel = () => {
                     onClick={() => onClick(channel.id)}
                   >
                     <span className='truncate'>
-                      {channel.name ?? channel.id}
+                      {channel.title ?? channel.id}
                     </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
