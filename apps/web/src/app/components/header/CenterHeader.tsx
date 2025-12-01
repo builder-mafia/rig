@@ -11,8 +11,6 @@ import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assertDefined } from '@/utils/assert';
 
-export const HEADER_HEIGHT = 52;
-
 export const CenterHeader = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const updateSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
@@ -42,10 +40,7 @@ export const CenterHeader = () => {
   );
 
   return (
-    <div
-      className='w-full flex absolute justify-center z-10'
-      style={{ height: `${HEADER_HEIGHT}px` }}
-    >
+    <div className='w-full flex absolute justify-center z-10 h-12'>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
