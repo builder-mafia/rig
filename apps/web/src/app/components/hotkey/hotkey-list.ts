@@ -1,5 +1,5 @@
 export const HotKeyList = {
-  toggleSidebar: {
+  toggleLeftPanel: {
     description: 'Toggle Sidebar',
     hotkey: 'mod+b',
   },
