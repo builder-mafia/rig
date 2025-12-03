@@ -1,6 +1,6 @@
 'use client';
 
-import { Provider } from 'jotai';
+import { getDefaultStore, Provider } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import type { ReactNode } from 'react';
 import { leftPanelAtoms } from './left-panel/left-panel-store';
@@ -21,12 +21,14 @@ const HydrateAtoms = ({
   return <>{children}</>;
 };
 
+const store = getDefaultStore();
+
 export const HydrateAtomProvider = ({
   children,
   leftPanelOpen,
 }: HydrateAtomProviderProps) => {
   return (
-    <Provider>
+    <Provider store={store}>
       <HydrateAtoms leftPanelOpen={leftPanelOpen}>{children}</HydrateAtoms>
     </Provider>
   );
