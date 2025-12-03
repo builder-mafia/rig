@@ -36,6 +36,7 @@ export const RightHeader = () => {
         providerName: providerName,
         createdAt: createdAt,
         isEmpty: true,
+        updatedAt: Date.now(),
       });
 
       await setConfig({
@@ -52,7 +53,7 @@ export const RightHeader = () => {
   }, [createChannel, selectedChannel, setConfig]);
 
   return (
-    <div className='fixed px-1 top-2 right-4 flex rounded-2xl dark:bg-input/30 dark:border-input'>
+    <div className='fixed px-1 top-2 right-4 flex rounded-2xl dark:bg-input/30 dark:border-input z-30'>
       <Button
         variant={'ghost'}
         size={'icon'}

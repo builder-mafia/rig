@@ -78,6 +78,7 @@ export const ApiKeyFormModal = ({
       providerName: providerName,
       createdAt: Date.now(),
       isEmpty: true,
+      updatedAt: Date.now(),
     });
 
     await setConfig({
