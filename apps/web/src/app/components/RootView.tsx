@@ -5,11 +5,13 @@ import { Chatting } from './chatting/Chatting';
 import { CenterHeader } from './header/CenterHeader';
 import { LeftHeader } from './header/LeftHeader';
 import { RightHeader } from './header/RightHeader';
+import { Initializer } from './Initializer';
 import { LeftPanelRenderer } from './left-panel/LeftPanelRenderer';
 
 export const RootView = React.memo(() => {
   return (
     <div className={'w-full h-full flex flex-row'}>
+      <Initializer />
       <LeftHeader />
       <Suspense fallback={<div>Loading...</div>}>
         <RightHeader />
