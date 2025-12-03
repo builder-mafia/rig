@@ -16,6 +16,7 @@ export const ChannelSchema = z.object({
   model: AllModelIdsSchema.describe('selected AI model'),
   providerName: LLMProviderNameSchema.describe('selected AI provider'),
   createdAt: z.number().min(0).describe('Timestamp of creation'),
+  updatedAt: z.number().min(0).describe('Timestamp of last update'),
   title: z.string().optional().describe('Channel title'),
   description: z.string().optional().describe('Channel description'),
   prompt: z.string().optional().describe('AI system prompt'),
@@ -136,6 +137,11 @@ const createChannel = async (channel: z.infer<typeof ChannelSchema>) => {
   return db.add(DB_STORE.CHANNELS, channel);
 };
 
+const deleteChannel = async (id: string) => {
+  const db = await getDB();
+  return db.delete(DB_STORE.CHANNELS, id);
+};
+
 const updateChannel = async (
   id: string,
   channel: Partial<z.infer<typeof ChannelSchema>>,
@@ -226,6 +232,24 @@ const addMessage = async (channelId: string, message: UIMessage) => {
   return db.add(DB_STORE.MESSAGES, { ...message, channelId });
 };
 
+const deleteMessage = async (messageId: string) => {
+  const db = await getDB();
+  return db.delete(DB_STORE.MESSAGES, messageId);
+};
+
+const deleteMessagesByChannelId = async (channelId: string) => {
+  const db = await getDB();
+  const tx = db.transaction(DB_STORE.MESSAGES, 'readwrite');
+  const store = tx.objectStore(DB_STORE.MESSAGES);
+  const index = store.index('channelId');
+
+  const keys = await index.getAllKeys(channelId);
+
+  await Promise.all(keys.map(key => store.delete(key)));
+
+  await tx.done;
+};
+
 const clearStore = async (storeName: DB_STORE) => {
   const db = await getDB();
   return db.clear(storeName);
@@ -237,6 +261,7 @@ export const DB = {
   getChannel,
   getChannels,
   createChannel,
+  deleteChannel,
   updateChannel,
   updateApiKey,
   getConfig,
@@ -244,5 +269,7 @@ export const DB = {
   getMessagesByChannelId,
   getMessages,
   addMessage,
+  deleteMessage,
+  deleteMessagesByChannelId,
   clearStore,
 };
