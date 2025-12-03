@@ -1,7 +1,8 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { ChatInit, UIMessage } from 'ai';
 import { noop } from 'es-toolkit';
-import { useRef, useSyncExternalStore } from 'react';
+import { useCallback, useRef, useSyncExternalStore } from 'react';
+import { generateUIMessage } from '../helper';
 import type { LLMProvider } from '../provider/LLMProvider';
 import { type ChatFacade, createChatFacade } from './ChatFacade';
 import { ChatFacadeManager } from './ChatFacadeManager';
@@ -132,10 +133,16 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     return chatFacadeRef.current.sendMessage(message);
   };
 
+  const addPrompt = useCallback((prompt: string) => {
+    const promptMessage = generateUIMessage('system', prompt);
+    chatFacadeRef.current.setContextMessages(prev => [...prev, promptMessage]);
+  }, []);
+
   return {
     uiMessages,
     status,
     stop,
     sendMessage,
+    addPrompt,
   };
 };
