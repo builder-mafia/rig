@@ -1,58 +1,22 @@
-import { useSetAtom } from 'jotai';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
-import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
+import { Suspense } from 'react';
+import { Sidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ChannelList } from './ChannelList';
 
 export const LeftPanel = () => {
-  const allChannels = useSwrAtomValue(dbAtoms.allChannelsAtom);
-  const selectedChannelId = useSwrAtomValue(dbAtoms.selectedChannelIdAtom);
-  const setSelectedChannelId = useSetAtom(dbAtoms.selectedChannelIdAtom);
-
-  assert(allChannels, 'LeftPanel: allChannels is not found.');
-  assert(selectedChannelId, 'LeftPanel: selectedChannel is not found.');
-
-  const onClick = (channelId: string) => {
-    setSelectedChannelId(channelId);
-  };
-
   return (
     <Sidebar>
-      <SidebarHeader>
-        <div className='w-full h-[24px]'></div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>My Chats</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {allChannels.map(channel => {
-              return (
-                <SidebarMenuItem key={channel.id}>
-                  <SidebarMenuButton
-                    isActive={selectedChannelId === channel.id}
-                    onClick={() => onClick(channel.id)}
-                  >
-                    <span className='truncate'>
-                      {channel.title ?? channel.id}
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter></SidebarFooter>
+      <Suspense
+        fallback={
+          <div className='w-full h-full flex flex-col gap-2 mt-16 px-2 overflow-hidden'>
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton key={index} className='w-full h-10 rounded-2xl' />
+            ))}
+          </div>
+        }
+      >
+        <ChannelList />
+      </Suspense>
     </Sidebar>
   );
 };
