@@ -2,12 +2,12 @@ import type { ChatStatus } from 'ai';
 import { Thread } from '@/app/main/chat/Thread';
 import type { Thread as ThreadType } from '@/core/helper';
 
-type ChattingProps = {
+type ThreadListProps = {
   threads: ThreadType[];
   status: ChatStatus;
 };
 
-export const ChatList = ({ threads, status }: ChattingProps) => {
+export const ThreadList = ({ threads, status }: ThreadListProps) => {
   return (
     <div className='w-full h-full flex flex-col max-w-2xl lg:max-w-4xl'>
       <div className='p-4 gap-4 flex flex-col'>
