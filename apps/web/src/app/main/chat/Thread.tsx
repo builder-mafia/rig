@@ -1,9 +1,8 @@
 import type { UIMessage, useChat } from '@ai-sdk/react';
 import { useEffect, useRef } from 'react';
-import { Spinner } from '@/components/ui/spinner';
-import { cn } from '@/utils/cn';
-import { Message } from './Message';
-import styles from './Thread.module.css';
+import { AssistantMessage } from '@/app/components/chatting/AssistantMessage';
+import { UserMessage } from '@/app/components/chatting/UserMessage';
+import { assert } from '@/utils/assert';
 
 type ThreadProps = {
   thread: Array<UIMessage>;
@@ -11,9 +10,14 @@ type ThreadProps = {
   status: ReturnType<typeof useChat>['status'];
 };
 
-const GENERATING_TEXT = 'answering...';
+export const Thread = ({ thread, isLast }: ThreadProps) => {
+  // thread length 1 : only user message (for some reason, ai response could not be generated)
+  // thread length 2 : user message and assistant message
+  assert(
+    thread.length > 0 && thread.length <= 2,
+    `Thread: thread length is not valid. thread length: ${thread.length}. thread: ${JSON.stringify(thread)}`,
+  );
 
-export const Thread = ({ thread, isLast, status }: ThreadProps) => {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (isLast) {
@@ -24,40 +28,26 @@ export const Thread = ({ thread, isLast, status }: ThreadProps) => {
     }
   }, [isLast]);
 
-  const userMessages = thread.filter(message => message.role === 'user');
-  const assistantMessages = thread.filter(
+  const userMessage = thread.filter(message => message.role === 'user')[0];
+  const assistantMessage: UIMessage | undefined = thread.filter(
     message => message.role === 'assistant',
-  );
-
-  const isGeneratingFinished = status !== 'streaming' && status !== 'submitted';
+  )[0];
 
   return (
     <>
-      {userMessages && (
-        <Message
-          key={userMessages[0].id}
-          message={userMessages[0]}
-          userMessageRef={ref as React.RefObject<HTMLDivElement>}
-        />
+      <UserMessage message={userMessage} />
+      {assistantMessage && (
+        <AssistantMessage
+          key={assistantMessage.id}
+          message={assistantMessage}
+        ></AssistantMessage>
       )}
-      <div
-        className={cn(
-          'flex items-center justify-center gap-1.5 mt-[-1rem] mb-[-1rem] text-sm text-muted-foreground',
-          (!isLast || isGeneratingFinished) && 'opacity-0',
-          (!isLast || isGeneratingFinished) && 'blur-[2px]',
-          styles.loading,
-        )}
-      >
-        <Spinner size='xs' variant='default' className='opacity-50' />
-        <p className='text-xs !m-0 text-muted-foreground opacity-75'>
-          {GENERATING_TEXT}
-        </p>
-      </div>
-      <article style={isLast ? { minHeight: 'calc(-264px + 100dvh)' } : {}}>
-        {assistantMessages.map(message => {
-          return <Message key={message.id} message={message}></Message>;
-        })}
-      </article>
     </>
   );
 };
+
+// <article style={isLast ? { minHeight: 'calc(-264px + 100dvh)' } : {}}>
+//           <Message
+//             key={assistantMessages.id}
+//             message={assistantMessages}
+//           ></Message></article>
