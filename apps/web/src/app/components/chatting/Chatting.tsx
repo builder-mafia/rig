@@ -1,5 +1,4 @@
 import type { ChatOnFinishCallback, UIMessage } from 'ai';
-import { toMerged } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useChat } from '@/core/chat/useChat';
@@ -15,7 +14,7 @@ export const Chatting = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
   const messages = useSwrAtomValue(dbAtoms.selectedChannelMessagesAtom);
-  const saveMessages = useSetAtom(dbAtoms.selectedChannelMessagesAtom);
+  const addMessage = useSetAtom(dbAtoms.addMessageAtom);
 
   assert(selectedChannel, 'Chatting: selectedChannel is not found.');
   assert(config, 'Chatting: config is not found.');
@@ -32,10 +31,9 @@ export const Chatting = () => {
 
   const onBeforeSend = useCallback(
     (message: UIMessage) => {
-      const dbMessage = toMerged(message, { channelId: selectedChannel.id });
-      saveMessages([dbMessage]);
+      addMessage(selectedChannel.id, message);
     },
-    [selectedChannel.id, saveMessages],
+    [selectedChannel.id, addMessage],
   );
 
   const onFinish = useCallback<ChatOnFinishCallback<UIMessage>>(
@@ -45,12 +43,9 @@ export const Chatting = () => {
         options.isAbort || options.isDisconnect || options.isError;
       if (shouldCancel) return;
 
-      const dbMessage = toMerged(options.message, {
-        channelId: selectedChannel.id,
-      });
-      saveMessages([dbMessage]);
+      addMessage(selectedChannel.id, options.message);
     },
-    [saveMessages, selectedChannel.id],
+    [selectedChannel.id, addMessage],
   );
 
   const { uiMessages, status, addPrompt } = useChat({
@@ -63,7 +58,10 @@ export const Chatting = () => {
   });
 
   useEffect(() => {
-    addPrompt('answer in markdown format.');
+    const prompt =
+      'answer in markdown format.' +
+      '\n code block should not be the child of the list item.';
+    addPrompt(prompt);
   }, [selectedChannel.id, addPrompt]);
 
   const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);

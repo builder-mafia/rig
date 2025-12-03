@@ -15,7 +15,7 @@ const DEFAULT_NAME = 'Untitled';
 
 export const ChannelTitle = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
-  const updateSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
+  const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
   assert(selectedChannel, 'CenterHeader: selectedChannel is not found.');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -25,10 +25,10 @@ export const ChannelTitle = () => {
     const value = inputRef.current?.value;
     if (!value) return;
 
-    updateSelectedChannel({
+    updateChannel(selectedChannel.id, {
       title: value,
     });
-  }, [updateSelectedChannel]);
+  }, [selectedChannel.id, updateChannel]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {

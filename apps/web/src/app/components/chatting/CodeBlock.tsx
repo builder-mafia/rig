@@ -75,7 +75,7 @@ export const CodeBlock = ({
         </>
       ) : (
         // Shiki works asynchronously. so we need to show a loading skeleton until it's loaded.
-        <div className={styles.skeleton} />
+        <span className={styles.skeleton} />
       )}
     </Element>
   );

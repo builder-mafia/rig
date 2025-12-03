@@ -36,7 +36,8 @@ export const ChatInput = () => {
   assert(selectedChannel, 'ChatInput: selectedChannel is not found.');
   assert(config, 'ChatInput: config is not found.');
 
-  const setSelectedChannel = useSetAtom(dbAtoms.selectedChannelAtom);
+  const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
+
   const [input, setInput] = useState('');
   const [LLM, setLLM] = useState<{
     providerName: LLMProviderName;
@@ -112,7 +113,7 @@ export const ChatInput = () => {
     modelId: AllModelIds,
     providerName: LLMProviderName,
   ) => {
-    setSelectedChannel({ model: modelId, providerName });
+    updateChannel(selectedChannel.id, { model: modelId, providerName });
   };
 
   return (
