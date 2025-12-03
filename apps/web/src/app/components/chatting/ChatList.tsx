@@ -17,7 +17,7 @@ export const ChatList = ({ threads, status }: ChattingProps) => {
             thread={thread}
             isLast={threads.length - 1 === index}
             status={status}
-          ></Thread>
+          />
         ))}
       </div>
     </div>

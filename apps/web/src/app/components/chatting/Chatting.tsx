@@ -1,7 +1,7 @@
 import type { ChatOnFinishCallback, UIMessage } from 'ai';
 import { toMerged } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useChat } from '@/core/chat/useChat';
 import { messagesToThreads } from '@/core/helper';
 import { providerRegistry } from '@/core/provider/providerRegistry';
@@ -53,7 +53,7 @@ export const Chatting = () => {
     [saveMessages, selectedChannel.id],
   );
 
-  const { uiMessages, status } = useChat({
+  const { uiMessages, status, addPrompt } = useChat({
     id: selectedChannel.id,
     provider,
     modelId,
@@ -61,6 +61,10 @@ export const Chatting = () => {
     onBeforeSend,
     onFinish,
   });
+
+  useEffect(() => {
+    addPrompt('answer in markdown format.');
+  }, [selectedChannel.id, addPrompt]);
 
   const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);
 
