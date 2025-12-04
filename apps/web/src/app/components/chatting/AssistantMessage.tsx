@@ -26,7 +26,7 @@ export const AssistantMessage = ({ message }: AssistantMessageProps) => {
   return (
     // override the default prose max-width to none.
     <article className='prose dark:prose-invert max-w-none'>
-      <Markdown text={textMessage} />
+      <Markdown messageId={message.id} text={textMessage} />
     </article>
   );
 };
