@@ -1,92 +1,37 @@
 import DOMPurify from 'dompurify';
 import { Clipboard, ClipboardCheck } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
+import { Subject, throttleTime } from 'rxjs';
 import { toast } from 'sonner';
 import { cn } from '@/utils/cn';
 import styles from './codeblock.module.css';
+import { HighLighter } from './HighLighter';
 
-type WorkerRequest = {
-  id: number;
-  code: string;
-  language: string;
-};
-
-type WorkerResponse =
-  | {
-      id: number;
-      html: string;
-      error?: undefined;
-    }
-  | {
-      id: number;
-      html?: undefined;
-      error: string;
-    };
-
-let shikiWorker: Worker | null = null;
-let requestIdCounter = 0;
-const pendingRequests = new Map<number, (response: WorkerResponse) => void>();
-
-const getShikiWorker = () => {
-  if (typeof window === 'undefined') return null;
-
-  if (!shikiWorker) {
-    shikiWorker = new Worker(new URL('./shikiWorker.ts', import.meta.url), {
-      name: 'shiki-highlighter',
-      type: 'module',
-    });
-
-    shikiWorker.onmessage = (event: MessageEvent<WorkerResponse>) => {
-      const response = event.data;
-      const resolve = pendingRequests.get(response.id);
-
-      if (!resolve) return;
-
-      pendingRequests.delete(response.id);
-      resolve(response);
-    };
-  }
-
-  return shikiWorker;
-};
-
-const highlightWithWorker = (code: string, language: string) => {
-  if (typeof window === 'undefined') {
-    return Promise.resolve<string | null>(null);
-  }
-
-  const worker = getShikiWorker();
-
-  if (!worker) {
-    return Promise.resolve<string | null>(null);
-  }
-
-  const requestId = requestIdCounter++;
-  const payload: WorkerRequest = {
-    id: requestId,
-    code,
-    language,
-  };
-
-  return new Promise<string | null>((resolve, reject) => {
-    pendingRequests.set(requestId, response => {
-      if (response.error) {
-        reject(new Error(response.error));
-        return;
-      }
-
-      resolve(response.html);
-    });
-
-    worker.postMessage(payload);
-  });
-};
-
-type ShikiProps = {
+type CodeBlockProps = {
   code: string;
   language: string;
   ref?: React.RefObject<HTMLElement>;
   as?: React.ElementType;
+};
+
+const highlighter = new HighLighter({ useWorker: true });
+
+// Layout Shifting Prevention:
+//
+// fontsize: 0.875rem
+// line height: 1.75
+// padding-top: 1.8rem
+// padding-bottom: 0.875rem
+// 0.1 is a magic.
+const calcEstimatedHeight = (code: string) => {
+  return code.split('\n').length * 0.875 * 1.75 + 1.8 + 0.875 + 0.1;
 };
 
 export const CodeBlock = ({
@@ -94,29 +39,37 @@ export const CodeBlock = ({
   language,
   ref,
   as: Element = 'pre',
-}: ShikiProps) => {
+}: CodeBlockProps) => {
   const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
+  const streamForOptimization = useMemo(
+    () => new Subject<{ code: string; language: string }>(),
+    [],
+  );
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    let isCancelled = false;
-
-    highlightWithWorker(code, language)
-      .then(html => {
-        if (isCancelled || html === null) return;
-
-        const sanitizedHtml = DOMPurify.sanitize(html);
-
-        setHighlightedCode(sanitizedHtml);
-      })
-      .catch(() => {
-        if (isCancelled) return;
-        setHighlightedCode(null);
+    const subscription = streamForOptimization
+      // first optimization: throttle the highlight requests to prevent worker overload.
+      .pipe(throttleTime(150, undefined, { leading: true, trailing: true }))
+      .subscribe(({ code, language }) => {
+        // second optimization: use useTransition to prevent ui interaction blocking.
+        startTransition(async () => {
+          const html = await highlighter.highlight(code, language);
+          if (!html) {
+            return;
+          }
+          const sanitizedHtml = DOMPurify.sanitize(html);
+          setHighlightedCode(sanitizedHtml);
+        });
       });
-
     return () => {
-      isCancelled = true;
+      subscription.unsubscribe();
     };
-  }, [code, language]);
+  }, [streamForOptimization]);
+
+  useEffect(() => {
+    streamForOptimization.next({ code, language });
+  }, [code, language, streamForOptimization]);
 
   const onCopy = useCallback(() => {
     try {
@@ -129,17 +82,28 @@ export const CodeBlock = ({
   }, [code]);
 
   return (
-    <Element ref={ref} className={cn(styles.codeBlockContainer, 'not-prose')}>
-      {highlightedCode ? (
+    <Element
+      ref={ref}
+      style={
+        {
+          '--estimated-height': `${calcEstimatedHeight(code)}rem`,
+        } as React.CSSProperties
+      }
+      data-loading={!highlightedCode}
+      className={cn(
+        styles.codeBlockContainer,
+        'not-prose',
+        !highlightedCode &&
+          'w-full h-[var(--estimated-height)] bg-sidebar rounded-lg border border-border',
+      )}
+    >
+      {highlightedCode && (
         <>
           <span className={cn(styles.languageLabel)}>{language}</span>
           <CopyButton onCopy={onCopy} />
           {/** biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized */}
           <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </>
-      ) : (
-        // Shiki works asynchronously. so we need to show a loading skeleton until it's loaded.
-        <span className={cn(styles.skeleton, 'inline-block')} />
       )}
     </Element>
   );
