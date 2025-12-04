@@ -66,16 +66,16 @@ export const CodeBlock = ({
 
   return (
     <Element ref={ref} className={cn(styles.codeBlockContainer, 'not-prose')}>
-      <span className={cn(styles.languageLabel)}>{language}</span>
       {highlightedCode ? (
         <>
+          <span className={cn(styles.languageLabel)}>{language}</span>
           <CopyButton onCopy={onCopy} />
           {/** biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized */}
           <div dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </>
       ) : (
         // Shiki works asynchronously. so we need to show a loading skeleton until it's loaded.
-        <span className={styles.skeleton} />
+        <span className={cn(styles.skeleton, 'inline-block')} />
       )}
     </Element>
   );
