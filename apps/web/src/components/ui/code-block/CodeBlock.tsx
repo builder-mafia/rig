@@ -1,29 +1,85 @@
 import DOMPurify from 'dompurify';
 import { Clipboard, ClipboardCheck } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createOnigurumaEngine } from 'shiki';
-import { getSingletonHighlighter } from 'shiki/bundle/full';
 import { toast } from 'sonner';
 import { cn } from '@/utils/cn';
 import styles from './codeblock.module.css';
 
-const getHighlighter = async (language: string) => {
-  try {
-    return await getSingletonHighlighter({
-      langs: [language],
-      themes: ['github-dark'],
-      engine: createOnigurumaEngine(import('shiki/wasm')),
-    });
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('Language')) {
-      return await getSingletonHighlighter({
-        langs: ['plaintext'],
-        themes: ['github-dark'],
-        engine: createOnigurumaEngine(import('shiki/wasm')),
-      });
+type WorkerRequest = {
+  id: number;
+  code: string;
+  language: string;
+};
+
+type WorkerResponse =
+  | {
+      id: number;
+      html: string;
+      error?: undefined;
     }
-    throw error;
+  | {
+      id: number;
+      html?: undefined;
+      error: string;
+    };
+
+let shikiWorker: Worker | null = null;
+let requestIdCounter = 0;
+const pendingRequests = new Map<number, (response: WorkerResponse) => void>();
+
+const getShikiWorker = () => {
+  if (typeof window === 'undefined') return null;
+
+  if (!shikiWorker) {
+    shikiWorker = new Worker(new URL('./shikiWorker.ts', import.meta.url), {
+      name: 'shiki-highlighter',
+      type: 'module',
+    });
+
+    shikiWorker.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      const response = event.data;
+      const resolve = pendingRequests.get(response.id);
+
+      if (!resolve) return;
+
+      pendingRequests.delete(response.id);
+      resolve(response);
+    };
   }
+
+  return shikiWorker;
+};
+
+const highlightWithWorker = (code: string, language: string) => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve<string | null>(null);
+  }
+
+  const worker = getShikiWorker();
+
+  if (!worker) {
+    return Promise.resolve<string | null>(null);
+  }
+
+  const requestId = requestIdCounter++;
+  const payload: WorkerRequest = {
+    id: requestId,
+    code,
+    language,
+  };
+
+  return new Promise<string | null>((resolve, reject) => {
+    pendingRequests.set(requestId, response => {
+      if (response.error) {
+        reject(new Error(response.error));
+        return;
+      }
+
+      resolve(response.html);
+    });
+
+    worker.postMessage(payload);
+  });
 };
 
 type ShikiProps = {
@@ -42,16 +98,24 @@ export const CodeBlock = ({
   const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
 
   useEffect(() => {
-    getHighlighter(language).then(highlighter => {
-      const html = highlighter.codeToHtml(code, {
-        lang: language,
-        theme: 'github-dark',
+    let isCancelled = false;
+
+    highlightWithWorker(code, language)
+      .then(html => {
+        if (isCancelled || html === null) return;
+
+        const sanitizedHtml = DOMPurify.sanitize(html);
+
+        setHighlightedCode(sanitizedHtml);
+      })
+      .catch(() => {
+        if (isCancelled) return;
+        setHighlightedCode(null);
       });
 
-      const sanitizedHtml = DOMPurify.sanitize(html);
-
-      setHighlightedCode(sanitizedHtml);
-    });
+    return () => {
+      isCancelled = true;
+    };
   }, [code, language]);
 
   const onCopy = useCallback(() => {
