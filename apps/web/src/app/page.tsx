@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster } from '@/components/ui/sonner';
 import { ModalRegistry } from './components/modal/ModalRegistry';
 
@@ -27,9 +28,13 @@ export default function MainPage() {
       <Toaster richColors duration={3000} />
       <QueryClientProvider client={queryClient}>
         <div className='w-full h-full'>
-          <Suspense fallback={<div>Loading...</div>}>
-            <DynamicRootViewRenderer />
-          </Suspense>
+          <ErrorBoundary
+            fallbackRender={({ error }) => <div>Error: {error.message}</div>}
+          >
+            <Suspense fallback={<div>Loading...</div>}>
+              <DynamicRootViewRenderer />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         <ModalRegistry />
       </QueryClientProvider>

@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import React, { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { ChatInput } from './chatting/ChatInput';
 import { Chatting } from './chatting/Chatting';
 import { CenterHeader } from './header/CenterHeader';
@@ -23,8 +24,20 @@ export const RootView = React.memo(() => {
         className='flex-1 flex h-full w-full flex-col relative'
       >
         <CenterHeader />
-        <Chatting />
-        <ChatInput />
+        <ErrorBoundary
+          fallbackRender={({ error }) => <div>Error: {error.message}</div>}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <Chatting />
+          </Suspense>
+        </ErrorBoundary>
+        <ErrorBoundary
+          fallbackRender={({ error }) => <div>Error: {error.message}</div>}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <ChatInput />
+          </Suspense>
+        </ErrorBoundary>
       </motion.div>
     </div>
   );

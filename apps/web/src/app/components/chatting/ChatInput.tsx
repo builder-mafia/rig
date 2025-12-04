@@ -190,7 +190,7 @@ export const ChatInput = () => {
                 <Kbd>⌘⏎</Kbd>
               </KbdGroup>
             </Button>
-            <Button
+            {/* <Button
               variant={'outline'}
               size='xs'
               className='py-2 px-1 pr-0 text-xs gap-1'
@@ -199,7 +199,7 @@ export const ChatInput = () => {
               <KbdGroup>
                 <Kbd>⌘K</Kbd>
               </KbdGroup>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </section>
