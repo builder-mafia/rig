@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Toaster } from '@/components/ui/sonner';
 import { ModalRegistry } from './components/modal/ModalRegistry';
+import { RootErrorFallback } from './components/RootErrorFallback';
 
 const queryClient = new QueryClient();
 
@@ -28,9 +29,7 @@ export default function MainPage() {
       <Toaster richColors duration={3000} />
       <QueryClientProvider client={queryClient}>
         <div className='w-full h-full'>
-          <ErrorBoundary
-            fallbackRender={({ error }) => <div>Error: {error.message}</div>}
-          >
+          <ErrorBoundary fallbackRender={RootErrorFallback}>
             <Suspense fallback={<div>Loading...</div>}>
               <DynamicRootViewRenderer />
             </Suspense>

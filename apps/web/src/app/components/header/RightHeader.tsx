@@ -14,6 +14,7 @@ import {
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
+import { isGhostChannel } from '../left-panel/ChannelList';
 import { modalManager } from '../modal/modalManager';
 
 export const RightHeader = () => {
@@ -24,6 +25,10 @@ export const RightHeader = () => {
   assert(selectedChannel, 'RightHeader: selectedChannel is not found');
 
   const onClickNewChannel = useCallback(async () => {
+    if (isGhostChannel(selectedChannel)) {
+      return;
+    }
+
     const channelId = v4();
     const createdAt = Date.now();
     const model = selectedChannel.model;

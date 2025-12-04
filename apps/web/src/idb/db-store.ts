@@ -35,7 +35,7 @@ const selectedChannelIdAtom = atom(
   async get => {
     return (await get(configAtom))?.lastSelectedChannelId ?? null;
   },
-  async (_, set, newSelectedChannelId: string) => {
+  async (get, set, newSelectedChannelId: string) => {
     await set(configAtom, { lastSelectedChannelId: newSelectedChannelId });
   },
 );
@@ -116,22 +116,28 @@ const addMessageAtom = atom(
   },
 );
 
-const deleteChannelAtom = atom(null, async (_, set, channelId: string) => {
+const deleteMessagesByChannelIdAtom = atom(
+  null,
+  async (get, set, channelId: string) => {
+    await DB.deleteMessagesByChannelId(channelId);
+    set(allMessagesRefreshAtom, prev => prev + 1);
+  },
+);
+
+const deleteChannelAtom = atom(null, async (get, set, channelId: string) => {
   await DB.deleteChannel(channelId);
   set(allChannelsRefreshAtom, prev => prev + 1);
-  // delete all messages of the channel
-  await DB.deleteMessagesByChannelId(channelId);
-  set(allMessagesRefreshAtom, prev => prev + 1);
 });
 
 export const dbAtoms = {
+  configAtom,
   allChannelsAtom,
   selectedChannelIdAtom,
   selectedChannelAtom,
-  configAtom,
+  selectedChannelMessagesAtom,
   allMessagesAtom,
   addMessageAtom,
-  selectedChannelMessagesAtom,
+  deleteMessagesByChannelIdAtom,
   createChannelAtom,
   updateChannelAtom,
   deleteChannelAtom,

@@ -26,6 +26,13 @@ export const ChannelSchema = z.object({
     .describe(
       'Whether the channel is empty. If true, it means the channel has no messages.',
     ),
+  pin: z
+    .object({
+      order: z.number().min(0).describe('Pin order of the channel'),
+      createdAt: z.number().min(0).describe('Timestamp of pinning'),
+    })
+    .optional()
+    .describe('Pinned status of the channel'),
 });
 
 const ApiKeysSchema = z.object(

@@ -57,6 +57,7 @@ export const Chatting = () => {
     onFinish,
   });
 
+  // add system prompt to the chat
   useEffect(() => {
     const prompt =
       'answer in markdown format.' +

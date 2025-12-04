@@ -24,20 +24,12 @@ export const RootView = React.memo(() => {
         className='flex-1 flex h-full w-full flex-col relative'
       >
         <CenterHeader />
-        <ErrorBoundary
-          fallbackRender={({ error }) => <div>Error: {error.message}</div>}
-        >
-          <Suspense fallback={<div>Loading...</div>}>
-            <Chatting />
-          </Suspense>
-        </ErrorBoundary>
-        <ErrorBoundary
-          fallbackRender={({ error }) => <div>Error: {error.message}</div>}
-        >
-          <Suspense fallback={<div>Loading...</div>}>
-            <ChatInput />
-          </Suspense>
-        </ErrorBoundary>
+        <Suspense fallback={<div className='grow w-full'></div>}>
+          <Chatting />
+        </Suspense>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ChatInput />
+        </Suspense>
       </motion.div>
     </div>
   );

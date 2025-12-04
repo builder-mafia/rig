@@ -1,5 +1,6 @@
 import { useSetAtom } from 'jotai';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Subject } from 'rxjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,6 +14,8 @@ import { assert } from '@/utils/assert';
 
 const DEFAULT_NAME = 'Untitled';
 
+export const channelTitleOpenStatus$ = new Subject<boolean>();
+
 export const ChannelTitle = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
@@ -23,12 +26,12 @@ export const ChannelTitle = () => {
 
   const onSubmit = useCallback(() => {
     const value = inputRef.current?.value;
-    if (!value) return;
+    if (!value || value === selectedChannel.title) return;
 
     updateChannel(selectedChannel.id, {
       title: value,
     });
-  }, [selectedChannel.id, updateChannel]);
+  }, [selectedChannel.id, selectedChannel.title, updateChannel]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -40,6 +43,16 @@ export const ChannelTitle = () => {
     },
     [onSubmit],
   );
+
+  useEffect(() => {
+    const subscription = channelTitleOpenStatus$.subscribe(open => {
+      setIsOpen(open);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const hasChannelTitle = Boolean(selectedChannel.title);
 
