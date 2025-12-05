@@ -8,8 +8,11 @@ class ProviderRegistry {
     this.providers[name] = provider;
   }
 
-  public get(name: LLMProviderName): LLMProvider | null {
-    return this.providers[name] ?? null;
+  public get(name: LLMProviderName): LLMProvider {
+    if (!this.providers[name]) {
+      throw new Error(`ProviderRegistry: provider ${name} is not registered.`);
+    }
+    return this.providers[name];
   }
 
   public has(name: LLMProviderName): boolean {
