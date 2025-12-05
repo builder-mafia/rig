@@ -48,7 +48,6 @@ export class ChatFacade {
 
   private provider: LLMProvider;
   private _isDisposed = false;
-  private messages: UIMessage[];
   private model: LanguageModelV2;
   private throttleTime: number;
 
@@ -61,7 +60,6 @@ export class ChatFacade {
   }: CreateChatFacadeParams) {
     this.uiMessageStore = new UIMessageStore<UIMessage>();
     this.id = id;
-    this.messages = messages;
     this.provider = provider;
     this.model = provider.getModel(modelId);
     this.throttleTime = throttleTime;
@@ -234,8 +232,16 @@ export class ChatFacade {
     });
   }
 
-  public updateProvider(provider: LLMProvider) {
+  /**
+   * In most cases, when the provider changes, the modelId should change accordingly.
+   *
+   * For example:
+   * - When switching from google to openai, the modelId should change from gemini to gpt.
+   */
+  public updateProvider(provider: LLMProvider, modelId: string) {
     this.provider = provider;
+    this.model = this.provider.getModel(modelId);
+
     this.updateChat({
       id: this.chat.id,
       messages: this.chat.messages,

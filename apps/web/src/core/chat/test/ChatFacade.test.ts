@@ -145,6 +145,7 @@ describe('ChatFacade', () => {
         textDeltaChunks: ['Hello', ' I am assistant.'],
         modelIds: ['gpt-4', 'gpt-5'],
       }),
+      'gpt-5',
     );
 
     expect(chatFacade.getProviderName()).toBe('opencode');
