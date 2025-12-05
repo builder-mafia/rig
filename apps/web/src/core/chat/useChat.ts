@@ -35,7 +35,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     queryKey: ['chat-facade', id],
     queryFn: async () => {
       if (ChatFacadeManager.getInstance().hasChatFacade(id)) {
-        return ChatFacadeManager.getInstance().getChatFacade(id)!;
+        return ChatFacadeManager.getInstance().getChatFacade(id);
       }
 
       const allMessages = await store.get(dbAtoms.allMessagesAtom);
