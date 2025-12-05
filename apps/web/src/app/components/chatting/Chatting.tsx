@@ -1,9 +1,6 @@
-import type { ChatOnFinishCallback, UIMessage } from 'ai';
-import { useSetAtom } from 'jotai';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useChat } from '@/core/chat/useChat';
 import { messagesToThreads } from '@/core/helper';
-import { providerRegistry } from '@/core/provider/providerRegistry';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
@@ -13,12 +10,13 @@ import { ThreadList } from './ThreadList';
 export const Chatting = () => {
   const selectedChannelId = useSwrAtomValue(dbAtoms.selectedChannelIdAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
+  // TODO: add selectedChannel change sideEffect that update the chatFacade.
 
   assert(selectedChannelId, 'Chatting: selectedChannelId is not found.');
 
   registerProvider(config);
 
-  const { uiMessages, status, addPrompt } = useChat({
+  const { uiMessages, status, setSystemPrompt } = useChat({
     id: selectedChannelId,
   });
 
@@ -27,8 +25,8 @@ export const Chatting = () => {
     const prompt =
       'answer in markdown format.' +
       '\n code block should not be the child of the list item.';
-    addPrompt(prompt);
-  }, [selectedChannelId, addPrompt]);
+    setSystemPrompt(prompt);
+  }, [selectedChannelId, setSystemPrompt]);
 
   const threads = useMemo(() => messagesToThreads(uiMessages), [uiMessages]);
 

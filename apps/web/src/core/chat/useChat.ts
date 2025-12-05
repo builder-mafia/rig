@@ -129,7 +129,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     [chatFacade],
   );
 
-  const addPrompt = useCallback(
+  const setSystemPrompt = useCallback(
     (prompt: string) => {
       chatFacade.addSystemMessage(generateUIMessage('system', prompt));
     },
@@ -141,6 +141,6 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
     status,
     stop,
     sendMessage,
-    addPrompt,
+    setSystemPrompt,
   };
 };
