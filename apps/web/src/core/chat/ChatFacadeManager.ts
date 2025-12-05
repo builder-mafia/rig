@@ -21,7 +21,14 @@ export class ChatFacadeManager {
   }
 
   public getChatFacade(id: string) {
-    return this.chatFacades.get(id);
+    const facade = this.chatFacades.get(id);
+    if (!facade) {
+      throw new Error(
+        `ChatFacadeManager: chat facade with id ${id} is not found.`,
+      );
+    }
+
+    return facade;
   }
 
   public getAllChatFacadeIds() {
@@ -29,10 +36,10 @@ export class ChatFacadeManager {
   }
 
   public setChatFacade(id: string, chatFacade: ChatFacade) {
-    const oldChatFacade = this.getChatFacade(id);
+    const prevFacade = this.hasChatFacade(id) ? this.getChatFacade(id) : null;
 
-    if (oldChatFacade && oldChatFacade !== chatFacade) {
-      oldChatFacade.dispose();
+    if (prevFacade && prevFacade !== chatFacade) {
+      prevFacade.dispose();
     }
 
     this.chatFacades.set(id, chatFacade);
