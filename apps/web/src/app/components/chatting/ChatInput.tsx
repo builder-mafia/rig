@@ -48,17 +48,15 @@ export const ChatInput = () => {
   });
 
   const sendMessage = (message: UIMessage & { role: 'user' }) => {
-    const currentChatFacade = ChatFacadeManager.getInstance().getChatFacade(
-      selectedChannel.id,
-    );
-
-    if (!currentChatFacade) {
+    if (!ChatFacadeManager.getInstance().hasChatFacade(selectedChannel.id)) {
       toast.error('Failed to send message.');
       console.error('ChatFacade is not found.');
       return;
     }
 
-    currentChatFacade.sendMessage(message);
+    ChatFacadeManager.getInstance()
+      .getChatFacade(selectedChannel.id)
+      .sendMessage(message);
   };
 
   const textAreaRef = useHotkeys<HTMLTextAreaElement>(
