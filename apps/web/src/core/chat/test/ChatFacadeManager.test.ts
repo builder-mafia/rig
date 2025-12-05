@@ -35,4 +35,12 @@ describe('ChatFacadeManager', () => {
       'chat-facade-id',
     ]);
   });
+
+  it('throws an error if the chat facade is not found', () => {
+    expect(() => {
+      ChatFacadeManager.getInstance().getChatFacade('chat-facade-id');
+    }).toThrow(
+      'ChatFacadeManager: chat facade with id chat-facade-id is not found.',
+    );
+  });
 });
