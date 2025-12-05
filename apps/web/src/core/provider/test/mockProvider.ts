@@ -9,16 +9,18 @@ import type { LLMProvider } from '../LLMProvider';
 import { createMockLanguageModel } from './mockLanguageModel';
 
 class MockProvider implements LLMProvider {
-  readonly name = 'mock-provider';
+  public name: string;
   private readonly textDeltaChunks: string[];
   private readonly modelIds: string[];
 
   constructor({
     textDeltaChunks,
     modelIds,
-  }: { textDeltaChunks: string[]; modelIds: string[] }) {
+    providerName = 'mock-provider',
+  }: { textDeltaChunks: string[]; modelIds: string[]; providerName?: string }) {
     this.textDeltaChunks = textDeltaChunks;
     this.modelIds = modelIds;
+    this.name = providerName;
   }
 
   validateConnection() {
@@ -61,9 +63,11 @@ class MockProvider implements LLMProvider {
 export const createMockProvider = ({
   textDeltaChunks,
   modelIds,
+  providerName,
 }: {
   textDeltaChunks: string[];
   modelIds: string[];
+  providerName?: string;
 }): MockProvider => {
-  return new MockProvider({ textDeltaChunks, modelIds });
+  return new MockProvider({ textDeltaChunks, modelIds, providerName });
 };
