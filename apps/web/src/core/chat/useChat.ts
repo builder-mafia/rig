@@ -51,7 +51,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   }
 
   const chatFacadeRef = useRef<ChatFacade>(
-    ChatFacadeManager.getChatFacade(id) ??
+    ChatFacadeManager.getInstance().getChatFacade(id) ??
       createChatFacade({
         id,
         messages,

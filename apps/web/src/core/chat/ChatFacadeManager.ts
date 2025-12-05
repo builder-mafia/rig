@@ -1,13 +1,11 @@
 import type { ChatFacade } from './ChatFacade';
 
 /**
- * channel and chat facade is 1:1 mapping.
- *
- * id is channelId.
+ * @singleton
  */
 export class ChatFacadeManager {
   private static instance: ChatFacadeManager;
-  private static chatFacades: Map<string, ChatFacade> = new Map();
+  private chatFacades: Map<string, ChatFacade> = new Map();
 
   private constructor() {}
 
@@ -18,21 +16,21 @@ export class ChatFacadeManager {
     return ChatFacadeManager.instance;
   }
 
-  public static hasChatFacade(id: string) {
-    return ChatFacadeManager.chatFacades.has(id);
+  public hasChatFacade(id: string) {
+    return this.chatFacades.has(id);
   }
 
-  public static getChatFacade(id: string) {
-    return ChatFacadeManager.chatFacades.get(id);
+  public getChatFacade(id: string) {
+    return this.chatFacades.get(id);
   }
 
-  public static setChatFacade(id: string, chatFacade: ChatFacade) {
-    const oldChatFacade = ChatFacadeManager.getChatFacade(id);
+  public setChatFacade(id: string, chatFacade: ChatFacade) {
+    const oldChatFacade = this.getChatFacade(id);
 
     if (oldChatFacade && oldChatFacade !== chatFacade) {
       oldChatFacade.dispose();
     }
 
-    ChatFacadeManager.chatFacades.set(id, chatFacade);
+    this.chatFacades.set(id, chatFacade);
   }
 }

@@ -48,7 +48,7 @@ export const ChatInput = () => {
   });
 
   const sendMessage = (message: UIMessage & { role: 'user' }) => {
-    const currentChatFacade = ChatFacadeManager.getChatFacade(
+    const currentChatFacade = ChatFacadeManager.getInstance().getChatFacade(
       selectedChannel.id,
     );
 

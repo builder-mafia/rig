@@ -54,7 +54,7 @@ export const createChatFacade = ({
     onBeforeSend,
   });
 
-  ChatFacadeManager.setChatFacade(id, chatFacade);
+  ChatFacadeManager.getInstance().setChatFacade(id, chatFacade);
 
   return chatFacade;
 };
