@@ -35,7 +35,7 @@ export const createChatFacade = ({
   onFinish,
   onError,
 }: CreateChatFacadeOptions) => {
-  const _model = model ?? provider.createModel(modelId!);
+  const _model = model ?? provider.getModel(modelId!);
   const transport = provider.createTransport(_model);
 
   const chat = createChat({

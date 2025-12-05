@@ -91,9 +91,7 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
 
   if (shouldUpdateTransport) {
     chatFacadeRef.current.setProvider(provider);
-    chatFacadeRef.current.setModel(
-      model ? model : provider.createModel(modelId!),
-    );
+    chatFacadeRef.current.setModel(model ? model : provider.getModel(modelId!));
     chatFacadeRef.current.updateTransport();
   }
 

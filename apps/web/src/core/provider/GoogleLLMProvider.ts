@@ -45,7 +45,7 @@ export class GoogleLLMProvider implements LLMProvider {
     return GoogleLLMProvider.validateConnection(this.apiKey);
   }
 
-  public createModel(modelId: string): LanguageModelV2 {
+  public getModel(modelId: string): LanguageModelV2 {
     // throw error if modelId is not valid
     const parsedModelId: GoogleAiModelId = GoogleAiModelIdSchema.parse(modelId);
     return createGoogleGenerativeAI({ apiKey: this.apiKey })(parsedModelId);
