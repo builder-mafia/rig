@@ -10,7 +10,7 @@ export interface LLMProvider {
   readonly name: string;
 
   validateConnection: () => Promise<boolean>;
-  createModel: (modelId: string, ...params: unknown[]) => LanguageModelV2;
+  getModel: (modelId: string) => LanguageModelV2;
   createTransport: (
     model: LanguageModelV2,
     options?: CreateTransportOptions,

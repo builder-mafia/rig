@@ -1,18 +1,10 @@
 import type { UIMessage } from 'ai';
+import { getAssistantMessageText } from '@/core/chat/message-util';
 import { assert } from '@/utils/assert';
 import { Markdown } from './Markdown';
 
 type AssistantMessageProps = {
   message: UIMessage;
-};
-
-const getTextAssistantMessage = (message: UIMessage): string => {
-  return message.parts.reduce((acc, part) => {
-    if (part.type === 'text') {
-      return acc + part.text;
-    }
-    return acc;
-  }, '');
 };
 
 export const AssistantMessage = ({ message }: AssistantMessageProps) => {
@@ -21,7 +13,7 @@ export const AssistantMessage = ({ message }: AssistantMessageProps) => {
     `AssistantMessage: message is not a assistant message. message: ${JSON.stringify(message)}`,
   );
 
-  const textMessage = getTextAssistantMessage(message);
+  const textMessage = getAssistantMessageText(message);
 
   return (
     // override the default prose max-width to none.

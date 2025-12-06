@@ -1,13 +1,11 @@
 import type { ChatFacade } from './ChatFacade';
 
 /**
- * channel and chat facade is 1:1 mapping.
- *
- * id is channelId.
+ * @singleton
  */
 export class ChatFacadeManager {
   private static instance: ChatFacadeManager;
-  private static chatFacades: Map<string, ChatFacade> = new Map();
+  private chatFacades: Map<string, ChatFacade> = new Map();
 
   private constructor() {}
 
@@ -18,21 +16,40 @@ export class ChatFacadeManager {
     return ChatFacadeManager.instance;
   }
 
-  public static hasChatFacade(id: string) {
-    return ChatFacadeManager.chatFacades.has(id);
+  public hasChatFacade(id: string) {
+    return this.chatFacades.has(id);
   }
 
-  public static getChatFacade(id: string) {
-    return ChatFacadeManager.chatFacades.get(id);
-  }
-
-  public static setChatFacade(id: string, chatFacade: ChatFacade) {
-    const oldChatFacade = ChatFacadeManager.getChatFacade(id);
-
-    if (oldChatFacade && oldChatFacade !== chatFacade) {
-      oldChatFacade.dispose();
+  public getChatFacade(id: string) {
+    const facade = this.chatFacades.get(id);
+    if (!facade) {
+      throw new Error(
+        `ChatFacadeManager: chat facade with id ${id} is not found.`,
+      );
     }
 
-    ChatFacadeManager.chatFacades.set(id, chatFacade);
+    return facade;
+  }
+
+  public getAllChatFacadeIds() {
+    return Array.from(this.chatFacades.keys());
+  }
+
+  public setChatFacade(id: string, chatFacade: ChatFacade) {
+    const prevFacade = this.hasChatFacade(id) ? this.getChatFacade(id) : null;
+
+    if (prevFacade && prevFacade !== chatFacade) {
+      prevFacade.dispose();
+    }
+
+    this.chatFacades.set(id, chatFacade);
+  }
+
+  public deleteChatFacadeById(id: string) {
+    const chatFacade = this.getChatFacade(id);
+    if (chatFacade) {
+      chatFacade.dispose();
+    }
+    this.chatFacades.delete(id);
   }
 }

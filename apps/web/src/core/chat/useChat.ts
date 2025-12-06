@@ -1,10 +1,12 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
-import type { ChatInit, UIMessage } from 'ai';
-import { noop } from 'es-toolkit';
-import { useCallback, useRef, useSyncExternalStore } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import type { UIMessage } from 'ai';
+import { getDefaultStore, useSetAtom } from 'jotai';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { dbAtoms } from '@/idb/db-store';
+import { assert } from '@/utils/assert';
 import { generateUIMessage } from '../helper';
-import type { LLMProvider } from '../provider/LLMProvider';
-import { type ChatFacade, createChatFacade } from './ChatFacade';
+import { providerRegistry } from '../provider/providerRegistry';
+import { ChatFacade } from './ChatFacade';
 import { ChatFacadeManager } from './ChatFacadeManager';
 
 /**
@@ -13,136 +15,132 @@ import { ChatFacadeManager } from './ChatFacadeManager';
 const EMPTY_MESSAGES: UIMessage[] = [];
 
 type UseChatOptions = {
-  /**
-   * this is unique id of the chat.
-   * It should be channelId.
-   */
   id: string;
-  provider: LLMProvider;
-  /**
-   * @example 'gpt-5.1'
-   */
-  modelId?: string;
-  model?: LanguageModelV2;
-  messages: UIMessage[];
-  onBeforeSend?: (message: UIMessage) => void;
-  onFinish?: ChatInit<UIMessage>['onFinish'];
-  onError?: ChatInit<UIMessage>['onError'];
-  onData?: ChatInit<UIMessage>['onData'];
 };
+
+const store = getDefaultStore();
 
 /**
  * if chatFacade is changed, the uiMessages and status will be updated.
  */
 export const useChat = <UI_MESSAGE extends UIMessage>({
   id,
-  provider,
-  model,
-  modelId,
-  messages,
-  onBeforeSend,
-  ...chatCallbacks
 }: UseChatOptions) => {
-  if (!model && !modelId) {
-    throw new Error('useChat: model or modelId is required');
-  }
-  if (model && modelId) {
-    throw new Error('useChat: both model and modelId cannot be used together');
-  }
+  const addMessage = useSetAtom(dbAtoms.addMessageAtom);
 
-  const chatFacadeRef = useRef<ChatFacade>(
-    ChatFacadeManager.getChatFacade(id) ??
-      createChatFacade({
+  /**
+   * useSuspenseQuery's only purpose is to trigger the suspense.
+   */
+  const { data: chatFacade } = useSuspenseQuery<ChatFacade>({
+    queryKey: ['chat-facade', id],
+    queryFn: async () => {
+      if (ChatFacadeManager.getInstance().hasChatFacade(id)) {
+        return ChatFacadeManager.getInstance().getChatFacade(id);
+      }
+
+      const allMessages = await store.get(dbAtoms.allMessagesAtom);
+      const channels = await store.get(dbAtoms.allChannelsAtom);
+
+      const ch = channels.find(channel => channel.id === id);
+      const messages = allMessages.filter(message => message.channelId === id);
+
+      assert(ch, 'useChat: channel is not found.');
+      assert(messages, 'useChat: channel messages are not found.');
+
+      const provider = providerRegistry.get(ch.providerName);
+
+      const facade = new ChatFacade({
         id,
-        messages,
         provider,
-        model,
-        modelId,
-        onBeforeSend,
-        onData: chatCallbacks.onData ?? noop,
-        onFinish: chatCallbacks.onFinish ?? noop,
-        onError: chatCallbacks.onError ?? noop,
-      }),
-  );
+        modelId: ch.model,
+        messages,
+      });
 
-  const shouldRecreateChatFacade = chatFacadeRef.current?.getId() !== id;
+      ChatFacadeManager.getInstance().setChatFacade(id, facade);
 
-  if (shouldRecreateChatFacade) {
-    chatFacadeRef.current = createChatFacade({
-      id,
-      messages,
-      provider,
-      model,
-      modelId,
-      onBeforeSend,
-      onData: chatCallbacks.onData ?? noop,
-      onFinish: chatCallbacks.onFinish ?? noop,
-      onError: chatCallbacks.onError ?? noop,
+      return facade;
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+  });
+
+  useEffect(() => {
+    const subscription1 = chatFacade.getOnBeforeSend$().subscribe(message => {
+      addMessage(chatFacade.getId(), message);
     });
-  }
 
-  const shouldUpdateTransport =
-    // if 'google' => 'openai'
-    provider.name !== chatFacadeRef.current.getProviderName() ||
-    // or 'gpt-5.1' => 'gpt-4.1'
-    (modelId && modelId !== chatFacadeRef.current.getModelId()) ||
-    // or new model instance
-    (model && !chatFacadeRef.current.isSameModel(model));
+    const subscription2 = chatFacade
+      .getOnFinish$()
+      .subscribe(({ message, isAbort, isDisconnect, isError }) => {
+        if (isAbort || isDisconnect || isError) {
+          return;
+        }
 
-  if (shouldUpdateTransport) {
-    chatFacadeRef.current.setProvider(provider);
-    chatFacadeRef.current.setModel(
-      model ? model : provider.createModel(modelId!),
-    );
-    chatFacadeRef.current.updateTransport();
-  }
+        addMessage(chatFacade.getId(), message);
+      });
 
-  const subscribeToMessages = (onChange: () => void) => {
-    const subscription = chatFacadeRef.current
-      .getUiMessages$()
-      .subscribe(onChange);
     return () => {
-      subscription.unsubscribe();
+      subscription1.unsubscribe();
+      subscription2.unsubscribe();
     };
-  };
+  }, [chatFacade, addMessage]);
+
+  const subscribeToMessages = useCallback(
+    (onChange: () => void) => {
+      const subscription = chatFacade.getUiMessages$().subscribe(onChange);
+      return () => {
+        subscription.unsubscribe();
+      };
+    },
+    [chatFacade],
+  );
 
   const uiMessages = useSyncExternalStore(
     subscribeToMessages,
-    () => chatFacadeRef.current.getUiMessages() ?? EMPTY_MESSAGES,
-    () => chatFacadeRef.current.getUiMessages() ?? EMPTY_MESSAGES,
+    () => chatFacade.getUiMessages() ?? EMPTY_MESSAGES,
+    () => chatFacade.getUiMessages() ?? EMPTY_MESSAGES,
   );
 
-  const subscribeToStatus = (onChange: () => void) => {
-    const subscription = chatFacadeRef.current.getStatus$().subscribe(onChange);
-    return () => {
-      subscription.unsubscribe();
-    };
-  };
+  const subscribeToStatus = useCallback(
+    (onChange: () => void) => {
+      const subscription = chatFacade.getStatus$().subscribe(onChange);
+      return () => {
+        subscription.unsubscribe();
+      };
+    },
+    [chatFacade],
+  );
 
   const status = useSyncExternalStore(
     subscribeToStatus,
-    () => chatFacadeRef.current.getStatus() ?? 'error',
-    () => chatFacadeRef.current.getStatus() ?? 'error',
+    () => chatFacade.getStatus() ?? 'error',
+    () => chatFacade.getStatus() ?? 'error',
   );
 
-  const stop = () => {
-    chatFacadeRef.current.stop();
-  };
+  const stop = useCallback(() => {
+    chatFacade.stop();
+  }, [chatFacade]);
 
-  const sendMessage = (message: UI_MESSAGE & { role: 'user' }) => {
-    return chatFacadeRef.current.sendMessage(message);
-  };
+  const sendMessage = useCallback(
+    (message: UI_MESSAGE & { role: 'user' }) => {
+      return chatFacade.sendMessage(message);
+    },
+    [chatFacade],
+  );
 
-  const addPrompt = useCallback((prompt: string) => {
-    const promptMessage = generateUIMessage('system', prompt);
-    chatFacadeRef.current.setContextMessages(prev => [...prev, promptMessage]);
-  }, []);
+  const setSystemPrompt = useCallback(
+    (prompt: string) => {
+      chatFacade.addSystemMessage(generateUIMessage('system', prompt));
+    },
+    [chatFacade],
+  );
 
   return {
     uiMessages,
     status,
     stop,
     sendMessage,
-    addPrompt,
+    setSystemPrompt,
   };
 };

@@ -205,6 +205,7 @@ export const ApiKeyConfigModal = ({
                         <div className='flex gap-1'>
                           <PasswordInput
                             {...register(providerName)}
+                            showPassword={false}
                             id={`${providerName}-api-key`}
                             placeholder=''
                             autoFocus={false}

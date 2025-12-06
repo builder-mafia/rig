@@ -13,6 +13,10 @@ const DB_VERSION = 2;
 
 export const ChannelSchema = z.object({
   id: z.string(),
+  /**
+   * @description model id.
+   * @example 'gpt-5.1'
+   */
   model: AllModelIdsSchema.describe('selected AI model'),
   providerName: LLMProviderNameSchema.describe('selected AI provider'),
   createdAt: z.number().min(0).describe('Timestamp of creation'),

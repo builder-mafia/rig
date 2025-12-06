@@ -1,72 +1,26 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
-import type { Chat } from '@ai-sdk/react';
-import type { ChatInit, ChatStatus, UIMessage } from 'ai';
-import { isEqual } from 'es-toolkit';
-import { BehaviorSubject, type Observable, take } from 'rxjs';
-import { type Setter, setValueOrFn } from '@/utils/setter';
+import { Chat } from '@ai-sdk/react';
+import type {
+  ChatOnDataCallback,
+  ChatOnFinishCallback,
+  ChatStatus,
+  UIMessage,
+} from 'ai';
+import { BehaviorSubject, type Observable, Subject } from 'rxjs';
+import type { Setter } from '@/utils/setter';
 import type { LLMProvider } from '../provider/LLMProvider';
 import { UIMessageStore } from '../UiMessageStore';
-import { ChatFacadeManager } from './ChatFacadeManager';
-import { createChat } from './createChat';
 
-export type CreateChatFacadeOptions = {
+type CreateChatFacadeParams = {
   id: string;
   messages: UIMessage[];
   provider: LLMProvider;
-  model?: LanguageModelV2;
-  /**
-   * @example 'gpt-5.1'
-   */
-  modelId?: string;
-  onBeforeSend?: (message: UIMessage) => void;
-  onData: Required<ChatInit<UIMessage>>['onData'];
-  onFinish: Required<ChatInit<UIMessage>>['onFinish'];
-  onError: Required<ChatInit<UIMessage>>['onError'];
-};
-
-export const createChatFacade = ({
-  id,
-  messages,
-  provider,
-  model,
-  modelId,
-  onBeforeSend,
-  onData,
-  onFinish,
-  onError,
-}: CreateChatFacadeOptions) => {
-  const _model = model ?? provider.createModel(modelId!);
-  const transport = provider.createTransport(_model);
-
-  const chat = createChat({
-    transport,
-    id,
-    messages,
-    onData,
-    onFinish,
-    onError,
-  });
-
-  const chatFacade = new ChatFacade({
-    chat,
-    provider,
-    model: _model,
-    onBeforeSend,
-  });
-
-  ChatFacadeManager.setChatFacade(id, chatFacade);
-
-  return chatFacade;
-};
-
-type CreateChatFacadeParams = {
-  chat: Chat<UIMessage>;
-  provider: LLMProvider;
-  model: LanguageModelV2;
-  onBeforeSend?: (message: UIMessage) => void;
+  modelId: string;
+  throttleTime?: number;
 };
 
 export class ChatFacade {
+  private id: string;
   private chat: Chat<UIMessage>;
   /**
    * @description Set messages to Display to the user.
@@ -84,52 +38,49 @@ export class ChatFacade {
   /**
    * current LLM provider and model
    */
+
+  private onData$ = new Subject<Parameters<ChatOnDataCallback<UIMessage>>[0]>();
+  private onFinish$ = new Subject<
+    Parameters<ChatOnFinishCallback<UIMessage>>[0]
+  >();
+  private onError$ = new Subject<Error>();
+  private onBeforeSend$ = new Subject<UIMessage & { role: 'user' }>();
+
   private provider: LLMProvider;
-  private model: LanguageModelV2;
-  private onBeforeSend?: (message: UIMessage) => void;
   private _isDisposed = false;
+  private model: LanguageModelV2;
+  private throttleTime: number;
 
-  constructor({ chat, provider, model, onBeforeSend }: CreateChatFacadeParams) {
-    this.chat = chat;
+  constructor({
+    id,
+    provider,
+    modelId,
+    messages,
+    throttleTime = 50,
+  }: CreateChatFacadeParams) {
     this.uiMessageStore = new UIMessageStore<UIMessage>();
+    this.id = id;
     this.provider = provider;
-    this.model = model;
-    this.onBeforeSend = onBeforeSend;
+    this.model = provider.getModel(modelId);
+    this.throttleTime = throttleTime;
 
-    this.uiMessageStore.setUiMessages(chat.messages);
-
-    this.chat['~registerStatusCallback'](() => {
-      this.status$.next(this.chat.status);
+    this.chat = this.updateChat({
+      id,
+      messages,
+      provider,
+      model: this.model,
+      throttleTime,
     });
 
-    this.chat['~registerMessagesCallback'](() => {
-      if (this.chat.lastMessage) {
-        const lastMessage = this.chat.lastMessage;
-        this.uiMessageStore.setUiMessages(prev => {
-          if (prev.at(-1)?.id === lastMessage.id) {
-            return [...prev.slice(0, -1), lastMessage];
-          } else {
-            return [...prev, lastMessage];
-          }
-        });
-      }
-    }, 50);
-
-    this.chat['~registerErrorCallback'](() => {
-      //
-    });
+    this.uiMessageStore.setUiMessages(this.chat.messages);
   }
 
   public getId(): string {
-    return this.chat.id;
+    return this.id;
   }
 
-  public getContextMessages(): UIMessage[] {
+  public getMessages(): UIMessage[] {
     return this.chat.messages;
-  }
-
-  public setContextMessages(setter: Setter<UIMessage[]>) {
-    this.chat.messages = setValueOrFn(this.chat.messages, setter);
   }
 
   public getUiMessages(): UIMessage[] {
@@ -140,10 +91,6 @@ export class ChatFacade {
     return this.uiMessageStore.getUiMessages$();
   }
 
-  public setUiMessages(setter: Setter<UIMessage[]>) {
-    this.uiMessageStore.setUiMessages(setter);
-  }
-
   public getStatus(): ChatStatus {
     return this.status$.getValue();
   }
@@ -152,40 +99,61 @@ export class ChatFacade {
     return this.status$.asObservable();
   }
 
-  public sendMessage(message: UIMessage & { role: 'user' }) {
-    if (this._isDisposed) {
-      throw new Error('ChatFacade is disposed');
-    }
-
-    this.onBeforeSend?.(message);
-    this.chat.sendMessage(message);
-  }
-
-  /**
-   * @description Return the error of the chat when it is in error status.
-   *
-   * @example
-   * getError() => Error | undefined
-   */
   public getError() {
     return this.chat.error;
-  }
-
-  /**
-   * @example
-   * getLLM() => { provider: 'openai-', model: 'gpt-4.1' }
-   * getLLM() => { provider: 'google', model: 'gemini-2.5-flash' }
-   */
-  public getProviderName() {
-    return this.provider.name;
   }
 
   public getModelId() {
     return this.model.modelId;
   }
 
-  public isSameModel(model: LanguageModelV2) {
-    return isEqual(this.model, model);
+  public getOnData$() {
+    return this.onData$.asObservable();
+  }
+
+  public getOnFinish$() {
+    return this.onFinish$.asObservable();
+  }
+
+  public getOnError$() {
+    return this.onError$.asObservable();
+  }
+
+  public getOnBeforeSend$() {
+    return this.onBeforeSend$.asObservable();
+  }
+
+  /**
+   * this must be used for testing only.
+   */
+  public __getChat() {
+    return this.chat;
+  }
+
+  /**
+   * @example return 'openai'
+   */
+  public getProviderName() {
+    return this.provider.name;
+  }
+
+  public setUiMessages(setter: Setter<UIMessage[]>) {
+    this.uiMessageStore.setUiMessages(setter);
+  }
+
+  public addSystemMessage(message: UIMessage & { role: 'system' }) {
+    this.chat.messages = [...this.chat.messages, message];
+  }
+
+  public async sendMessage(message: UIMessage & { role: 'user' }) {
+    if (this._isDisposed) {
+      throw new Error('ChatFacade is disposed');
+    }
+
+    this.onBeforeSend$.next(message);
+    await this.chat.sendMessage(message);
+    // return response message
+    return this.chat.lastMessage;
   }
 
   public stop() {
@@ -198,36 +166,98 @@ export class ChatFacade {
     }
   }
 
-  public setProvider(provider: LLMProvider) {
-    this.provider = provider;
-  }
+  private updateChat({
+    id,
+    messages,
+    provider,
+    model,
+    throttleTime,
+  }: {
+    id: string;
+    messages: UIMessage[];
+    provider: LLMProvider;
+    model: LanguageModelV2;
+    throttleTime: number;
+  }) {
+    const transport = provider.createTransport(model);
 
-  public setModel(model: LanguageModelV2) {
-    this.model = model;
-  }
+    const chat = new Chat({
+      id,
+      transport,
+      messages,
+      onData: data => {
+        this.onData$.next(data);
+      },
+      onFinish: options => {
+        this.onFinish$.next(options);
+      },
+      onError: error => {
+        this.onError$.next(error);
+      },
+    });
 
-  public updateTransport() {
-    if (this._isDisposed) {
-      throw new Error('ChatFacade is disposed');
-    }
+    chat['~registerStatusCallback'](() => {
+      this.status$.next(chat.status);
+    });
 
-    const newTransport = this.provider.createTransport(this.model);
+    chat['~registerMessagesCallback'](() => {
+      const streamingMessage = chat.lastMessage;
 
-    // if the chat is submitted or streaming, wait for the chat to be finished,
-    if (this.chat.status === 'submitted' || this.chat.status === 'streaming') {
-      this.getStatus$()
-        .pipe(take(1))
-        .subscribe(() => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error : this is a private property of the chat object
-          this.chat.transport = newTransport;
+      if (streamingMessage) {
+        this.uiMessageStore.setUiMessages(prev => {
+          if (prev.at(-1)?.id === streamingMessage.id) {
+            return [...prev.slice(0, -1), streamingMessage];
+          } else {
+            return [...prev, streamingMessage];
+          }
         });
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error : this is a private property of the chat object
-      this.chat.transport = newTransport;
-    }
+      }
+    }, throttleTime);
+
+    this.chat = chat;
+
+    return chat;
   }
+
+  public updateModelId(modelId: string) {
+    const newModel = this.provider.getModel(modelId);
+    this.model = newModel;
+
+    this.updateChat({
+      id: this.chat.id,
+      messages: this.chat.messages,
+      provider: this.provider,
+      model: this.model,
+      throttleTime: this.throttleTime,
+    });
+  }
+
+  /**
+   * In most cases, when the provider changes, the modelId should change accordingly.
+   *
+   * For example:
+   * - When switching from google to openai, the modelId should change from gemini to gpt.
+   */
+  public updateProvider(provider: LLMProvider, modelId: string) {
+    this.provider = provider;
+    this.model = this.provider.getModel(modelId);
+
+    this.updateChat({
+      id: this.chat.id,
+      messages: this.chat.messages,
+      provider: this.provider,
+      model: this.model,
+      throttleTime: this.throttleTime,
+    });
+  }
+
+  // TODO: getModel options and update the transport
+  // like header, baseURL, etc.
+  public updateModelOptions() {}
+
+  // TODO: update the transport options
+  // like thinking, webSearch, etc.
+  public updateTransportOptions() {}
 
   public dispose() {
     this._isDisposed = true;

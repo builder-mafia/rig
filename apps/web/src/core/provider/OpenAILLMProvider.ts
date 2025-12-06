@@ -57,7 +57,7 @@ export class OpenAILLMProvider implements LLMProvider {
     return OpenAILLMProvider.validateConnection(this.apiKey);
   }
 
-  public createModel(modelId: string): LanguageModelV2 {
+  public getModel(modelId: string): LanguageModelV2 {
     // throw error if modelId is not valid
     const parsedModelId: OpenAiModelId = OpenAiModelIdSchema.parse(modelId);
     return createOpenAI({ apiKey: this.apiKey })(parsedModelId);
