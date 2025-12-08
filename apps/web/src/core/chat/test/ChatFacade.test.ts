@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { generateUIMessage } from '@/core/helper';
+import { generateUIMessage } from '@/core/chat/message-util';
 import { createMockProvider } from '@/core/provider/test/mockProvider';
 import { ChatFacade } from '../ChatFacade';
 import { ChatFacadeManager } from '../ChatFacadeManager';

@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
 import React, { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
 import { ChatInput } from './chatting/ChatInput';
 import { Chatting } from './chatting/Chatting';
 import { CenterHeader } from './header/CenterHeader';

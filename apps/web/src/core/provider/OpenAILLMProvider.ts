@@ -67,6 +67,9 @@ export class OpenAILLMProvider implements LLMProvider {
     model: LanguageModelV2,
     options?: CreateTransportOptions,
   ): ChatTransport<UIMessage> {
+    const modelId = model.modelId;
+    const providerName = this.name;
+
     return {
       sendMessages: async ({ messages }) => {
         return await streamText({
@@ -80,7 +83,25 @@ export class OpenAILLMProvider implements LLMProvider {
                 : 'Failed to fetch the chat response.',
             );
           },
-        }).toUIMessageStream();
+        }).toUIMessageStream({
+          messageMetadata: ({ part }) => {
+            if (part.type === 'start') {
+              return {
+                modelId,
+                provider: providerName,
+                createdAt: Date.now(),
+              };
+            } else if (part.type === 'finish') {
+              return {
+                inputTokens: part.totalUsage.inputTokens,
+                outputTokens: part.totalUsage.outputTokens,
+                reasoningTokens: part.totalUsage.reasoningTokens,
+                cachedInputTokens: part.totalUsage.cachedInputTokens,
+                totalTokens: part.totalUsage.totalTokens,
+              };
+            }
+          },
+        });
       },
       reconnectToStream: () => {
         throw new Error('Not implemented');

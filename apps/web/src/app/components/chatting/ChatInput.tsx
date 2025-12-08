@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { useSetAtom } from 'jotai';
-import { useCallback, useState } from 'react';
+import { type ChangeEvent, useCallback, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ChatFacadeManager } from '@/core/chat/ChatFacadeManager';
-import { generateUIMessage } from '@/core/helper';
+import { generateUIMessage } from '@/core/chat/message-util';
 import {
   type AllModelIds,
   AllModelIdsSchema,
@@ -37,6 +37,7 @@ export const ChatInput = () => {
   assert(config, 'ChatInput: config is not found.');
 
   const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
+  const ignoreNextChangeRef = useRef(false);
 
   const [input, setInput] = useState('');
   const [LLM, setLLM] = useState<{
@@ -61,8 +62,16 @@ export const ChatInput = () => {
 
   const textAreaRef = useHotkeys<HTMLTextAreaElement>(
     HotKeyList.submitChat.hotkey,
-    () => {
-      if (!input.trim()) return;
+    event => {
+      if (event.isComposing) {
+        ignoreNextChangeRef.current = true;
+      }
+
+      if (!input.trim()) {
+        ignoreNextChangeRef.current = false;
+        return;
+      }
+
       sendMessage(generateUIMessage('user', input));
       setInput('');
     },
@@ -82,6 +91,14 @@ export const ChatInput = () => {
       textAreaRef.current.focus();
     }
   });
+
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    if (ignoreNextChangeRef.current) {
+      ignoreNextChangeRef.current = false;
+      return;
+    }
+    setInput(e.target.value);
+  };
 
   const handleSubmit = () => {
     if (!input.trim()) return;
@@ -120,7 +137,7 @@ export const ChatInput = () => {
         <Textarea
           ref={textAreaRef}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={handleChange}
           className='mx-auto max-w-2xl lg:max-w-4xl min-h-[40px] max-h-[500px] backdrop-blur-lg'
           placeholder='Ask AI Anything...'
         />

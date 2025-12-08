@@ -1,6 +1,6 @@
 import type { ChatStatus } from 'ai';
-import { Thread } from '@/app/main/chat/Thread';
-import type { Thread as ThreadType } from '@/core/helper';
+import { Thread } from '@/app/components/chatting/Thread';
+import type { Thread as ThreadType } from './thread-util';
 
 type ThreadListProps = {
   threads: ThreadType[];
@@ -13,7 +13,7 @@ export const ThreadList = ({ threads, status }: ThreadListProps) => {
       <div className='p-4 gap-4 flex flex-col'>
         {threads.map((thread, index) => (
           <Thread
-            key={`thread-${index}`}
+            key={`${thread.userMessage.id}`}
             thread={thread}
             isLast={threads.length - 1 === index}
             status={status}
