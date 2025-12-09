@@ -6,23 +6,8 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import { z } from 'zod';
 import type { CreateTransportOptions, LLMProvider } from '../LLMProvider';
-
-export const OpenAiModelIdSchema = z.enum([
-  'gpt-4.1',
-  'gpt-4.1-mini',
-  'gpt-4.1-nano',
-  'gpt-5',
-  'gpt-5-mini',
-  'gpt-5-nano',
-  'gpt-5-codex',
-  'gpt-5.1-codex',
-  'gpt-5.1-codex-mini',
-  'gpt-5.1',
-]);
-
-export type OpenAiModelId = z.infer<typeof OpenAiModelIdSchema>;
+import { type OpenAiModelId, OpenAiModelIdSchema } from './openai-models';
 
 type OpenAILLMProviderOptions = {
   apiKey: string;
@@ -69,6 +54,10 @@ export class OpenAILLMProvider implements LLMProvider {
   ): ChatTransport<UIMessage> {
     const modelId = model.modelId;
     const providerName = this.name;
+
+    // reasoningEffort?: string | null | undefined;
+    // reasoningSummary?: string | null | undefined;
+    // textVerbosity?: "low" | "medium" | "high" | null | undefined;
 
     return {
       sendMessages: async ({ messages }) => {

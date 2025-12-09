@@ -2,7 +2,8 @@ import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { ChatTransport, UIMessage } from 'ai';
 
 export type CreateTransportOptions = {
-  thinking?: boolean;
+  reasoning?: boolean;
+  showReasoning?: boolean;
   webSearch?: boolean;
 };
 

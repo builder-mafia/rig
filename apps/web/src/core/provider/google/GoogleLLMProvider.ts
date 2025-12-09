@@ -6,17 +6,8 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import { z } from 'zod';
 import type { CreateTransportOptions, LLMProvider } from '../LLMProvider';
-
-export const GoogleAiModelIdSchema = z.enum([
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-2.5-pro',
-  'gemini-3-pro-preview',
-]);
-
-export type GoogleAiModelId = z.infer<typeof GoogleAiModelIdSchema>;
+import { type GoogleAiModelId, GoogleAiModelIdSchema } from './google-models';
 
 type GoogleLLMProviderOptions = {
   apiKey: string;
@@ -71,7 +62,7 @@ export class GoogleLLMProvider implements LLMProvider {
       ? {
           thinkingConfig: {
             thinkingBudget: 8192,
-            includeThoughts: true,
+            includeThoughts: false,
           },
         }
       : undefined;
