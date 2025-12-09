@@ -5,7 +5,7 @@ import {
   LLMProviderNameSchema,
 } from '@/core/provider/all-models';
 import { GoogleLLMProvider } from '@/core/provider/google/GoogleLLMProvider';
-import { OpenAILLMProvider } from '@/core/provider/OpenAILLMProvider';
+import { OpenAILLMProvider } from '@/core/provider/openai/OpenAILLMProvider';
 import { providerRegistry } from '@/core/provider/providerRegistry';
 import type { ConfigSchema } from '@/idb/db';
 
