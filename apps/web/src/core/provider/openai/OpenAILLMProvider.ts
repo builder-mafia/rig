@@ -55,8 +55,8 @@ export class OpenAILLMProvider implements LLMProvider {
     const modelId = model.modelId;
     const providerName = this.name;
 
-    // reasoningEffort?: string | null | undefined;
-    // reasoningSummary?: string | null | undefined;
+    // reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high'
+    // reasoningSummary?: 'auto' | 'detailed'
     // textVerbosity?: "low" | "medium" | "high" | null | undefined;
 
     return {

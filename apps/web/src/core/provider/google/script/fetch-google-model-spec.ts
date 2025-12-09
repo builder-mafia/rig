@@ -4,7 +4,7 @@ import { type ModelSpec, ModelSpecSchema } from '../../model-spec';
 import { type GoogleAiModelId, GoogleAiModelIdSchema } from '../google-models';
 
 const MODELS_API_URL = 'https://models.dev/api.json';
-const OUTPUT_FILENAME = 'google-model-spec.json';
+const OUTPUT_FILENAME = 'google-model-spec.ts';
 
 type ModelsApiResponse = {
   google: {
@@ -51,10 +51,14 @@ async function generateGoogleModelSpec(): Promise<void> {
     {} as Record<GoogleAiModelId, ModelSpec>,
   );
 
-  const json = JSON.stringify(modelSpec, null, 2);
+  const ts = `
+  import type { ModelSpec } from '../../model-spec';
+  import type { GoogleAiModelId } from '../google-models';
 
-  // 5. write model spec to json file
-  await fs.writeFile(outputPath, json, 'utf-8');
+  export const googleModelSpec = ${JSON.stringify(modelSpec, null, 2)} as const satisfies Record<GoogleAiModelId, ModelSpec>;`;
+
+  // 5. write model spec to ts file
+  await fs.writeFile(outputPath, ts, 'utf-8');
 }
 
 generateGoogleModelSpec()

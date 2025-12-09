@@ -4,7 +4,7 @@ import { type ModelSpec, ModelSpecSchema } from '../../model-spec';
 import { type OpenAiModelId, OpenAiModelIdSchema } from '../openai-models';
 
 const MODELS_API_URL = 'https://models.dev/api.json';
-const OUTPUT_FILENAME = 'openai-model-spec.json';
+const OUTPUT_FILENAME = 'openai-model-spec.ts';
 
 type ModelsApiResponse = {
   openai: {
@@ -51,10 +51,14 @@ async function generateOpenAiModelSpec(): Promise<void> {
     {} as Record<OpenAiModelId, ModelSpec>,
   );
 
-  const json = JSON.stringify(modelSpec, null, 2);
+  const ts = `
+  import type { ModelSpec } from '../../model-spec';
+  import type { OpenAiModelId } from '../openai-models';
 
-  // 5. write model spec to json file
-  await fs.writeFile(outputPath, json, 'utf-8');
+  export const openaiModelSpec = ${JSON.stringify(modelSpec, null, 2)} as const satisfies Record<OpenAiModelId, ModelSpec>;`;
+
+  // 5. write model spec to ts file
+  await fs.writeFile(outputPath, ts, 'utf-8');
 }
 
 generateOpenAiModelSpec()
