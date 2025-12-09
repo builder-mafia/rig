@@ -1,6 +1,7 @@
+import { match } from 'ts-pattern';
 import type { LLMProviderName } from './all-models';
-import { GoogleLLMProvider } from './GoogleLLMProvider';
-import { OpenAILLMProvider } from './OpenAILLMProvider';
+import { GoogleProvider } from './google/GoogleProvider';
+import { OpenAiProvider } from './openai/OpenAiProvider';
 
 export interface ValidateApiKeyParams {
   apiKey: string;
@@ -13,12 +14,8 @@ export const validateApiKey = async ({
 }: ValidateApiKeyParams): Promise<boolean> => {
   if (!apiKey) return false;
 
-  switch (providerName) {
-    case 'openai':
-      return OpenAILLMProvider.validateConnection(apiKey);
-    case 'google':
-      return GoogleLLMProvider.validateConnection(apiKey);
-    default:
-      throw new Error(`validateApiKey: Unsupported provider: ${providerName}`);
-  }
+  return match(providerName)
+    .with('openai', () => OpenAiProvider.validateConnection(apiKey))
+    .with('google', () => GoogleProvider.validateConnection(apiKey))
+    .exhaustive();
 };

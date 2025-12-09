@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest run --watch"
+    "test:watch": "vitest run --watch",
+    "generate:model-spec": "tsx src/core/provider/google/script/fetch-google-model-spec.ts && tsx src/core/provider/openai/script/fetch-openai-model-spec.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "catalog:ai",
@@ -95,6 +96,7 @@
     "tailwindcss": "^4",
     "ts-brand": "^0.2.0",
     "tw-animate-css": "^1.3.4",
+    "tsx": "^4.21.0",
     "typescript": "catalog:types",
     "vitest": "catalog:test"
   },

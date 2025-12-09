@@ -11,8 +11,7 @@
     "test:once": "pnpm --filter 'web' test",
     "create:mcp": "node inquirer.mjs",
     "build:tools": "pnpm --filter '@mcp-server/*' build",
-    "prepare": "husky",
-    "web": "pnpm --filter 'web'"
+    "model-spec": "pnpm --filter 'web' generate:model-spec"
   },
   "keywords": [],
   "author": "",

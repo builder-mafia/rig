@@ -6,12 +6,15 @@ import {
   type UIMessage,
 } from 'ai';
 import type { LLMProvider } from '../LLMProvider';
+import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { createMockLanguageModel } from './mockLanguageModel';
+import { MockResponseOptionAdaptor } from './mockResponseOptionAdaptor';
 
 class MockProvider implements LLMProvider {
   public name: string;
   private readonly textDeltaChunks: string[];
   private readonly modelIds: string[];
+  readonly responseOptionAdaptor: ModelResponseOptionAdaptor;
 
   constructor({
     textDeltaChunks,
@@ -21,6 +24,7 @@ class MockProvider implements LLMProvider {
     this.textDeltaChunks = textDeltaChunks;
     this.modelIds = modelIds;
     this.name = providerName;
+    this.responseOptionAdaptor = new MockResponseOptionAdaptor();
   }
 
   validateConnection() {

@@ -104,7 +104,7 @@ describe('ChatFacade', () => {
       });
     }));
 
-  it('updateModelId: updates Chat instance when model changes', () => {
+  it('updateModelId: updates Chat instance when modelId changes', () => {
     const chatFacade = new ChatFacade({
       id: 'chat-facade-id',
       messages: [],
