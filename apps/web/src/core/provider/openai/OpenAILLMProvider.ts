@@ -1,4 +1,7 @@
-import { createOpenAI } from '@ai-sdk/openai';
+import {
+  createOpenAI,
+  type OpenAIResponsesProviderOptions,
+} from '@ai-sdk/openai';
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import {
   type ChatTransport,
@@ -6,7 +9,9 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { CreateTransportOptions, LLMProvider } from '../LLMProvider';
+import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
+import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
+import { OpenAiResponseOptionAdaptor } from './OpenAiResponseOptionAdaptor';
 import { type OpenAiModelId, OpenAiModelIdSchema } from './openai-models';
 
 type OpenAILLMProviderOptions = {
@@ -16,12 +21,14 @@ type OpenAILLMProviderOptions = {
 export class OpenAILLMProvider implements LLMProvider {
   readonly name = 'openai';
   private apiKey: string;
+  readonly responseOptionAdaptor: ModelResponseOptionAdaptor<OpenAIResponsesProviderOptions>;
 
   /**
    * apiKey must be registered after validation check.
    */
   constructor({ apiKey }: OpenAILLMProviderOptions) {
     this.apiKey = apiKey;
+    this.responseOptionAdaptor = new OpenAiResponseOptionAdaptor();
   }
 
   public static async validateConnection(apiKey: string): Promise<boolean> {
@@ -50,21 +57,21 @@ export class OpenAILLMProvider implements LLMProvider {
 
   public createTransport(
     model: LanguageModelV2,
-    options?: CreateTransportOptions,
+    options?: ModelResponseOptions,
   ): ChatTransport<UIMessage> {
     const modelId = model.modelId;
     const providerName = this.name;
 
-    // reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high'
-    // reasoningSummary?: 'auto' | 'detailed'
-    // textVerbosity?: "low" | "medium" | "high" | null | undefined;
+    const providerOptions = this.responseOptionAdaptor.adapt(modelId, options);
 
     return {
       sendMessages: async ({ messages }) => {
         return await streamText({
           model: model,
           messages: convertToModelMessages(messages),
-          // providerOptions: createProviderOptions(service, model),
+          providerOptions: {
+            openai: providerOptions,
+          },
           onError: err => {
             throw new Error(
               err instanceof Error

@@ -6,7 +6,7 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { CreateTransportOptions, LLMProvider } from '../LLMProvider';
+import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
 import { type GoogleAiModelId, GoogleAiModelIdSchema } from './google-models';
 
 type GoogleLLMProviderOptions = {
@@ -44,7 +44,7 @@ export class GoogleLLMProvider implements LLMProvider {
 
   public createTransport(
     model: LanguageModelV2,
-    options?: CreateTransportOptions,
+    options?: ModelResponseOptions,
   ): ChatTransport<UIMessage> {
     const modelId = model.modelId;
     const providerName = this.name;
