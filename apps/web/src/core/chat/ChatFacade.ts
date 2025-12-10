@@ -8,7 +8,10 @@ import type {
 } from 'ai';
 import { BehaviorSubject, type Observable, Subject } from 'rxjs';
 import type { Setter } from '@/utils/setter';
-import type { LLMProvider } from '../provider/LLMProvider';
+import type {
+  LLMProvider,
+  ModelResponseOptions,
+} from '../provider/LLMProvider';
 import { UIMessageStore } from '../UiMessageStore';
 
 type CreateChatFacadeParams = {
@@ -251,13 +254,7 @@ export class ChatFacade {
     });
   }
 
-  // TODO: getModel options and update the transport
-  // like header, baseURL, etc.
-  public updateModelOptions() {}
-
-  // TODO: update the transport options
-  // like thinking, webSearch, etc.
-  public updateTransportOptions() {}
+  public updateModelResponseOptions(options: ModelResponseOptions) {}
 
   public dispose() {
     this._isDisposed = true;
