@@ -11,6 +11,13 @@ export const DB_NAME = 'ALLIN';
 export const DEFAULT_CHANNEL_ID = 'DEFAULT-CHANNEL';
 const DB_VERSION = 2;
 
+export const ReasoningEffortSchema = z
+  .enum(['none', 'low', 'medium', 'high'])
+  .describe('Reasoning effort');
+export const ReasoningSummarySchema = z
+  .boolean()
+  .describe('Whether to include reasoning summary');
+
 export const ChannelSchema = z.object({
   id: z.string(),
   /**
@@ -19,6 +26,8 @@ export const ChannelSchema = z.object({
    */
   model: AllModelIdsSchema.describe('selected AI model'),
   providerName: LLMProviderNameSchema.describe('selected AI provider'),
+  reasoningEffort: ReasoningEffortSchema.optional(),
+  reasoningSummary: ReasoningSummarySchema.optional(),
   createdAt: z.number().min(0).describe('Timestamp of creation'),
   updatedAt: z.number().min(0).describe('Timestamp of last update'),
   title: z.string().optional().describe('Channel title'),
