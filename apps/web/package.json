@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "ts-check": "tsc --noEmit",
     "test:watch": "vitest run --watch",
     "generate:model-spec": "tsx src/core/provider/google/script/fetch-google-model-spec.ts && tsx src/core/provider/openai/script/fetch-openai-model-spec.ts"
   },
