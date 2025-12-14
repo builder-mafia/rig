@@ -21,6 +21,10 @@ describe('ChatFacadeManager', () => {
         modelIds: ['mock-model-id'],
       }),
       modelId: 'mock-model-id',
+      responseOptions: {
+        reasoning: 'low',
+        reasoningSummary: false,
+      },
     });
 
     ChatFacadeManager.getInstance().setChatFacade('chat-facade-id', chatFacade);

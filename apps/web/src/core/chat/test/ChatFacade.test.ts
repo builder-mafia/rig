@@ -23,6 +23,10 @@ describe('ChatFacade', () => {
         modelIds: ['mock-model-id'],
       }),
       modelId: 'mock-model-id',
+      responseOptions: {
+        reasoning: 'low',
+        reasoningSummary: false,
+      },
     });
 
     const response = await chatFacade.sendMessage(
@@ -49,6 +53,10 @@ describe('ChatFacade', () => {
         modelIds: ['mock-model-id'],
       }),
       modelId: 'mock-model-id',
+      responseOptions: {
+        reasoning: 'low',
+        reasoningSummary: false,
+      },
     });
 
     chatFacade.getUiMessages$().subscribe(currentMessages => {
@@ -71,6 +79,10 @@ describe('ChatFacade', () => {
           modelIds: ['mock-model-id'],
         }),
         modelId: 'mock-model-id',
+        responseOptions: {
+          reasoning: 'low',
+          reasoningSummary: false,
+        },
       });
 
       chatFacade.sendMessage(generateUIMessage('user', 'Say Hello World.'));
@@ -113,6 +125,11 @@ describe('ChatFacade', () => {
         modelIds: ['gpt-4', 'gpt-5'],
       }),
       modelId: 'gpt-4',
+      responseOptions: {
+        reasoning: 'low',
+        reasoningSummary: false,
+      },
+      throttleTime: 50,
     });
 
     expect(chatFacade.getModelId()).toBe('gpt-4');
@@ -134,6 +151,10 @@ describe('ChatFacade', () => {
         modelIds: ['gpt-4', 'gpt-5'],
       }),
       modelId: 'gpt-4',
+      responseOptions: {
+        reasoning: 'low',
+        reasoningSummary: false,
+      },
     });
 
     expect(chatFacade.getProviderName()).toBe('openai');
