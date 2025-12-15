@@ -148,7 +148,10 @@ export const ChannelList = () => {
                       isActive={selectedChannel.id === channel.id}
                       onClick={() => onClick(channel.id)}
                     >
-                      <span className='truncate'>{channel.title}</span>
+                      <span className='truncate'>
+                        {channel.title ??
+                          `Untitled ${formatDate(channel.createdAt)}`}
+                      </span>
                     </SidebarMenuButton>
                     <DropdownMenu modal={true}>
                       <DropdownMenuTrigger asChild>
