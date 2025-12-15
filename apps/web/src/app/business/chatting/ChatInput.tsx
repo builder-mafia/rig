@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { useSetAtom } from 'jotai';
-import { type ChangeEvent, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -127,6 +127,13 @@ export const ChatInput = () => {
     });
     onChangeSelectedModel(safeModelId, safeProviderName);
   };
+
+  useEffect(() => {
+    setProviderAndModel({
+      providerName: selectedChannel.providerName,
+      modelId: selectedChannel.model,
+    });
+  }, [selectedChannel.model, selectedChannel.providerName]);
 
   const onChangeSelectedModel = (
     modelId: AllModelIds,
