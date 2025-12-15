@@ -1,14 +1,35 @@
+import { useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-export const PromptTextArea = () => {
+type PromptTextAreaProps = {
+  value: string;
+  changeSystemPrompt: (prompt: string) => void;
+};
+
+export const PromptTextArea = ({
+  value,
+  changeSystemPrompt,
+}: PromptTextAreaProps) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  const handleBlur = () => {
+    const newValue = ref.current?.value;
+    if (newValue && newValue !== value) {
+      changeSystemPrompt(newValue);
+    }
+  };
+
   return (
     <div className='flex flex-col gap-4'>
       <Label htmlFor='prompt'>Prompt</Label>
       <Textarea
+        ref={ref}
         id='prompt'
         placeholder='Enter your prompt here...'
         className='w-full h-full rounded-sm !text-sm max-h-72 p-2 min-h-32'
+        defaultValue={value}
+        onBlur={handleBlur}
       />
     </div>
   );

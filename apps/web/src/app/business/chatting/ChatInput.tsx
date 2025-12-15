@@ -15,6 +15,7 @@ import {
   type LLMProviderName,
   LLMProviderNameSchema,
 } from '@/core/provider/all-models';
+import type { ReasoningEffort } from '@/core/provider/LLMProvider';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
@@ -134,6 +135,14 @@ export const ChatInput = () => {
     updateChannel(selectedChannel.id, { model: modelId, providerName });
   };
 
+  const onChangeSystemPrompt = (prompt: string) => {
+    updateChannel(selectedChannel.id, { prompt: prompt });
+  };
+
+  const onChangeReasoningEffort = (effort: ReasoningEffort) => {
+    updateChannel(selectedChannel.id, { reasoningEffort: effort });
+  };
+
   return (
     <div className='relative flex flex-col isolate z-10 w-full mx-auto'>
       <section className='w-full flex flex-col items-start'>
@@ -152,7 +161,12 @@ export const ChatInput = () => {
               onChange={onChange}
               enabledProviders={enabledProviders}
             />
-            <ModelSettingView />
+            <ModelSettingView
+              reasoningEffort={selectedChannel.reasoningEffort}
+              systemPrompt={selectedChannel.prompt ?? ''}
+              onChangeSystemPrompt={onChangeSystemPrompt}
+              onChangeReasoningEffort={onChangeReasoningEffort}
+            />
           </ButtonGroup>
           <div className='flex flex-row gap-2'>
             <Button

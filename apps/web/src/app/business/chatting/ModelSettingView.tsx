@@ -7,9 +7,22 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { RadioGroup } from '@/components/ui/radio-group';
+import type { ReasoningEffort } from '@/core/provider/LLMProvider';
 import { PromptTextArea } from './PromptTextArea';
 
-export const ModelSettingView = () => {
+type ModelSettingViewProps = {
+  reasoningEffort: ReasoningEffort;
+  onChangeSystemPrompt: (prompt: string) => void;
+  onChangeReasoningEffort: (effort: ReasoningEffort) => void;
+  systemPrompt: string;
+};
+
+export const ModelSettingView = ({
+  reasoningEffort,
+  onChangeSystemPrompt,
+  onChangeReasoningEffort,
+  systemPrompt,
+}: ModelSettingViewProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -21,15 +34,20 @@ export const ModelSettingView = () => {
         <div className='grid gap-4'>
           <div className='flex flex-col gap-4'>
             <Label>Reasoning</Label>
-            <RadioGroup
-              targets={['none', 'low', 'medium', 'high']}
-              defaultValue={'medium'}
-              onChange={v => {
-                console.log(v);
-              }}
-            />
+            <div className='w-full px-4 pl-2'>
+              <RadioGroup
+                targets={['none', 'low', 'medium', 'high']}
+                defaultValue={reasoningEffort}
+                onChange={v => {
+                  onChangeReasoningEffort(v as ReasoningEffort);
+                }}
+              />
+            </div>
           </div>
-          <PromptTextArea />
+          <PromptTextArea
+            value={systemPrompt}
+            changeSystemPrompt={onChangeSystemPrompt}
+          />
         </div>
       </PopoverContent>
     </Popover>

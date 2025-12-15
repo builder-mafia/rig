@@ -10,6 +10,7 @@ import { messagesToThreads } from './thread-util';
 export const Chatting = () => {
   const selectedChannelId = useSwrAtomValue(dbAtoms.selectedChannelIdAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
+
   // TODO: add selectedChannel change sideEffect that update the chatFacade.
 
   assert(selectedChannelId, 'Chatting: selectedChannelId is not found.');
