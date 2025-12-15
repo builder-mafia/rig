@@ -65,7 +65,7 @@ export class GoogleResponseOptionAdaptor
       }
 
       const thinkingBudget = this.mapThinkingBudget(reasoning);
-      if (thinkingBudget) {
+      if (thinkingBudget !== undefined) {
         ret.thinkingConfig = {
           ...(ret.thinkingConfig || {}),
           thinkingBudget,
