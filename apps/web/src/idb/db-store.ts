@@ -1,4 +1,5 @@
-import type { UIMessage } from '@ai-sdk/react';
+import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
+import type { UIMessage } from 'ai';
 import { atom } from 'jotai';
 import z from 'zod';
 import {
@@ -7,7 +8,6 @@ import {
 } from '@/core/provider/all-models';
 import { assert } from '@/utils/assert';
 import { DB } from './db';
-import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from './db-schema';
 
 export const isDataBaseInitializedAtom = atom(false);
 

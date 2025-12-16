@@ -1,5 +1,6 @@
+import { DB_CONFIG_KEY, DB_STORE } from '@allin/db-schema';
 import type { IDBPDatabase } from 'idb';
-import { type ALLIN_DB, DB_CONFIG_KEY, DB_STORE } from '../db-schema';
+import type { ALLIN_DB } from '../idb-schema';
 
 export const initDb = (db: IDBPDatabase<ALLIN_DB>) => {
   if (!db.objectStoreNames.contains(DB_STORE.CHANNELS)) {

@@ -1,8 +1,8 @@
+import type { ChannelSchema } from '@allin/db-schema';
 import type { z } from 'zod';
 import { ChatFacadeManager } from '@/core/chat/ChatFacadeManager';
 import type { LLMProviderName } from '@/core/provider/all-models';
 import { providerRegistry } from '@/core/provider/providerRegistry';
-import type { ChannelSchema } from '../db-schema';
 
 type SelectedChannelSnapshot = Pick<
   z.infer<typeof ChannelSchema>,

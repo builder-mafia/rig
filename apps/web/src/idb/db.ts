@@ -1,15 +1,17 @@
+import {
+  type ChannelSchema,
+  ConfigSchema,
+  DB_CONFIG_KEY,
+  type DB_MESSAGE,
+  DB_NAME,
+  DB_STORE,
+  type DBStoreName,
+} from '@allin/db-schema';
 import type { UIMessage } from 'ai';
 import { type IDBPDatabase, openDB } from 'idb';
 import type { z } from 'zod';
 import type { LLMProviderName } from '@/core/provider/all-models';
-import {
-  type ALLIN_DB,
-  type ChannelSchema,
-  ConfigSchema,
-  DB_CONFIG_KEY,
-  DB_NAME,
-  DB_STORE,
-} from './db-schema';
+import type { ALLIN_DB } from './idb-schema';
 import { initDb } from './migrations/initDb';
 import { migrateToV3 } from './migrations/migrateToV3';
 
@@ -157,7 +159,10 @@ const addMessage = async (channelId: string, message: UIMessage) => {
     throw new Error('Channel not found');
   }
 
-  return db.add(DB_STORE.MESSAGES, { ...message, channelId });
+  return db.add(DB_STORE.MESSAGES, {
+    ...message,
+    channelId,
+  } satisfies DB_MESSAGE);
 };
 
 const deleteMessage = async (messageId: string) => {
@@ -178,7 +183,7 @@ const deleteMessagesByChannelId = async (channelId: string) => {
   await tx.done;
 };
 
-const clearStore = async (storeName: DB_STORE) => {
+const clearStore = async (storeName: DBStoreName) => {
   const db = await getDB();
   return db.clear(storeName);
 };
