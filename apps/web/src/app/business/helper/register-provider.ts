@@ -1,5 +1,6 @@
+import type { ConfigSchema } from '@allin/db-schema';
 import { match } from 'ts-pattern';
-import type z from 'zod';
+import type { z } from 'zod';
 import {
   type LLMProviderName,
   LLMProviderNameSchema,
@@ -7,7 +8,6 @@ import {
 import { GoogleProvider } from '@/core/provider/google/GoogleProvider';
 import { OpenAiProvider } from '@/core/provider/openai/OpenAiProvider';
 import { providerRegistry } from '@/core/provider/providerRegistry';
-import type { ConfigSchema } from '@/idb/db-schema';
 
 export const registerProvider = (config: z.infer<typeof ConfigSchema>) => {
   const { apiKeys } = config;

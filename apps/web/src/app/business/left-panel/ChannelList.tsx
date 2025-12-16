@@ -1,3 +1,4 @@
+import type { ChannelSchema } from '@allin/db-schema';
 import { sortBy } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import {
@@ -9,7 +10,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type z from 'zod';
+import type { z } from 'zod';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,6 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
-import type { ChannelSchema } from '@/idb/db-schema';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
 import { channelTitleOpenStatus$ } from '../header/ChannelTitle';

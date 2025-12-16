@@ -1,5 +1,4 @@
 import type { UIMessage } from 'ai';
-import type { DBSchema } from 'idb';
 import z from 'zod';
 
 // ** Channel Schema ** //
@@ -7,10 +6,12 @@ export const ReasoningEffortSchema = z
   .enum(['none', 'low', 'medium', 'high'])
   .describe('Reasoning effort')
   .default('low');
+
 export const ReasoningSummarySchema = z
   .boolean()
   .describe('Whether to include reasoning summary')
   .default(false);
+
 export const ChannelSchema = z.object({
   id: z.string(),
   /**
@@ -41,36 +42,28 @@ export const ChannelSchema = z.object({
     .describe('Pinned status of the channel'),
 });
 
+export type Channel = z.infer<typeof ChannelSchema>;
+
 // ** Config Schema ** //
 export const ConfigSchema = z.object({
   lastSelectedChannelId: z.string().optional(),
   apiKeys: z.record(z.string(), z.string()),
 });
+
+export type Config = z.infer<typeof ConfigSchema>;
+
 export const DB_CONFIG_KEY = 'userConfig';
 
-// ** Message Schema ** //
+// ** Message Schema (type only) ** //
 export type DB_MESSAGE = UIMessage & { channelId: string };
 
-// ** DB Schema ** //
+// ** Shared DB Constants ** //
 export const DB_NAME = 'ALLIN';
-export enum DB_STORE {
-  CHANNELS = 'channels',
-  MESSAGES = 'messages',
-  CONFIG = 'config',
-}
 
-export interface ALLIN_DB extends DBSchema {
-  [DB_STORE.CHANNELS]: {
-    key: string;
-    value: z.infer<typeof ChannelSchema>;
-  };
-  [DB_STORE.MESSAGES]: {
-    key: string;
-    value: DB_MESSAGE;
-    indexes: { channelId: string };
-  };
-  [DB_STORE.CONFIG]: {
-    key: typeof DB_CONFIG_KEY;
-    value: z.infer<typeof ConfigSchema>;
-  };
-}
+export const DB_STORE = {
+  CHANNELS: 'channels',
+  MESSAGES: 'messages',
+  CONFIG: 'config',
+} as const;
+
+export type DBStoreName = (typeof DB_STORE)[keyof typeof DB_STORE];

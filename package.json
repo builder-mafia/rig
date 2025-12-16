@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "turbo dev",
+    "dev:app": "pnpm --filter 'desktop-app' tauri dev",
     "start": "turbo start",
     "build": "turbo build",
     "test": "pnpm --filter 'web' test:watch",

@@ -1,5 +1,6 @@
+import { DB_STORE, type DBStoreName } from '@allin/db-schema';
 import type { IDBPTransaction } from 'idb';
-import { type ALLIN_DB, DB_STORE } from '../db-schema';
+import type { ALLIN_DB } from '../idb-schema';
 
 /**
  * v3 migration
@@ -7,7 +8,7 @@ import { type ALLIN_DB, DB_STORE } from '../db-schema';
  * - add reasoningSummary (default: false)
  */
 export const migrateToV3 = async (
-  transaction: IDBPTransaction<ALLIN_DB, DB_STORE[], 'versionchange'>,
+  transaction: IDBPTransaction<ALLIN_DB, DBStoreName[], 'versionchange'>,
 ) => {
   const channelStore = transaction.objectStore(DB_STORE.CHANNELS);
   const channels = await channelStore.getAll();
