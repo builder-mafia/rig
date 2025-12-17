@@ -1,4 +1,4 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
 import type {
   ReasoningEffortSchema,
   ReasoningSummarySchema,
@@ -21,6 +21,11 @@ export interface LLMProvider {
 
   validateConnection: () => Promise<boolean>;
   getModel: (modelId: string) => LanguageModelV2;
+  /**
+   * If the provider supports TTS (text-to-speech), return the SpeechModelV2.
+   * Otherwise, return null.
+   */
+  getSpeechModel: (modelId: string) => SpeechModelV2 | null;
   createTransport: (
     model: LanguageModelV2,
     options?: ModelResponseOptions,

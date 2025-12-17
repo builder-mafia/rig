@@ -2,7 +2,7 @@ import {
   createOpenAI,
   type OpenAIResponsesProviderOptions,
 } from '@ai-sdk/openai';
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
 import {
   type ChatTransport,
   convertToModelMessages,
@@ -21,6 +21,7 @@ type OpenAiProviderOptions = {
 export class OpenAiProvider implements LLMProvider {
   readonly name = 'openai';
   private apiKey: string;
+  private client: ReturnType<typeof createOpenAI>;
   readonly responseOptionAdaptor: ModelResponseOptionAdaptor<OpenAIResponsesProviderOptions>;
 
   /**
@@ -28,6 +29,7 @@ export class OpenAiProvider implements LLMProvider {
    */
   constructor({ apiKey }: OpenAiProviderOptions) {
     this.apiKey = apiKey;
+    this.client = createOpenAI({ apiKey: this.apiKey });
     this.responseOptionAdaptor = new OpenAiResponseOptionAdaptor();
   }
 
@@ -52,7 +54,11 @@ export class OpenAiProvider implements LLMProvider {
   public getModel(modelId: string): LanguageModelV2 {
     // throw error if modelId is not valid
     const parsedModelId: OpenAiModelId = OpenAiModelIdSchema.parse(modelId);
-    return createOpenAI({ apiKey: this.apiKey })(parsedModelId);
+    return this.client(parsedModelId);
+  }
+
+  public getSpeechModel(modelId: string): SpeechModelV2 {
+    return this.client.speech(modelId);
   }
 
   public createTransport(

@@ -2,7 +2,7 @@ import {
   createGoogleGenerativeAI,
   type GoogleGenerativeAIProviderOptions,
 } from '@ai-sdk/google';
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
 import {
   type ChatTransport,
   convertToModelMessages,
@@ -21,10 +21,12 @@ type GoogleProviderOptions = {
 export class GoogleProvider implements LLMProvider {
   readonly name = 'google';
   private apiKey: string;
+  private client: ReturnType<typeof createGoogleGenerativeAI>;
   readonly responseOptionAdaptor: ModelResponseOptionAdaptor<GoogleGenerativeAIProviderOptions>;
 
   constructor({ apiKey }: GoogleProviderOptions) {
     this.apiKey = apiKey;
+    this.client = createGoogleGenerativeAI({ apiKey: this.apiKey });
     this.responseOptionAdaptor = new GoogleResponseOptionAdaptor();
   }
 
@@ -46,7 +48,11 @@ export class GoogleProvider implements LLMProvider {
   public getModel(modelId: string): LanguageModelV2 {
     // throw error if modelId is not valid
     const parsedModelId: GoogleAiModelId = GoogleAiModelIdSchema.parse(modelId);
-    return createGoogleGenerativeAI({ apiKey: this.apiKey })(parsedModelId);
+    return this.client(parsedModelId);
+  }
+
+  public getSpeechModel(modelId: string): null {
+    return null;
   }
 
   public createTransport(

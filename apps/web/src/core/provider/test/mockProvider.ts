@@ -42,6 +42,10 @@ class MockProvider implements LLMProvider {
     });
   }
 
+  getSpeechModel(): null {
+    return null;
+  }
+
   createTransport(model: LanguageModelV2): ChatTransport<UIMessage> {
     return {
       sendMessages: async ({ messages }) => {
