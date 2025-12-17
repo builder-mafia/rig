@@ -9,6 +9,11 @@
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build"
   },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:ALLIN.sqlite"]
+    }
+  },
   "app": {
     "windows": [
       {
