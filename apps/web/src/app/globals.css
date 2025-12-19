@@ -1,7 +1,8 @@
-@import "@allin/ui/theme.css";
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@allin/ui/theme.css";
 @plugin "@tailwindcss/typography";
+@source "../../node_modules/@allin/ui/dist/**/*.js";
 
 @layer base {
   * {
