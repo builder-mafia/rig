@@ -5,22 +5,22 @@ import { useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
-import { Button } from '@/components/ui/button';
+import { Button } from '@allin/ui';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@allin/ui';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/ui/password-input';
+} from '@allin/ui';
+import { Label } from '@allin/ui';
+import { PasswordInput } from '@allin/ui';
 import {
   type LLMProviderName,
   LLMProviderNameSchema,

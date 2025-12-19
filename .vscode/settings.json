@@ -33,5 +33,7 @@
   "hide-files.files": [],
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
+  // rust analyzer path settings.
+  "rust-analyzer.linkedProjects": ["apps/desktop-app/src-tauri/Cargo.toml"]
 }

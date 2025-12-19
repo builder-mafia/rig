@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@allin/ui';
 
 export const ChattingSuspenseFallbackView = () => {
   return (
