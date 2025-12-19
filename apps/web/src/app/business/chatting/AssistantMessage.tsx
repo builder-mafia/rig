@@ -1,7 +1,7 @@
 import type { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { AnimatePresence, motion } from 'motion/react';
-import { Spinner } from '@/components/ui/spinner';
+import { Spinner } from '@allin/ui';
 import { getAssistantMessageText } from '@/core/chat/message-util';
 import { assert } from '@/utils/assert';
 import { cn } from '@/utils/cn';

@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import z from 'zod';
-import { Button } from '@/components/ui/button';
+import { Button } from '@allin/ui';
 import {
   Card,
   CardContent,
@@ -13,17 +13,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/ui/password-input';
+} from '@allin/ui';
+import { Dialog, DialogContent, DialogTitle } from '@allin/ui';
+import { Label } from '@allin/ui';
+import { PasswordInput } from '@allin/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@allin/ui';
 import {
   type LLMProviderName,
   LLMProviderNameSchema,

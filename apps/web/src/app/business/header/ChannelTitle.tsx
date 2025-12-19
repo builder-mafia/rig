@@ -1,13 +1,13 @@
 import { useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Subject } from 'rxjs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@allin/ui';
+import { Input } from '@allin/ui';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@allin/ui';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';

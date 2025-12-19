@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@allin/ui';
 import { ModalRegistry } from './business/modal/ModalRegistry';
 import { RootErrorFallback } from './business/RootErrorFallback';
 

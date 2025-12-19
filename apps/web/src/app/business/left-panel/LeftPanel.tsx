@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Sidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Sidebar } from '@allin/ui';
+import { Skeleton } from '@allin/ui';
 import { ChannelList } from './ChannelList';
 
 export const LeftPanel = () => {

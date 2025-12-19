@@ -1,12 +1,12 @@
 import { Settings2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Button } from '@allin/ui';
+import { Label } from '@allin/ui';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { RadioGroup } from '@/components/ui/radio-group';
+} from '@allin/ui';
+import { RadioGroup } from '@allin/ui';
 import type { ReasoningEffort } from '@/core/provider/LLMProvider';
 import { PromptTextArea } from './PromptTextArea';
 

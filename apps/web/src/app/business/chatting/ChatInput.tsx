@@ -3,10 +3,10 @@ import { useSetAtom } from 'jotai';
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ButtonGroup } from '@/components/ui/button-group';
-import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@allin/ui';
+import { ButtonGroup } from '@allin/ui';
+import { Kbd, KbdGroup } from '@allin/ui';
+import { Textarea } from '@allin/ui';
 import { ChatFacadeManager } from '@/core/chat/ChatFacadeManager';
 import { generateUIMessage } from '@/core/chat/message-util';
 import {

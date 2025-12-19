@@ -3,14 +3,14 @@ import { ChevronDown, KeyRound, MessageCirclePlus } from 'lucide-react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
-import { Button } from '@/components/ui/button';
+import { Button } from '@allin/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@allin/ui';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';

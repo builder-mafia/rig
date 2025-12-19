@@ -18,6 +18,7 @@
     "@ai-sdk/provider": "catalog:ai",
     "@ai-sdk/provider-utils": "catalog:ai",
     "@ai-sdk/react": "catalog:ai",
+    "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@allin/auto-clipboard-copy-plugin": "workspace:*",
     "@allin/plugin-sdk": "workspace:*",

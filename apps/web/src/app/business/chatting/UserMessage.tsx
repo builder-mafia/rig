@@ -1,5 +1,5 @@
 import type { UIMessage } from 'ai';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@allin/ui';
 import { getUserMessageText } from '@/core/chat/message-util';
 import { assert } from '@/utils/assert';
 

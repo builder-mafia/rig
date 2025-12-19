@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@allin/ui';
+import { Textarea } from '@allin/ui';
 
 type PromptTextAreaProps = {
   value: string;

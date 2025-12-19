@@ -1,6 +1,6 @@
 import { useSetAtom } from 'jotai';
 import { SidebarIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@allin/ui';
 import { leftPanelAtoms } from '../left-panel/left-panel-store';
 
 export const LeftHeader = () => {
