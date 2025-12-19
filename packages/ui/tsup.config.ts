@@ -7,4 +7,5 @@ export default defineConfig(options => ({
   format: ['cjs', 'esm'],
   dts: true,
   minify: !options.watch,
+  publicDir: 'src/theme',
 }));
