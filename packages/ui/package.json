@@ -21,13 +21,21 @@
     "dev": "tsup --watch",
     "build": "tsup"
   },
+  "peerDependencies": {
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19"
+  },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "clsx": "^2.1.1",
     "tailwind-merge": "catalog:tw"
   },
   "devDependencies": {
-    "typescript": "catalog:types",
-    "tsup": "catalog:build",
+    "@tailwindcss/postcss": "catalog:tw",
     "tailwindcss": "catalog:tw",
-    "@tailwindcss/postcss": "catalog:tw"
+    "tsup": "catalog:build",
+    "typescript": "catalog:types",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19"
   }
 }
