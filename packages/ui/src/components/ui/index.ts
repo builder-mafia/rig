@@ -1,4 +1,3 @@
-export * from './InfoTooltip';
 export * from './accordion';
 export * from './alert-dialog';
 export * from './avatar';
@@ -13,6 +12,7 @@ export * from './dialog';
 export * from './divider';
 export * from './dropdown-menu';
 export * from './field';
+export * from './InfoTooltip';
 export * from './input';
 export * from './item';
 export * from './kbd';
@@ -37,4 +37,3 @@ export * from './tool-toggle-button';
 export * from './tooltip';
 export * from './typography-inline-code';
 export * from './typographyH3';
-

@@ -11,4 +11,3 @@ export function mergeRefs<T>(...refs: (ForwardedRef<T> | undefined | null)[]) {
     });
   };
 }
-
