@@ -1,10 +1,10 @@
-import type { UIMessage } from 'ai';
 import {
   type AssistantMessage,
   isAssistantMessage,
   isUserMessage,
   type UserMessage,
-} from '@/core/chat/message-util';
+} from '@allin/chat';
+import type { UIMessage } from 'ai';
 
 export type Thread = {
   userMessage: UserMessage;

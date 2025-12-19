@@ -7,12 +7,12 @@ import type {
   UIMessage,
 } from 'ai';
 import { BehaviorSubject, type Observable, Subject } from 'rxjs';
-import type { Setter } from '@/utils/setter';
 import type {
   LLMProvider,
   ModelResponseOptions,
 } from '../provider/LLMProvider';
-import { UIMessageStore } from '../UiMessageStore';
+import type { Setter } from '../utils/setter';
+import { UIMessageStore } from './UiMessageStore';
 
 type CreateChatFacadeParams = {
   id: string;

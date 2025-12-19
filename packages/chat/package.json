@@ -1,0 +1,60 @@
+{
+  "name": "@allin/chat",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Chat for ALLIN",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "pnpm run generate:model-spec && tsup --watch",
+    "build": "pnpm run generate:model-spec && tsup",
+    "generate:model-spec": "tsx src/provider/google/script/fetch-google-model-spec.ts && tsx src/provider/openai/script/fetch-openai-model-spec.ts",
+    "ts-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest run --watch"
+  },
+  "peerDependencies": {
+    "ai": "catalog:ai",
+    "zod": "catalog:utils",
+    "@ai-sdk/react": "catalog:ai",
+    "@ai-sdk/provider": "catalog:ai",
+    "@ai-sdk/provider-utils": "catalog:ai",
+    "@ai-sdk/google": "catalog:ai",
+    "@ai-sdk/openai": "catalog:ai",
+    "rxjs": "catalog:utils",
+    "uuid": "catalog:utils",
+    "ts-pattern": "catalog:utils"
+  },
+  "devDependencies": {
+    "typescript": "catalog:types",
+    "tsup": "catalog:build",
+    "@allin/db-schema": "workspace:*",
+    "ai": "catalog:ai",
+    "@ai-sdk/react": "catalog:ai",
+    "@ai-sdk/provider": "catalog:ai",
+    "@ai-sdk/provider-utils": "catalog:ai",
+    "@ai-sdk/google": "catalog:ai",
+    "@ai-sdk/openai": "catalog:ai",
+    "ts-pattern": "catalog:utils",
+    "zod": "catalog:utils",
+    "vitest": "catalog:test",
+    "rxjs": "catalog:utils",
+    "uuid": "catalog:utils"
+  }
+}

@@ -1,6 +1,6 @@
-import type { UIMessage } from 'ai';
+import { getUserMessageText } from '@allin/chat';
 import { Badge } from '@allin/ui';
-import { getUserMessageText } from '@/core/chat/message-util';
+import type { UIMessage } from 'ai';
 import { assert } from '@/utils/assert';
 
 type UserMessageProps = {

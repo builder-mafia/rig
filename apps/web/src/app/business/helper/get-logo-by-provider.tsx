@@ -1,6 +1,6 @@
+import type { LLMProviderName } from '@allin/chat';
 import { Google, OpenAI } from '@lobehub/icons';
 import { match } from 'ts-pattern';
-import type { LLMProviderName } from '@/core/provider/all-models';
 
 export const getLogoByProvider = (
   providerName: LLMProviderName,

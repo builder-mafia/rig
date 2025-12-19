@@ -7,10 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "check-ts": "tsc --noEmit",
     "test": "vitest run",
-    "ts-check": "tsc --noEmit",
-    "test:watch": "vitest run --watch",
-    "generate:model-spec": "tsx src/core/provider/google/script/fetch-google-model-spec.ts && tsx src/core/provider/openai/script/fetch-openai-model-spec.ts"
+    "test:watch": "vitest run --watch"
   },
   "dependencies": {
     "@ai-sdk/google": "catalog:ai",
@@ -18,6 +17,7 @@
     "@ai-sdk/provider": "catalog:ai",
     "@ai-sdk/provider-utils": "catalog:ai",
     "@ai-sdk/react": "catalog:ai",
+    "@allin/chat": "workspace:*",
     "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@allin/auto-clipboard-copy-plugin": "workspace:*",
@@ -78,9 +78,9 @@
     "shiki": "^3.6.0",
     "sonner": "^2.0.5",
     "tailwind-merge": "catalog:tw",
-    "ts-pattern": "^5.9.0",
+    "ts-pattern": "catalog:utils",
     "usehooks-ts": "catalog:utils",
-    "uuid": "^11.1.0",
+    "uuid": "catalog:utils",
     "zod": "catalog:utils"
   },
   "devDependencies": {

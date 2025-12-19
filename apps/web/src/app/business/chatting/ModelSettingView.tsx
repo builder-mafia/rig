@@ -1,13 +1,13 @@
-import { Settings2 } from 'lucide-react';
-import { Button } from '@allin/ui';
-import { Label } from '@allin/ui';
+import type { ReasoningEffort } from '@allin/chat';
 import {
+  Button,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  RadioGroup,
 } from '@allin/ui';
-import { RadioGroup } from '@allin/ui';
-import type { ReasoningEffort } from '@/core/provider/LLMProvider';
+import { Settings2 } from 'lucide-react';
 import { PromptTextArea } from './PromptTextArea';
 
 type ModelSettingViewProps = {

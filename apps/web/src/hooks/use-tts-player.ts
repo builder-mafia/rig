@@ -1,10 +1,12 @@
 'use client';
 
+import {
+  type LLMProviderName,
+  providerRegistry,
+  speak as speakAudio,
+} from '@allin/chat';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
-import type { LLMProviderName } from '@/core/provider/all-models';
-import { providerRegistry } from '@/core/provider/providerRegistry';
-import { speak as speakAudio } from '@/core/speech/speak';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';

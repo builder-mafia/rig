@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { BehaviorSubject, type Observable } from 'rxjs';
-import { type Setter, setValueOrFn } from '@/utils/setter';
+import { type Setter, setValueOrFn } from '../utils/setter';
 
 /**
  * This class stores displayed messages.

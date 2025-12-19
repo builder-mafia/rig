@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { v4 } from 'uuid';
-import { assert } from '@/utils/assert';
+import { assert } from '../utils/assert';
 
 export type UserMessage = UIMessage & {
   role: 'user';

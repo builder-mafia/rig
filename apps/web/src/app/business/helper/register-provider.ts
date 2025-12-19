@@ -1,13 +1,13 @@
+import {
+  GoogleProvider,
+  type LLMProviderName,
+  LLMProviderNameSchema,
+  OpenAiProvider,
+  providerRegistry,
+} from '@allin/chat';
 import type { ConfigSchema } from '@allin/db-schema';
 import { match } from 'ts-pattern';
 import type { z } from 'zod';
-import {
-  type LLMProviderName,
-  LLMProviderNameSchema,
-} from '@/core/provider/all-models';
-import { GoogleProvider } from '@/core/provider/google/GoogleProvider';
-import { OpenAiProvider } from '@/core/provider/openai/OpenAiProvider';
-import { providerRegistry } from '@/core/provider/providerRegistry';
 
 export const registerProvider = (config: z.infer<typeof ConfigSchema>) => {
   const { apiKeys } = config;

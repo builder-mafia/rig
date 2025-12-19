@@ -1,11 +1,8 @@
+import { AllModelIdsSchema, LLMProviderNameSchema } from '@allin/chat';
 import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
 import type { UIMessage } from 'ai';
 import { atom } from 'jotai';
 import z from 'zod';
-import {
-  AllModelIdsSchema,
-  LLMProviderNameSchema,
-} from '@/core/provider/all-models';
 import { assert } from '@/utils/assert';
 import { DB } from './db';
 

@@ -1,3 +1,22 @@
+import {
+  type LLMProviderName,
+  LLMProviderNameSchema,
+  validateApiKey,
+} from '@allin/chat';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  Label,
+  PasswordInput,
+} from '@allin/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSetAtom } from 'jotai';
 import { Loader2, Plus } from 'lucide-react';
@@ -5,27 +24,6 @@ import { useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
-import { Button } from '@allin/ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@allin/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@allin/ui';
-import { Label } from '@allin/ui';
-import { PasswordInput } from '@allin/ui';
-import {
-  type LLMProviderName,
-  LLMProviderNameSchema,
-} from '@/core/provider/all-models';
-import { validateApiKey } from '@/core/provider/validate-apikey';
 import { DB } from '@/idb/db';
 import { dbAtoms } from '@/idb/db-store';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';
@@ -96,7 +94,7 @@ export const ApiKeyConfigModal = ({
 
       void setInitialValue();
     }
-  }, [open, setValue]);
+  }, [open, reset, setValue]);
 
   const handleValidateAndSave =
     (providerName: LLMProviderName) => async (values: FormValuesType) => {
@@ -139,7 +137,7 @@ export const ApiKeyConfigModal = ({
           position: 'top-center',
           duration: 3000,
         });
-      } catch (err) {
+      } catch {
         setError(providerName, {
           message: 'Invalid API key. Please check your key and try again.',
         });

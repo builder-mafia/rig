@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockProvider } from '@/core/provider/test/mockProvider';
+import { createMockProvider } from '../../provider/test/mockProvider';
 import { ChatFacade } from '../ChatFacade';
 import { ChatFacadeManager } from '../ChatFacadeManager';
 

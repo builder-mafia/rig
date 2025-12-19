@@ -1,3 +1,28 @@
+import {
+  type LLMProviderName,
+  LLMProviderNameSchema,
+  MODEL_IDS_PER_PROVIDER,
+  validateApiKey,
+} from '@allin/chat';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Label,
+  PasswordInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@allin/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { sample } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
@@ -5,33 +30,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import z from 'zod';
-import { Button } from '@allin/ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@allin/ui';
-import { Dialog, DialogContent, DialogTitle } from '@allin/ui';
-import { Label } from '@allin/ui';
-import { PasswordInput } from '@allin/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@allin/ui';
-import {
-  type LLMProviderName,
-  LLMProviderNameSchema,
-  MODEL_IDS_PER_PROVIDER,
-} from '@/core/provider/all-models';
-import { validateApiKey } from '@/core/provider/validate-apikey';
 import { dbAtoms } from '@/idb/db-store';
-import { DB } from '../../../idb/db';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';
 
 const FormValuesSchema = z.object({

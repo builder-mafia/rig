@@ -1,14 +1,16 @@
+import {
+  ChatFacade,
+  ChatFacadeManager,
+  generateUIMessage,
+  LLMProviderNameSchema,
+  providerRegistry,
+} from '@allin/chat';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { getDefaultStore, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
-import { generateUIMessage } from '@/core/chat/message-util';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
-import { LLMProviderNameSchema } from '../provider/all-models';
-import { providerRegistry } from '../provider/providerRegistry';
-import { ChatFacade } from './ChatFacade';
-import { ChatFacadeManager } from './ChatFacadeManager';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.

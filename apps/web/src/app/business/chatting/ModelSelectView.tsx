@@ -1,4 +1,9 @@
 import {
+  type AllModelIds,
+  type LLMProviderName,
+  MODEL_IDS_PER_PROVIDER,
+} from '@allin/chat';
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -7,11 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@allin/ui';
-import {
-  type AllModelIds,
-  type LLMProviderName,
-  MODEL_IDS_PER_PROVIDER,
-} from '@/core/provider/all-models';
 
 type ModelSelectViewProps = {
   selectedModelId: AllModelIds;

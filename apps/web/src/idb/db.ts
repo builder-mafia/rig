@@ -1,3 +1,4 @@
+import type { LLMProviderName } from '@allin/chat';
 import {
   type ChannelSchema,
   ConfigSchema,
@@ -10,7 +11,6 @@ import {
 import type { UIMessage } from 'ai';
 import { type IDBPDatabase, openDB } from 'idb';
 import type { z } from 'zod';
-import type { LLMProviderName } from '@/core/provider/all-models';
 import type { ALLIN_DB } from './idb-schema';
 import { initDb } from './migrations/initDb';
 import { migrateToV3 } from './migrations/migrateToV3';

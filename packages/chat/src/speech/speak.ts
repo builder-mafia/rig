@@ -1,7 +1,7 @@
 'use client';
 
 import { experimental_generateSpeech as generateSpeech } from 'ai';
-import type { LLMProvider } from '@/core/provider/LLMProvider';
+import type { LLMProvider } from '../provider/LLMProvider';
 
 export type SpeakOptions = {
   text: string;
