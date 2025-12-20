@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { type ModelSpec, ModelSpecSchema } from '../../model-spec';
 import { type GoogleAiModelId, GoogleAiModelIdSchema } from '../google-models';
 
@@ -11,6 +12,10 @@ type ModelsApiResponse = {
     models: Record<string, ModelSpec>;
   };
 };
+
+// ESM doesn't provide __dirname/__filename; derive them from import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function generateGoogleModelSpec(): Promise<void> {
   // 1. fetch models JSON from https://models.dev/api.json

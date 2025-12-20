@@ -27,7 +27,7 @@ export function RootErrorFallback({
         }
 
         await getDefaultStore().set(
-          dbAtoms.selectedChannelIdAtom,
+          dbAtoms.updateSelectedChannelIdAtom,
           lastestChannel.id,
         );
       }

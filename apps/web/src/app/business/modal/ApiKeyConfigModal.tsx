@@ -72,7 +72,7 @@ export const ApiKeyConfigModal = ({
     createInitialStatusMap(),
   );
 
-  const setConfig = useSetAtom(dbAtoms.configAtom);
+  const updateConfig = useSetAtom(dbAtoms.updateConfigAtom);
 
   useLayoutEffect(() => {
     if (open) {
@@ -127,7 +127,7 @@ export const ApiKeyConfigModal = ({
 
         isSuccessful = true;
 
-        await setConfig({
+        await updateConfig({
           apiKeys: {
             [providerName]: apiKey,
           },

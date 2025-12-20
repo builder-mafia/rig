@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "app-frontend:dev": "next dev",
+    "app-frontend:build": "next build",
+    "app-frontend:start": "next start",
     "lint": "eslint",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@allin/db-atom": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@tauri-apps/plugin-sql": "^2.3.1",
     "next": "16.0.10",

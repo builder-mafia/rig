@@ -19,7 +19,9 @@ import { modalManager } from '../modal/modalManager';
 
 export const RightHeader = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
-  const setConfig = useSetAtom(dbAtoms.configAtom);
+  const updateSelectedChannelId = useSetAtom(
+    dbAtoms.updateSelectedChannelIdAtom,
+  );
   const createChannel = useSetAtom(dbAtoms.createChannelAtom);
 
   assert(selectedChannel, 'RightHeader: selectedChannel is not found');
@@ -46,9 +48,7 @@ export const RightHeader = () => {
         reasoningSummary: false,
       });
 
-      await setConfig({
-        lastSelectedChannelId: newChannelId,
-      });
+      await updateSelectedChannelId(newChannelId);
     } catch (error) {
       toast.error('Failed to create new channel.', {
         position: 'top-center',
@@ -57,7 +57,7 @@ export const RightHeader = () => {
       console.error(error);
       return;
     }
-  }, [createChannel, selectedChannel, setConfig]);
+  }, [createChannel, selectedChannel, updateSelectedChannelId]);
 
   return (
     <div className='fixed px-1 top-2 right-4 flex rounded-2xl dark:bg-input/30 dark:border-input z-30'>

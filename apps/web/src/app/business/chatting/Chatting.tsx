@@ -1,4 +1,6 @@
+import type { ConfigSchema } from '@allin/db-schema';
 import { useEffect, useMemo } from 'react';
+import type z from 'zod';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
@@ -15,7 +17,7 @@ export const Chatting = () => {
 
   assert(selectedChannelId, 'Chatting: selectedChannelId is not found.');
 
-  registerProvider(config);
+  registerProvider(config as z.infer<typeof ConfigSchema>);
 
   const { uiMessages, status, setSystemPrompt } = useChat({
     id: selectedChannelId,

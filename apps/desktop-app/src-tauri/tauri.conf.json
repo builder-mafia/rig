@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
+    "beforeDevCommand": "pnpm app-frontend:dev",
+    "beforeBuildCommand": "pnpm app-frontend:build"
   },
   "plugins": {
     "sql": {

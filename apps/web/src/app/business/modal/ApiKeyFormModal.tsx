@@ -57,7 +57,7 @@ export const ApiKeyFormModal = ({
     },
   });
 
-  const setConfig = useSetAtom(dbAtoms.configAtom);
+  const updateConfig = useSetAtom(dbAtoms.updateConfigAtom);
   const createChannel = useSetAtom(dbAtoms.createChannelAtom);
 
   const onSubmit = async (values: FormValuesType) => {
@@ -82,7 +82,7 @@ export const ApiKeyFormModal = ({
       reasoningSummary: false,
     });
 
-    await setConfig({
+    await updateConfig({
       lastSelectedChannelId: channelId,
       apiKeys: {
         [providerName]: apiKey,

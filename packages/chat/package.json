@@ -55,6 +55,7 @@
     "zod": "catalog:utils",
     "vitest": "catalog:test",
     "rxjs": "catalog:utils",
-    "uuid": "catalog:utils"
+    "uuid": "catalog:utils",
+    "tsx": "^4.21.0"
   }
 }

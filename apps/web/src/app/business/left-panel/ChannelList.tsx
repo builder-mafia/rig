@@ -1,4 +1,19 @@
 import type { ChannelSchema } from '@allin/db-schema';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenuAction,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@allin/ui';
 import { sortBy } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import {
@@ -11,23 +26,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { z } from 'zod';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@allin/ui';
-import {
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@allin/ui';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
@@ -52,7 +50,9 @@ export const isGhostChannel = (channel: z.infer<typeof ChannelSchema>) => {
 export const ChannelList = () => {
   const allChannels = useSwrAtomValue(dbAtoms.allChannelsAtom);
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
-  const setSelectedChannelId = useSetAtom(dbAtoms.selectedChannelIdAtom);
+  const updateSelectedChannelId = useSetAtom(
+    dbAtoms.updateSelectedChannelIdAtom,
+  );
   const deleteChannel = useSetAtom(dbAtoms.deleteChannelAtom);
   const deleteMessagesByChannelId = useSetAtom(
     dbAtoms.deleteMessagesByChannelIdAtom,
@@ -68,7 +68,7 @@ export const ChannelList = () => {
     // delete previous channel if it is ghost channel
     const deletePrevChannel = isGhostChannel(selectedChannel);
 
-    await setSelectedChannelId(channelId);
+    await updateSelectedChannelId(channelId);
 
     if (deletePrevChannel) {
       await deleteChannel(selectedChannel.id);
@@ -94,7 +94,7 @@ export const ChannelList = () => {
         return;
       }
 
-      await setSelectedChannelId(nextChannel.id);
+      await updateSelectedChannelId(nextChannel.id);
     }
 
     await deleteChannel(channelId);
