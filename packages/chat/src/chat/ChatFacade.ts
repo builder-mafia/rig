@@ -11,7 +11,7 @@ import type {
   LLMProvider,
   ModelResponseOptions,
 } from '../provider/LLMProvider';
-import type { UIMessageMetadata } from '../provider/metadata';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { Setter } from '../utils/setter';
 import { UIMessageStore } from './UiMessageStore';
 

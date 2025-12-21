@@ -6,7 +6,7 @@ import type {
 import type { ChatTransport, UIMessage } from 'ai';
 import type { z } from 'zod';
 import type { ModelResponseOptionAdaptor } from './ModelResponseOptionAdaptor';
-import type { UIMessageMetadata } from './metadata';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 
 export type ReasoningEffort = z.infer<typeof ReasoningEffortSchema>;
 export type ReasoningSummary = z.infer<typeof ReasoningSummarySchema>;

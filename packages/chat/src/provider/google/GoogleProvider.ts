@@ -9,9 +9,9 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
-import type { UIMessageMetadata } from '../metadata';
 import { GoogleResponseOptionAdaptor } from './GoogleResponseOptionAdaptor';
 import { type GoogleAiModelId, GoogleAiModelIdSchema } from './google-models';
 

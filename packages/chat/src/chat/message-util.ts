@@ -1,6 +1,6 @@
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import { v4 } from 'uuid';
-import type { UIMessageMetadata } from '../provider/metadata';
 import { assert } from '../utils/assert';
 
 type ChatUiMessage = UIMessage<UIMessageMetadata>;
