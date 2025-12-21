@@ -9,6 +9,7 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { OpenAiResponseOptionAdaptor } from './OpenAiResponseOptionAdaptor';
@@ -64,7 +65,7 @@ export class OpenAiProvider implements LLMProvider {
   public createTransport(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
-  ): ChatTransport<UIMessage> {
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
     const providerName = this.name;
 
@@ -92,7 +93,7 @@ export class OpenAiProvider implements LLMProvider {
                 modelId,
                 provider: providerName,
                 createdAt: Date.now(),
-              };
+              } as UIMessageMetadata;
             } else if (part.type === 'finish') {
               return {
                 inputTokens: part.totalUsage.inputTokens,
@@ -100,7 +101,7 @@ export class OpenAiProvider implements LLMProvider {
                 reasoningTokens: part.totalUsage.reasoningTokens,
                 cachedInputTokens: part.totalUsage.cachedInputTokens,
                 totalTokens: part.totalUsage.totalTokens,
-              };
+              } as UIMessageMetadata;
             }
           },
         });

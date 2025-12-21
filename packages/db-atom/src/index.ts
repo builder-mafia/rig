@@ -4,6 +4,7 @@ import {
   LLMProviderNameSchema,
 } from '@allin/chat';
 import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import { atom } from 'jotai';
 import type { z } from 'zod';
@@ -24,7 +25,10 @@ export type AllinDbAdapter = {
   updateConfig: (config: Partial<Config>) => Promise<void>;
 
   getMessages: () => Promise<DB_MESSAGE[]>;
-  addMessage: (channelId: string, message: UIMessage) => Promise<void>;
+  addMessage: (
+    channelId: string,
+    message: UIMessage<UIMessageMetadata>,
+  ) => Promise<void>;
   deleteMessagesByChannelId: (channelId: string) => Promise<void>;
 };
 
@@ -150,7 +154,12 @@ export function createDbAtoms(db: AllinDbAdapter) {
 
   const addMessageAtom = atom(
     null,
-    async (_, set, channelId: string, message: UIMessage) => {
+    async (
+      _,
+      set,
+      channelId: string,
+      message: UIMessage<UIMessageMetadata>,
+    ) => {
       await db.addMessage(channelId, message);
       set(allMessagesRefreshAtom, prev => prev + 1);
     },

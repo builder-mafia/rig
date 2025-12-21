@@ -21,6 +21,7 @@
     "@allin/db-atom": "workspace:*",
     "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",
+    "@allin/message-metadata-schema": "workspace:*",
     "@allin/auto-clipboard-copy-plugin": "workspace:*",
     "@allin/plugin-sdk": "workspace:*",
     "@gsap/react": "catalog:animation",

@@ -162,7 +162,7 @@ const addMessage = async (channelId: string, message: UIMessage) => {
   return db.add(DB_STORE.MESSAGES, {
     ...message,
     channelId,
-  } satisfies DB_MESSAGE);
+  } as DB_MESSAGE);
 };
 
 const deleteMessage = async (messageId: string) => {

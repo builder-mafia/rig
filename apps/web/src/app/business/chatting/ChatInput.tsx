@@ -7,6 +7,7 @@ import {
   LLMProviderNameSchema,
   type ReasoningEffort,
 } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Button, ButtonGroup, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import type { UIMessage } from 'ai';
 import { useSetAtom } from 'jotai';
@@ -38,7 +39,9 @@ export const ChatInput = () => {
     modelId: selectedChannel.model,
   });
 
-  const sendMessage = (message: UIMessage & { role: 'user' }) => {
+  const sendMessage = (
+    message: UIMessage<UIMessageMetadata> & { role: 'user' },
+  ) => {
     if (!ChatFacadeManager.getInstance().hasChatFacade(selectedChannel.id)) {
       toast.error('Failed to send message.');
       console.error('ChatFacade is not found.');

@@ -11,12 +11,15 @@ import type {
   LLMProvider,
   ModelResponseOptions,
 } from '../provider/LLMProvider';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { Setter } from '../utils/setter';
 import { UIMessageStore } from './UiMessageStore';
 
+type ChatUiMessage = UIMessage<UIMessageMetadata>;
+
 type CreateChatFacadeParams = {
   id: string;
-  messages: UIMessage[];
+  messages: ChatUiMessage[];
   provider: LLMProvider;
   responseOptions: ModelResponseOptions;
   modelId: string;
@@ -25,11 +28,11 @@ type CreateChatFacadeParams = {
 
 export class ChatFacade {
   private id: string;
-  private chat: Chat<UIMessage>;
+  private chat: Chat<ChatUiMessage>;
   /**
    * @description Set messages to Display to the user.
    */
-  private uiMessageStore: UIMessageStore<UIMessage>;
+  private uiMessageStore: UIMessageStore<ChatUiMessage>;
   /**
    * status of the chat.
    * see: https://ai-sdk.dev/docs/ai-sdk-ui/chatbot#status
@@ -43,12 +46,14 @@ export class ChatFacade {
    * current LLM provider and model
    */
 
-  private onData$ = new Subject<Parameters<ChatOnDataCallback<UIMessage>>[0]>();
+  private onData$ = new Subject<
+    Parameters<ChatOnDataCallback<ChatUiMessage>>[0]
+  >();
   private onFinish$ = new Subject<
-    Parameters<ChatOnFinishCallback<UIMessage>>[0]
+    Parameters<ChatOnFinishCallback<ChatUiMessage>>[0]
   >();
   private onError$ = new Subject<Error>();
-  private onBeforeSend$ = new Subject<UIMessage & { role: 'user' }>();
+  private onBeforeSend$ = new Subject<ChatUiMessage & { role: 'user' }>();
 
   private provider: LLMProvider;
   private _isDisposed = false;
@@ -64,7 +69,7 @@ export class ChatFacade {
     messages,
     throttleTime = 50,
   }: CreateChatFacadeParams) {
-    this.uiMessageStore = new UIMessageStore<UIMessage>();
+    this.uiMessageStore = new UIMessageStore<ChatUiMessage>();
     this.id = id;
     this.provider = provider;
     this.responseOptions = responseOptions;
@@ -87,15 +92,15 @@ export class ChatFacade {
     return this.id;
   }
 
-  public getMessages(): UIMessage[] {
+  public getMessages(): ChatUiMessage[] {
     return this.chat.messages;
   }
 
-  public getUiMessages(): UIMessage[] {
+  public getUiMessages(): ChatUiMessage[] {
     return this.uiMessageStore.getUiMessages();
   }
 
-  public getUiMessages$(): Observable<UIMessage[]> {
+  public getUiMessages$(): Observable<ChatUiMessage[]> {
     return this.uiMessageStore.getUiMessages$();
   }
 
@@ -145,15 +150,15 @@ export class ChatFacade {
     return this.provider.name;
   }
 
-  public setUiMessages(setter: Setter<UIMessage[]>) {
+  public setUiMessages(setter: Setter<ChatUiMessage[]>) {
     this.uiMessageStore.setUiMessages(setter);
   }
 
-  public addSystemMessage(message: UIMessage & { role: 'system' }) {
+  public addSystemMessage(message: ChatUiMessage & { role: 'system' }) {
     this.chat.messages = [...this.chat.messages, message];
   }
 
-  public async sendMessage(message: UIMessage & { role: 'user' }) {
+  public async sendMessage(message: ChatUiMessage & { role: 'user' }) {
     if (this._isDisposed) {
       throw new Error('ChatFacade is disposed');
     }
@@ -183,7 +188,7 @@ export class ChatFacade {
     throttleTime,
   }: {
     id: string;
-    messages: UIMessage[];
+    messages: ChatUiMessage[];
     provider: LLMProvider;
     model: LanguageModelV2;
     responseOptions: ModelResponseOptions;

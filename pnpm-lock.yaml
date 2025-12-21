@@ -228,6 +228,9 @@ importers:
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../../packages/db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../../packages/message-metadata-schema
       '@allin/plugin-sdk':
         specifier: workspace:*
         version: link:../../plugins/plugin-sdk
@@ -487,6 +490,9 @@ importers:
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../message-metadata-schema
       ai:
         specifier: catalog:ai
         version: 5.0.100(zod@3.25.76)
@@ -523,6 +529,9 @@ importers:
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../message-metadata-schema
       ai:
         specifier: catalog:ai
         version: 5.0.100(zod@3.25.76)
@@ -543,6 +552,24 @@ importers:
         version: 3.25.76
 
   packages/db-schema:
+    devDependencies:
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../message-metadata-schema
+      ai:
+        specifier: catalog:ai
+        version: 5.0.100(zod@3.25.76)
+      tsup:
+        specifier: catalog:build
+        version: 8.4.0(@swc/core@1.11.21)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.8.3)(yaml@2.8.1)
+      typescript:
+        specifier: catalog:types
+        version: 5.8.3
+      zod:
+        specifier: catalog:utils
+        version: 3.25.76
+
+  packages/message-metadata-schema:
     devDependencies:
       ai:
         specifier: catalog:ai

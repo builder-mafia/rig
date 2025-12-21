@@ -1,3 +1,4 @@
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import z from 'zod';
 
@@ -55,7 +56,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export const DB_CONFIG_KEY = 'userConfig';
 
 // ** Message Schema (type only) ** //
-export type DB_MESSAGE = UIMessage & { channelId: string };
+export type DB_MESSAGE = UIMessage<UIMessageMetadata> & { channelId: string };
 
 // ** Shared DB Constants ** //
 export const DB_NAME = 'ALLIN';

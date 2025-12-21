@@ -1,8 +1,8 @@
 {
-  "name": "@allin/db-schema",
+  "name": "@allin/message-metadata-schema",
   "version": "0.1.0",
   "private": false,
-  "description": "DB Schema for ALLIN",
+  "description": "Shared chat message metadata schema & types for ALLIN",
   "type": "module",
   "files": [
     "dist"
@@ -33,7 +33,6 @@
     "typescript": "catalog:types",
     "tsup": "catalog:build",
     "ai": "catalog:ai",
-    "zod": "catalog:utils",
-    "@allin/message-metadata-schema": "workspace:*"
+    "zod": "catalog:utils"
   }
 }

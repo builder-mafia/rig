@@ -5,6 +5,7 @@ import {
   LLMProviderNameSchema,
   providerRegistry,
 } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { getDefaultStore, useSetAtom } from 'jotai';
@@ -15,7 +16,7 @@ import { assert } from '@/utils/assert';
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
  */
-const EMPTY_MESSAGES: UIMessage[] = [];
+const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
 
 type UseChatOptions = {
   id: string;
@@ -26,10 +27,10 @@ const store = getDefaultStore();
 /**
  * if chatFacade is changed, the uiMessages and status will be updated.
  */
-export const useChat = <UI_MESSAGE extends UIMessage>({
+export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   id,
 }: UseChatOptions) => {
-  const addMessage = useSetAtom(dbAtoms.addMessageAtom);
+  const addMessageOnDB = useSetAtom(dbAtoms.addMessageAtom);
 
   /**
    * useSuspenseQuery's only purpose is to trigger the suspense.
@@ -75,25 +76,32 @@ export const useChat = <UI_MESSAGE extends UIMessage>({
   });
 
   useEffect(() => {
+    // save user message to db before sending
     const subscription1 = chatFacade.getOnBeforeSend$().subscribe(message => {
-      addMessage(chatFacade.getId(), message);
+      addMessageOnDB(chatFacade.getId(), message);
     });
 
+    // save assistant response to db after finishing
     const subscription2 = chatFacade
       .getOnFinish$()
       .subscribe(({ message, isAbort, isDisconnect, isError }) => {
         if (isAbort || isDisconnect || isError) {
+          console.log();
+          const error = chatFacade.getError();
+          console.log(error?.name);
+          console.log(error?.message);
+          console.log(error?.stack);
+          console.log(error?.cause);
           return;
         }
-
-        addMessage(chatFacade.getId(), message);
+        addMessageOnDB(chatFacade.getId(), message);
       });
 
     return () => {
       subscription1.unsubscribe();
       subscription2.unsubscribe();
     };
-  }, [chatFacade, addMessage]);
+  }, [chatFacade, addMessageOnDB]);
 
   const subscribeToMessages = useCallback(
     (onChange: () => void) => {

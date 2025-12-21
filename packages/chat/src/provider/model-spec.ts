@@ -35,6 +35,7 @@ export const ModelModalitiesSchema = z.object({
 export const ModelSpecSchema = z.object({
   id: z.string(),
   name: z.string(),
+  family: z.string().optional(),
   attachment: z.boolean(),
   reasoning: z.boolean(),
   tool_call: z.boolean(),

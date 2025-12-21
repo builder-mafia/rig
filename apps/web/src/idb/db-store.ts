@@ -1,4 +1,5 @@
 import { type AllinDbAdapter, createDbAtoms } from '@allin/db-atom';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import { DB } from './db';
 
@@ -10,7 +11,10 @@ const dbAdapter = {
   getConfig: DB.getConfig,
   updateConfig: DB.updateConfig,
   getMessages: DB.getMessages,
-  addMessage: async (channelId: string, message: UIMessage) => {
+  addMessage: async (
+    channelId: string,
+    message: UIMessage<UIMessageMetadata>,
+  ) => {
     await DB.addMessage(channelId, message);
   },
   deleteMessagesByChannelId: async (channelId: string) => {

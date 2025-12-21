@@ -9,6 +9,7 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { GoogleResponseOptionAdaptor } from './GoogleResponseOptionAdaptor';
@@ -51,14 +52,14 @@ export class GoogleProvider implements LLMProvider {
     return this.client(parsedModelId);
   }
 
-  public getSpeechModel(modelId: string): null {
+  public getSpeechModel(_modelId: string): null {
     return null;
   }
 
   public createTransport(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
-  ): ChatTransport<UIMessage> {
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
     const providerName = this.name;
     const providerOptions = this.responseOptionAdaptor.adapt(modelId, options);
@@ -85,7 +86,7 @@ export class GoogleProvider implements LLMProvider {
                 modelId,
                 provider: providerName,
                 createdAt: Date.now(),
-              };
+              } as UIMessageMetadata;
             } else if (part.type === 'finish') {
               return {
                 inputTokens: part.totalUsage.inputTokens,
@@ -93,7 +94,7 @@ export class GoogleProvider implements LLMProvider {
                 reasoningTokens: part.totalUsage.reasoningTokens,
                 cachedInputTokens: part.totalUsage.cachedInputTokens,
                 totalTokens: part.totalUsage.totalTokens,
-              };
+              } as UIMessageMetadata;
             }
           },
         });

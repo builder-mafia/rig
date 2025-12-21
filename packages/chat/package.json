@@ -45,6 +45,7 @@
     "typescript": "catalog:types",
     "tsup": "catalog:build",
     "@allin/db-schema": "workspace:*",
+    "@allin/message-metadata-schema": "workspace:*",
     "ai": "catalog:ai",
     "@ai-sdk/react": "catalog:ai",
     "@ai-sdk/provider": "catalog:ai",
