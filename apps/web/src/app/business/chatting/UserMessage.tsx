@@ -1,10 +1,11 @@
 import { getUserMessageText } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Badge } from '@allin/ui';
 import type { UIMessage } from 'ai';
 import { assert } from '@/utils/assert';
 
 type UserMessageProps = {
-  message: UIMessage;
+  message: UIMessage<UIMessageMetadata>;
 };
 
 export const UserMessage = ({ message }: UserMessageProps) => {

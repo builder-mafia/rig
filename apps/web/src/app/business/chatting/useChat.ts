@@ -5,6 +5,7 @@ import {
   LLMProviderNameSchema,
   providerRegistry,
 } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { getDefaultStore, useSetAtom } from 'jotai';
@@ -15,7 +16,7 @@ import { assert } from '@/utils/assert';
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
  */
-const EMPTY_MESSAGES: UIMessage[] = [];
+const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
 
 type UseChatOptions = {
   id: string;
@@ -26,7 +27,7 @@ const store = getDefaultStore();
 /**
  * if chatFacade is changed, the uiMessages and status will be updated.
  */
-export const useChat = <UI_MESSAGE extends UIMessage>({
+export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   id,
 }: UseChatOptions) => {
   const addMessageOnDB = useSetAtom(dbAtoms.addMessageAtom);

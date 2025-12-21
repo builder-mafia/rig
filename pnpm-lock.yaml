@@ -228,6 +228,9 @@ importers:
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../../packages/db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../../packages/message-metadata-schema
       '@allin/plugin-sdk':
         specifier: workspace:*
         version: link:../../plugins/plugin-sdk
@@ -526,6 +529,9 @@ importers:
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../message-metadata-schema
       ai:
         specifier: catalog:ai
         version: 5.0.100(zod@3.25.76)
@@ -547,6 +553,9 @@ importers:
 
   packages/db-schema:
     devDependencies:
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../message-metadata-schema
       ai:
         specifier: catalog:ai
         version: 5.0.100(zod@3.25.76)

@@ -4,6 +4,7 @@ import {
   isUserMessage,
   type UserMessage,
 } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 
 export type Thread = {
@@ -17,7 +18,9 @@ export type Thread = {
  * [user message, assistant message]
  * Any other forms indicate an unexpected error or a serious bug.
  */
-export const messagesToThreads = (messages: UIMessage[]): Thread[] => {
+export const messagesToThreads = (
+  messages: UIMessage<UIMessageMetadata>[],
+): Thread[] => {
   const threads = messages.reduce(
     (acc, message) => {
       if (isUserMessage(message)) {

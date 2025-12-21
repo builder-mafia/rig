@@ -33,6 +33,7 @@
     "typescript": "catalog:types",
     "tsup": "catalog:build",
     "ai": "catalog:ai",
-    "zod": "catalog:utils"
+    "zod": "catalog:utils",
+    "@allin/message-metadata-schema": "workspace:*"
   }
 }

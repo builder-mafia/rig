@@ -1,5 +1,6 @@
 import type { useChat } from '@ai-sdk/react';
 import { getAssistantMessageText } from '@allin/chat';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Spinner } from '@allin/ui';
 import type { UIMessage } from 'ai';
 import { AnimatePresence, motion } from 'motion/react';
@@ -9,7 +10,7 @@ import { cn } from '@/utils/cn';
 import { Markdown } from './Markdown';
 
 type AssistantMessageProps = {
-  message: UIMessage;
+  message: UIMessage<UIMessageMetadata>;
   isLast: boolean;
   status: ReturnType<typeof useChat>['status'];
 };
