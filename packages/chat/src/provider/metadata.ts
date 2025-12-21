@@ -10,6 +10,11 @@ export const UIMessageMetadataSchema = z
     reasoningTokens: z.number().optional(),
     cachedInputTokens: z.number().optional(),
     totalTokens: z.number().optional(),
+
+    isError: z.boolean().optional(),
+    isAborted: z.boolean().optional(),
+    isDisconnected: z.boolean().optional(),
+    errorMessage: z.string().optional(),
   })
   .optional();
 

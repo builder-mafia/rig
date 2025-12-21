@@ -1,11 +1,15 @@
 import type { UIMessage } from 'ai';
 import { BehaviorSubject, type Observable } from 'rxjs';
+import type { UIMessageMetadata } from '../provider/metadata';
 import { type Setter, setValueOrFn } from '../utils/setter';
 
 /**
  * This class stores displayed messages.
  */
-export class UIMessageStore<UI_MESSAGE extends UIMessage> {
+export class UIMessageStore<
+  UI_MESSAGE extends
+    UIMessage<UIMessageMetadata> = UIMessage<UIMessageMetadata>,
+> {
   private messages$ = new BehaviorSubject<UI_MESSAGE[]>([]);
 
   public getUiMessages(): UI_MESSAGE[] {

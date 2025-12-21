@@ -3,6 +3,7 @@ import { getAssistantMessageText } from '@allin/chat';
 import { Spinner } from '@allin/ui';
 import type { UIMessage } from 'ai';
 import { AnimatePresence, motion } from 'motion/react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { assert } from '@/utils/assert';
 import { cn } from '@/utils/cn';
 import { Markdown } from './Markdown';
@@ -29,7 +30,11 @@ export const AssistantMessage = ({
   return (
     // override the default prose max-width to none.
     <article className='prose dark:prose-invert max-w-none relative'>
-      <Markdown messageId={message.id} text={textMessage} />
+      <ErrorBoundary
+        fallbackRender={({ error }) => <div>Error: {error.message}</div>}
+      >
+        <Markdown messageId={message.id} text={textMessage} />
+      </ErrorBoundary>
       <AnimatePresence>
         {isLast && isGenerating && (
           <motion.div

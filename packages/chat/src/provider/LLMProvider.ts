@@ -6,6 +6,7 @@ import type {
 import type { ChatTransport, UIMessage } from 'ai';
 import type { z } from 'zod';
 import type { ModelResponseOptionAdaptor } from './ModelResponseOptionAdaptor';
+import type { UIMessageMetadata } from './metadata';
 
 export type ReasoningEffort = z.infer<typeof ReasoningEffortSchema>;
 export type ReasoningSummary = z.infer<typeof ReasoningSummarySchema>;
@@ -29,5 +30,5 @@ export interface LLMProvider {
   createTransport: (
     model: LanguageModelV2,
     options?: ModelResponseOptions,
-  ) => ChatTransport<UIMessage>;
+  ) => ChatTransport<UIMessage<UIMessageMetadata>>;
 }

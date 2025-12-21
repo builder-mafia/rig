@@ -65,7 +65,7 @@ export class OpenAiProvider implements LLMProvider {
   public createTransport(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
-  ): ChatTransport<UIMessage> {
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
     const providerName = this.name;
 

@@ -52,14 +52,14 @@ export class GoogleProvider implements LLMProvider {
     return this.client(parsedModelId);
   }
 
-  public getSpeechModel(modelId: string): null {
+  public getSpeechModel(_modelId: string): null {
     return null;
   }
 
   public createTransport(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
-  ): ChatTransport<UIMessage> {
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
     const providerName = this.name;
     const providerOptions = this.responseOptionAdaptor.adapt(modelId, options);

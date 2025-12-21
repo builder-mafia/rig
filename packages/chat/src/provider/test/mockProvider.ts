@@ -7,6 +7,7 @@ import {
 } from 'ai';
 import type { LLMProvider } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
+import type { UIMessageMetadata } from '../metadata';
 import { createMockLanguageModel } from './mockLanguageModel';
 import { MockResponseOptionAdaptor } from './mockResponseOptionAdaptor';
 
@@ -46,7 +47,7 @@ class MockProvider implements LLMProvider {
     return null;
   }
 
-  createTransport(model: LanguageModelV2): ChatTransport<UIMessage> {
+  createTransport(model: LanguageModelV2): ChatTransport<UIMessage<UIMessageMetadata>> {
     return {
       sendMessages: async ({ messages }) => {
         return await streamText({

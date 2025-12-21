@@ -1,26 +1,31 @@
 import type { UIMessage } from 'ai';
 import { v4 } from 'uuid';
+import type { UIMessageMetadata } from '../provider/metadata';
 import { assert } from '../utils/assert';
 
-export type UserMessage = UIMessage & {
+type ChatUiMessage = UIMessage<UIMessageMetadata>;
+
+export type UserMessage = ChatUiMessage & {
   role: 'user';
 };
 
-export type AssistantMessage = UIMessage & {
+export type AssistantMessage = ChatUiMessage & {
   role: 'assistant';
 };
 
-export const isUserMessage = (message: UIMessage): message is UserMessage => {
+export const isUserMessage = (
+  message: ChatUiMessage,
+): message is UserMessage => {
   return message.role === 'user';
 };
 
 export const isAssistantMessage = (
-  message: UIMessage,
+  message: ChatUiMessage,
 ): message is AssistantMessage => {
   return message.role === 'assistant';
 };
 
-export const getAssistantMessageText = (message: UIMessage): string => {
+export const getAssistantMessageText = (message: ChatUiMessage): string => {
   assert(
     message.role === 'assistant',
     `getAssistantMessageText: message is not a assistant message. role: ${message.role}`,
@@ -34,7 +39,7 @@ export const getAssistantMessageText = (message: UIMessage): string => {
   }, '');
 };
 
-export const getUserMessageText = (message: UIMessage): string => {
+export const getUserMessageText = (message: ChatUiMessage): string => {
   assert(
     message.role === 'user',
     `getUserMessageText: message is not a user message. role: ${message.role}`,
@@ -49,7 +54,7 @@ export const getUserMessageText = (message: UIMessage): string => {
 };
 
 export const generateUIMessage = <
-  UI_MESSAGE extends UIMessage,
+  UI_MESSAGE extends ChatUiMessage,
   Role extends UI_MESSAGE['role'],
 >(
   role: Role,
