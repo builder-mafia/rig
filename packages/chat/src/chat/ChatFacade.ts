@@ -1,5 +1,6 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { Chat } from '@ai-sdk/react';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type {
   ChatOnDataCallback,
   ChatOnFinishCallback,
@@ -11,7 +12,6 @@ import type {
   LLMProvider,
   ModelResponseOptions,
 } from '../provider/LLMProvider';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { Setter } from '../utils/setter';
 import { UIMessageStore } from './UiMessageStore';
 
@@ -154,8 +154,37 @@ export class ChatFacade {
     this.uiMessageStore.setUiMessages(setter);
   }
 
+  public upsertUiMessage(message: ChatUiMessage) {
+    const existingMessageIndex = this.getUiMessages().findIndex(
+      m => m.id === message.id,
+    );
+
+    const newMessages =
+      existingMessageIndex !== -1
+        ? [
+            ...this.getUiMessages().slice(0, existingMessageIndex),
+            message,
+            ...this.getUiMessages().slice(existingMessageIndex + 1),
+          ]
+        : [...this.getUiMessages(), message];
+
+    this.setUiMessages(newMessages);
+  }
+
   public addSystemMessage(message: ChatUiMessage & { role: 'system' }) {
     this.chat.messages = [...this.chat.messages, message];
+  }
+
+  public replaceContextMessage(message: ChatUiMessage) {
+    const targetMessage = this.chat.messages.find(msg => msg.id === message.id);
+
+    if (targetMessage) {
+      this.chat.messages = this.chat.messages.map(msg =>
+        msg.id === message.id ? message : msg,
+      );
+    } else {
+      throw new Error(`target context message not found: ${message.id}.`);
+    }
   }
 
   public async sendMessage(message: ChatUiMessage & { role: 'user' }) {
@@ -169,13 +198,25 @@ export class ChatFacade {
     return this.chat.lastMessage;
   }
 
-  public stop() {
+  public async regenerateMessage(messageId: string) {
+    if (this._isDisposed) {
+      throw new Error('ChatFacade is disposed');
+    }
+
+    this.setUiMessages(prev => prev.filter(msg => msg.id !== messageId));
+    await this.chat.regenerate({
+      messageId,
+    });
+    return this.chat.lastMessage;
+  }
+
+  public async stop() {
     if (this._isDisposed) {
       throw new Error('ChatFacade is disposed');
     }
 
     if (this.chat.status === 'streaming' || this.chat.status === 'submitted') {
-      this.chat.stop();
+      await this.chat.stop();
     }
   }
 
@@ -217,15 +258,8 @@ export class ChatFacade {
 
     chat['~registerMessagesCallback'](() => {
       const streamingMessage = chat.lastMessage;
-
       if (streamingMessage) {
-        this.uiMessageStore.setUiMessages(prev => {
-          if (prev.at(-1)?.id === streamingMessage.id) {
-            return [...prev.slice(0, -1), streamingMessage];
-          } else {
-            return [...prev, streamingMessage];
-          }
-        });
+        this.upsertUiMessage(streamingMessage);
       }
     }, throttleTime);
 

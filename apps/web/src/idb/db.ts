@@ -144,12 +144,24 @@ const updateConfig = async (config: Partial<z.infer<typeof ConfigSchema>>) => {
 
 const getMessages = async () => {
   const db = await getDB();
-  return db.getAll(DB_STORE.MESSAGES);
+  const messages = await db.getAll(DB_STORE.MESSAGES);
+
+  // sort messages by createdAt
+  return messages.sort(
+    (a, b) => (a.metadata?.createdAt ?? 0) - (b.metadata?.createdAt ?? 0),
+  );
 };
 
 const getMessagesByChannelId = async (channelId: string) => {
   const db = await getDB();
-  return db.getAllFromIndex(DB_STORE.MESSAGES, 'channelId', channelId);
+  const messages = await db.getAllFromIndex(
+    DB_STORE.MESSAGES,
+    'channelId',
+    channelId,
+  );
+  return messages.sort(
+    (a, b) => (a.metadata?.createdAt ?? 0) - (b.metadata?.createdAt ?? 0),
+  );
 };
 
 const addMessage = async (channelId: string, message: UIMessage) => {

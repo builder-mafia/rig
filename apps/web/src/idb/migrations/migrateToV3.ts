@@ -4,8 +4,8 @@ import type { ALLIN_DB } from '../idb-schema';
 
 /**
  * v3 migration
- * - add reasoningEffort (default: 'low')
- * - add reasoningSummary (default: false)
+ * - add reasoningEffort on channel (default: 'low')
+ * - add reasoningSummary on channel (default: false)
  */
 export const migrateToV3 = async (
   transaction: IDBPTransaction<ALLIN_DB, DBStoreName[], 'versionchange'>,

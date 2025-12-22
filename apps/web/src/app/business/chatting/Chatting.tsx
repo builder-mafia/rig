@@ -19,7 +19,7 @@ export const Chatting = () => {
 
   registerProvider(config as z.infer<typeof ConfigSchema>);
 
-  const { uiMessages, status, setSystemPrompt } = useChat({
+  const { uiMessages, status, setSystemPrompt, regenerate } = useChat({
     id: selectedChannelId,
   });
 
@@ -40,7 +40,7 @@ export const Chatting = () => {
           'bg-background grow justify-center flex max-h-dvh overflow-y-auto mb-[-36px] '
         }
       >
-        <ThreadList threads={threads} status={status} />
+        <ThreadList threads={threads} status={status} regenerate={regenerate} />
       </div>
       {/* scroll shadow to top of the container */}
       <div className='w-full from-background via-background/80 to-background/50 -top-2 absolute h-8 shrink-0 bg-gradient-to-b blur-sm'></div>

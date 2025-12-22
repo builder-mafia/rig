@@ -27,7 +27,7 @@ export const RootView = React.memo(() => {
         <Suspense fallback={<ChattingSuspenseFallbackView />}>
           <Chatting />
         </Suspense>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<ChattingSuspenseFallbackView />}>
           <ChatInput />
         </Suspense>
       </motion.div>

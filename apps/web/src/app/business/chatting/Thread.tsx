@@ -8,9 +8,10 @@ type ThreadProps = {
   thread: ThreadType;
   isLast: boolean;
   status: ReturnType<typeof useChat>['status'];
+  regenerate: (messageId: string) => void;
 };
 
-export const Thread = ({ thread, isLast, status }: ThreadProps) => {
+export const Thread = ({ thread, isLast, status, regenerate }: ThreadProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export const Thread = ({ thread, isLast, status }: ThreadProps) => {
           message={thread.assistantMessage}
           isLast={isLast}
           status={status}
+          regenerate={regenerate}
         ></AssistantMessage>
       )}
     </div>

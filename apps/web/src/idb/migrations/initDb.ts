@@ -11,7 +11,7 @@ export const initDb = (db: IDBPDatabase<ALLIN_DB>) => {
 
   if (!db.objectStoreNames.contains(DB_STORE.MESSAGES)) {
     const messagesStore = db.createObjectStore(DB_STORE.MESSAGES, {
-      autoIncrement: true,
+      keyPath: 'id',
     });
     // this makes it quicker to get messages by channel id.
     messagesStore.createIndex('channelId', 'channelId');

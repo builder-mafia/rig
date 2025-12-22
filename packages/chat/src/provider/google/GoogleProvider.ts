@@ -3,13 +3,13 @@ import {
   type GoogleGenerativeAIProviderOptions,
 } from '@ai-sdk/google';
 import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
   convertToModelMessages,
   streamText,
   type UIMessage,
 } from 'ai';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider, ModelResponseOptions } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { GoogleResponseOptionAdaptor } from './GoogleResponseOptionAdaptor';
@@ -65,8 +65,9 @@ export class GoogleProvider implements LLMProvider {
     const providerOptions = this.responseOptionAdaptor.adapt(modelId, options);
 
     return {
-      sendMessages: async ({ messages }) => {
+      sendMessages: async ({ messages, abortSignal }) => {
         return await streamText({
+          abortSignal,
           model: model,
           messages: convertToModelMessages(messages),
           providerOptions: {
