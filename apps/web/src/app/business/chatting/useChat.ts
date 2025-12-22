@@ -8,10 +8,13 @@ import {
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
+import { merge } from 'es-toolkit';
 import { getDefaultStore, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
+import { isMessagesConsistent } from './consistency-check';
+import { handleExceptionOnOpenAi } from './open-ai-exception-handling';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
@@ -31,7 +34,7 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   id,
 }: UseChatOptions) => {
   const addMessageOnDB = useSetAtom(dbAtoms.addMessageAtom);
-
+  const deleteMessageOnDB = useSetAtom(dbAtoms.deleteMessageAtom);
   /**
    * useSuspenseQuery's only purpose is to trigger the suspense.
    */
@@ -51,6 +54,7 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
       assert(currentChannel, 'useChat: channel is not found.');
       assert(messages, 'useChat: channel messages are not found.');
 
+      console.log('valid', isMessagesConsistent(messages));
       // in db, providerName is stored as string.
       // so we need to parse it to LLMProviderName.
       const safeProviderName = LLMProviderNameSchema.parse(
@@ -78,23 +82,51 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   useEffect(() => {
     // save user message to db before sending
     const subscription1 = chatFacade.getOnBeforeSend$().subscribe(message => {
-      addMessageOnDB(chatFacade.getId(), message);
+      const metadata: UIMessageMetadata = {
+        createdAt: Date.now(),
+      };
+      addMessageOnDB(
+        chatFacade.getId(),
+        merge(message, {
+          metadata,
+        }),
+      );
     });
 
     // save assistant response to db after finishing
     const subscription2 = chatFacade
       .getOnFinish$()
       .subscribe(({ message, isAbort, isDisconnect, isError }) => {
-        if (isAbort || isDisconnect || isError) {
-          console.log();
-          const error = chatFacade.getError();
-          console.log(error?.name);
-          console.log(error?.message);
-          console.log(error?.stack);
-          console.log(error?.cause);
-          return;
+        const isAbnormalFinish = isAbort || isDisconnect || isError;
+        let messageToSave: UIMessage<UIMessageMetadata> = message;
+
+        if (chatFacade.getProviderName() === 'openai') {
+          messageToSave = handleExceptionOnOpenAi(messageToSave);
         }
-        addMessageOnDB(chatFacade.getId(), message);
+
+        if (isAbnormalFinish) {
+          // when streaming is finished with error,
+          // we add error metadata to the message.
+          // and replace the context message and ui message to show the error.
+          const error = chatFacade.getError();
+          const metadataAboutError: UIMessageMetadata = {
+            isError: isError,
+            isDisconnected: isDisconnect,
+            isAborted: isAbort,
+            errorMessage: error?.message,
+          };
+          messageToSave = merge(message, {
+            metadata: metadataAboutError,
+          });
+
+          // the reason we replace the context message is for handling openai exception. (see handleExceptionOnOpenAi)
+          chatFacade.replaceContextMessage(messageToSave);
+          // the reason we upsert the ui message is for showing the error message to the user.
+          // because basicallly the uiMessage is updated in only when message is streaming. (see `@allin/chat`)
+          chatFacade.upsertUiMessage(messageToSave);
+        }
+
+        addMessageOnDB(chatFacade.getId(), messageToSave);
       });
 
     return () => {
@@ -153,10 +185,21 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
     [chatFacade],
   );
 
+  const regenerate = useCallback(
+    (messageId: string) => {
+      deleteMessageOnDB(messageId);
+      return chatFacade.regenerateMessage(messageId);
+    },
+    [chatFacade],
+  );
+
+  console.log(uiMessages);
+
   return {
     uiMessages,
     status,
     stop,
+    regenerate,
     sendMessage,
     setSystemPrompt,
   };
