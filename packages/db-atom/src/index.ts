@@ -29,6 +29,7 @@ export type AllinDbAdapter = {
     channelId: string,
     message: UIMessage<UIMessageMetadata>,
   ) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
   deleteMessagesByChannelId: (channelId: string) => Promise<void>;
 };
 
@@ -165,6 +166,11 @@ export function createDbAtoms(db: AllinDbAdapter) {
     },
   );
 
+  const deleteMessageAtom = atom(null, async (_, set, messageId: string) => {
+    await db.deleteMessage(messageId);
+    set(allMessagesRefreshAtom, prev => prev + 1);
+  });
+
   const deleteMessagesByChannelIdAtom = atom(
     null,
     async (_, set, channelId: string) => {
@@ -181,6 +187,7 @@ export function createDbAtoms(db: AllinDbAdapter) {
     selectedChannelMessagesAtom,
     allMessagesAtom,
     addMessageAtom,
+    deleteMessageAtom,
     deleteMessagesByChannelIdAtom,
     createChannelAtom,
     updateChannelAtom,

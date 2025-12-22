@@ -17,6 +17,9 @@ const dbAdapter = {
   ) => {
     await DB.addMessage(channelId, message);
   },
+  deleteMessage: async (messageId: string) => {
+    await DB.deleteMessage(messageId);
+  },
   deleteMessagesByChannelId: async (channelId: string) => {
     await DB.deleteMessagesByChannelId(channelId);
   },
