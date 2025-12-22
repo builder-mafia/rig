@@ -1,3 +1,4 @@
+import { type Observable, Subject } from 'rxjs';
 import type { ChatFacade } from './ChatFacade';
 
 /**
@@ -6,6 +7,8 @@ import type { ChatFacade } from './ChatFacade';
 export class ChatFacadeManager {
   private static instance: ChatFacadeManager;
   private chatFacades: Map<string, ChatFacade> = new Map();
+  // notify when a chat facade is created. (chat facade id is emitted)
+  private chatFacadeCreated$ = new Subject<string>();
 
   private constructor() {}
 
@@ -43,6 +46,14 @@ export class ChatFacadeManager {
     }
 
     this.chatFacades.set(id, chatFacade);
+    this.chatFacadeCreated$.next(id);
+  }
+
+  /**
+   * when a chat facade is created, the chat facade id is emitted.
+   */
+  public getChatFacadeCreated$(): Observable<string> {
+    return this.chatFacadeCreated$.asObservable();
   }
 
   public deleteChatFacadeById(id: string) {

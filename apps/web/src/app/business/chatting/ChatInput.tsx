@@ -9,14 +9,24 @@ import {
 } from '@allin/chat';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Button, ButtonGroup, Kbd, KbdGroup, Textarea } from '@allin/ui';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useSetAtom } from 'jotai';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { toast } from 'sonner';
+import { filter } from 'rxjs';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
+import { waitUntil } from '@/utils/wait-until';
 import { HotKeyList } from '../hotkey/hotkey-list';
 import { ModelSelectView } from './ModelSelectView';
 import { ModelSettingView } from './ModelSettingView';
@@ -24,12 +34,34 @@ import { ModelSettingView } from './ModelSettingView';
 export const ChatInput = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
+
   assert(selectedChannel, 'ChatInput: selectedChannel is not found.');
   assert(config, 'ChatInput: config is not found.');
 
-  const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
-  const ignoreNextChangeRef = useRef(false);
+  // chat facade is created asynchronously after the channel is selected. (see useChat.ts)
+  // so we need to wait until the chat facade is created.
+  const { data: chatFacade } = useSuspenseQuery({
+    queryKey: ['chatInput', selectedChannel.id],
+    queryFn: async () => {
+      await waitUntil(
+        ChatFacadeManager.getInstance()
+          .getChatFacadeCreated$()
+          .pipe(filter(id => id === selectedChannel.id)),
+        // if the chat facade is not created within 10 seconds, throw an error.
+        // most of the time, the chat facade is created within 100ms.
+        // (because data fetching from IndexedDB is so fast.)
+        10 * 1000,
+      );
 
+      return ChatFacadeManager.getInstance().getChatFacade(selectedChannel.id);
+    },
+  });
+
+  const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
+  // In Composing Language (Korean, Japanese, Chinese, etc...),
+  // after setInput('') is called, the input is updated. (that's related to IME.)
+  // so we need to ignore the next change by adding a flag.
+  const ignoreNextChangeRef = useRef(false);
   const [input, setInput] = useState('');
   const [providerAndModel, setProviderAndModel] = useState<{
     providerName: LLMProviderName;
@@ -39,23 +71,44 @@ export const ChatInput = () => {
     modelId: selectedChannel.model,
   });
 
+  const subscribeToStatus = useCallback(
+    (onChange: () => void) => {
+      const subscription = chatFacade.getStatus$().subscribe(onChange);
+      return () => {
+        subscription.unsubscribe();
+      };
+    },
+    [chatFacade],
+  );
+
+  const status = useSyncExternalStore(
+    subscribeToStatus,
+    () => chatFacade.getStatus(),
+    () => chatFacade.getStatus(),
+  );
+
   const sendMessage = (
     message: UIMessage<UIMessageMetadata> & { role: 'user' },
   ) => {
-    if (!ChatFacadeManager.getInstance().hasChatFacade(selectedChannel.id)) {
-      toast.error('Failed to send message.');
-      console.error('ChatFacade is not found.');
+    chatFacade.sendMessage(message);
+  };
+
+  const stop = () => {
+    if (status !== 'streaming') {
       return;
     }
 
-    ChatFacadeManager.getInstance()
-      .getChatFacade(selectedChannel.id)
-      .sendMessage(message);
+    chatFacade.stop();
   };
 
   const textAreaRef = useHotkeys<HTMLTextAreaElement>(
     HotKeyList.submitChat.hotkey,
     event => {
+      if (status === 'streaming') {
+        stop();
+        return;
+      }
+
       if (event.isComposing) {
         ignoreNextChangeRef.current = true;
       }
@@ -78,8 +131,8 @@ export const ChatInput = () => {
 
   useHotkeys(HotKeyList.focusChatInput.hotkey, e => {
     if (textAreaRef.current) {
-      // after focus, the `/` key is inputted.
-      // so need to prevent `/` from being inputted.
+      // "/" key trigger focus on the text area.
+      // add e.preventDefault() to prevent "/" from being inputted.
       e.preventDefault();
       textAreaRef.current.focus();
     }
@@ -95,8 +148,17 @@ export const ChatInput = () => {
 
   const handleSubmit = () => {
     if (!input.trim()) return;
+
     sendMessage(generateUIMessage('user', input));
     setInput('');
+  };
+
+  const handleStop = async () => {
+    if (status !== 'streaming') {
+      return;
+    }
+
+    await stop();
   };
 
   const enabledProviders = useMemo(() => {
@@ -176,18 +238,32 @@ export const ChatInput = () => {
             />
           </ButtonGroup>
           <div className='flex flex-row gap-2'>
-            <Button
-              variant={'outline'}
-              size='sm'
-              className='pr-2'
-              onClick={handleSubmit}
-              disabled={input.trim().length === 0}
-            >
-              Submit
-              <KbdGroup>
-                <Kbd>⌘⏎</Kbd>
-              </KbdGroup>
-            </Button>
+            {status === 'streaming' ? (
+              <Button
+                variant={'outline'}
+                size='sm'
+                className='pr-2'
+                onClick={handleStop}
+              >
+                Stop
+                <KbdGroup>
+                  <Kbd>⌘⏎</Kbd>
+                </KbdGroup>
+              </Button>
+            ) : (
+              <Button
+                variant={'outline'}
+                size='sm'
+                className='pr-2'
+                onClick={handleSubmit}
+                disabled={input.trim().length === 0}
+              >
+                Submit
+                <KbdGroup>
+                  <Kbd>⌘⏎</Kbd>
+                </KbdGroup>
+              </Button>
+            )}
             {/* <Button
               variant={'outline'}
               size='xs'
