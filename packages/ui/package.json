@@ -25,7 +25,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "check-ts": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": "catalog:react19",

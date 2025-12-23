@@ -20,6 +20,7 @@
     "dev": "tsup --watch",
     "build": "tsup",
     "test": "vitest run",
+    "check-ts": "tsc --noEmit",
     "test:watch": "vitest run --watch"
   },
   "peerDependencies": {
