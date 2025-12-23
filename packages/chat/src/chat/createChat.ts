@@ -1,6 +1,6 @@
 import { Chat } from '@ai-sdk/react';
-import type { ChatInit, ChatTransport, UIMessage } from 'ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
+import type { ChatInit, ChatTransport, UIMessage } from 'ai';
 
 type ChatUiMessage = UIMessage<UIMessageMetadata>;
 

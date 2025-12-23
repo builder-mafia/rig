@@ -56,7 +56,7 @@ export class GoogleProvider implements LLMProvider {
     return null;
   }
 
-  public createTransport(
+  public createTextStream(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
   ): ChatTransport<UIMessage<UIMessageMetadata>> {

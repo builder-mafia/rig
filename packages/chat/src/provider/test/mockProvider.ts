@@ -1,11 +1,11 @@
 import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
   convertToModelMessages,
   streamText,
   type UIMessage,
 } from 'ai';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { createMockLanguageModel } from './mockLanguageModel';
@@ -47,7 +47,9 @@ class MockProvider implements LLMProvider {
     return null;
   }
 
-  createTransport(model: LanguageModelV2): ChatTransport<UIMessage<UIMessageMetadata>> {
+  createTextStream(
+    model: LanguageModelV2,
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     return {
       sendMessages: async ({ messages }) => {
         return await streamText({

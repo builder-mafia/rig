@@ -3,10 +3,10 @@ import type {
   ReasoningEffortSchema,
   ReasoningSummarySchema,
 } from '@allin/db-schema';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { ChatTransport, UIMessage } from 'ai';
 import type { z } from 'zod';
 import type { ModelResponseOptionAdaptor } from './ModelResponseOptionAdaptor';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 
 export type ReasoningEffort = z.infer<typeof ReasoningEffortSchema>;
 export type ReasoningSummary = z.infer<typeof ReasoningSummarySchema>;
@@ -27,7 +27,7 @@ export interface LLMProvider {
    * Otherwise, return null.
    */
   getSpeechModel: (modelId: string) => SpeechModelV2 | null;
-  createTransport: (
+  createTextStream: (
     model: LanguageModelV2,
     options?: ModelResponseOptions,
   ) => ChatTransport<UIMessage<UIMessageMetadata>>;

@@ -62,7 +62,7 @@ export class OpenAiProvider implements LLMProvider {
     return this.client.speech(modelId);
   }
 
-  public createTransport(
+  public createTextStream(
     model: LanguageModelV2,
     options?: ModelResponseOptions,
   ): ChatTransport<UIMessage<UIMessageMetadata>> {

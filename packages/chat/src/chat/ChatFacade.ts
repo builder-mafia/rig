@@ -235,7 +235,7 @@ export class ChatFacade {
     responseOptions: ModelResponseOptions;
     throttleTime: number;
   }) {
-    const transport = provider.createTransport(model, responseOptions);
+    const transport = provider.createTextStream(model, responseOptions);
 
     const chat = new Chat({
       id,
