@@ -1,6 +1,6 @@
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
-import z from 'zod';
+import { z } from 'zod/v3';
 
 // ** Channel Schema ** //
 export const ReasoningEffortSchema = z

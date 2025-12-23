@@ -2,7 +2,7 @@ import type { ChannelSchema, ConfigSchema } from '@allin/db-schema';
 import type { UIMessage } from 'ai';
 import { createStore } from 'jotai/vanilla';
 import { describe, expect, it } from 'vitest';
-import type z from 'zod';
+import { z } from 'zod/v3';
 import { type AllinDbAdapter, createDbAtoms } from '../index';
 
 type Channel = z.infer<typeof ChannelSchema>;

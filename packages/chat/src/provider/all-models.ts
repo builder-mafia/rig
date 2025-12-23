@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod/v3';
 import { GoogleAiModelIdSchema } from './google/google-models';
 import { OpenAiModelIdSchema } from './openai/openai-models';
 

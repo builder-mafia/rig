@@ -1,8 +1,9 @@
 import type {
-  LanguageModelV2,
-  LanguageModelV2StreamPart,
+  LanguageModelV3,
+  LanguageModelV3CallOptions,
+  LanguageModelV3StreamPart,
 } from '@ai-sdk/provider';
-import { convertArrayToReadableStream, MockLanguageModelV2 } from 'ai/test';
+import { convertArrayToReadableStream, MockLanguageModelV3 } from 'ai/test';
 
 type CreateMockModelOptions = {
   /**
@@ -29,30 +30,39 @@ export const createMockLanguageModel = ({
   provider = 'mock-provider',
   textDeltaChunks,
   finishReason = 'stop',
-}: CreateMockModelOptions): LanguageModelV2 => {
+}: CreateMockModelOptions): LanguageModelV3 => {
   const messageId = '0';
 
-  const textDelta: LanguageModelV2StreamPart[] = textDeltaChunks.map(text => ({
+  const textDelta: LanguageModelV3StreamPart[] = textDeltaChunks.map(text => ({
     type: 'text-delta',
     id: messageId,
     delta: text,
   }));
 
-  return new MockLanguageModelV2({
+  return new MockLanguageModelV3({
     modelId,
     provider,
-    doStream: async () => ({
+    doStream: async options => ({
       stream: convertArrayToReadableStream([
         { type: 'text-start', id: messageId },
         ...textDelta,
         { type: 'text-end', id: messageId },
         {
           type: 'finish',
-          finishReason,
+          finishReason: { raw: undefined, unified: finishReason },
+          logprobs: undefined,
           usage: {
-            inputTokens: 3,
-            outputTokens: 10,
-            totalTokens: 13,
+            inputTokens: {
+              total: 3,
+              noCache: 3,
+              cacheRead: undefined,
+              cacheWrite: undefined,
+            },
+            outputTokens: {
+              total: 10,
+              text: 10,
+              reasoning: undefined,
+            },
           },
         },
       ]),

@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod/v3';
 
 export const GoogleAiModelIdSchema = z.enum([
   'gemini-2.5-flash-lite',

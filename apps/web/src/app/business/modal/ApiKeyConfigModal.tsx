@@ -23,7 +23,7 @@ import { Loader2, Plus } from 'lucide-react';
 import { useLayoutEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import z from 'zod';
+import { z } from 'zod/v3';
 import { DB } from '@/idb/db';
 import { dbAtoms } from '@/idb/db-store';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';

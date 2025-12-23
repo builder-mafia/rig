@@ -54,7 +54,7 @@ class MockProvider implements LLMProvider {
       sendMessages: async ({ messages }) => {
         return await streamText({
           model: model,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           onError: err => {
             throw new Error(
               err instanceof Error

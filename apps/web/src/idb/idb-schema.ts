@@ -6,7 +6,7 @@ import {
   DB_STORE,
 } from '@allin/db-schema';
 import type { DBSchema } from 'idb';
-import type { z } from 'zod';
+import type { z } from 'zod/v3';
 
 export interface ALLIN_DB extends DBSchema {
   [DB_STORE.CHANNELS]: {

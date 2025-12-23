@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod/v3';
 
 export const ModelCostSchema = z.object({
   input: z.number().optional(),
@@ -37,7 +37,7 @@ export const ModelSpecSchema = z.object({
   name: z.string(),
   family: z.string().optional(),
   attachment: z.boolean(),
-  reasoning: z.boolean(),
+  reasoningText: z.boolean(),
   tool_call: z.boolean(),
   structured_output: z.boolean().optional(),
   temperature: z.boolean(),
