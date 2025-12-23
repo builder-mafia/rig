@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod/v3';
 
 export const ModelCostSchema = z.object({
   input: z.number().optional(),

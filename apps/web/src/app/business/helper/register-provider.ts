@@ -7,7 +7,7 @@ import {
 } from '@allin/chat';
 import type { ConfigSchema } from '@allin/db-schema';
 import { match } from 'ts-pattern';
-import type { z } from 'zod';
+import type { z } from 'zod/v3';
 
 export const registerProvider = (config: z.infer<typeof ConfigSchema>) => {
   const { apiKeys } = config;

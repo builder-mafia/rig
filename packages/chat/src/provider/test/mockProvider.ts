@@ -1,11 +1,11 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
   convertToModelMessages,
   streamText,
   type UIMessage,
 } from 'ai';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { LLMProvider } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { createMockLanguageModel } from './mockLanguageModel';
@@ -32,7 +32,7 @@ class MockProvider implements LLMProvider {
     return Promise.resolve(true);
   }
 
-  getModel(modelId: string): LanguageModelV2 {
+  getModel(modelId: string): LanguageModelV3 {
     if (!this.modelIds.includes(modelId)) {
       throw new Error(`Model ID ${modelId} is not supported by this provider`);
     }
@@ -47,12 +47,14 @@ class MockProvider implements LLMProvider {
     return null;
   }
 
-  createTransport(model: LanguageModelV2): ChatTransport<UIMessage<UIMessageMetadata>> {
+  createTextStream(
+    model: LanguageModelV3,
+  ): ChatTransport<UIMessage<UIMessageMetadata>> {
     return {
       sendMessages: async ({ messages }) => {
         return await streamText({
           model: model,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           onError: err => {
             throw new Error(
               err instanceof Error

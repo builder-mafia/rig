@@ -4,7 +4,7 @@ import {
   providerRegistry,
 } from '@allin/chat';
 import type { ChannelSchema } from '@allin/db-schema';
-import type { z } from 'zod';
+import type { z } from 'zod/v3';
 
 type SelectedChannelSnapshot = Pick<
   z.infer<typeof ChannelSchema>,

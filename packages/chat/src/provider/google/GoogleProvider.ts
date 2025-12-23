@@ -2,7 +2,7 @@ import {
   createGoogleGenerativeAI,
   type GoogleGenerativeAIProviderOptions,
 } from '@ai-sdk/google';
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
@@ -46,7 +46,7 @@ export class GoogleProvider implements LLMProvider {
     return GoogleProvider.validateConnection(this.apiKey);
   }
 
-  public getModel(modelId: string): LanguageModelV2 {
+  public getModel(modelId: string): LanguageModelV3 {
     // throw error if modelId is not valid
     const parsedModelId: GoogleAiModelId = GoogleAiModelIdSchema.parse(modelId);
     return this.client(parsedModelId);
@@ -56,8 +56,8 @@ export class GoogleProvider implements LLMProvider {
     return null;
   }
 
-  public createTransport(
-    model: LanguageModelV2,
+  public createTextStream(
+    model: LanguageModelV3,
     options?: ModelResponseOptions,
   ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
@@ -69,7 +69,7 @@ export class GoogleProvider implements LLMProvider {
         return await streamText({
           abortSignal,
           model: model,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           providerOptions: {
             google: providerOptions,
           },

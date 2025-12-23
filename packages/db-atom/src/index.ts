@@ -7,7 +7,7 @@ import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import { atom } from 'jotai';
-import type { z } from 'zod';
+import type { z } from 'zod/v3';
 
 type Channel = z.infer<typeof ChannelSchema>;
 type Config = z.infer<typeof ConfigSchema>;

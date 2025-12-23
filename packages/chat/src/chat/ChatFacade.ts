@@ -1,4 +1,4 @@
-import type { LanguageModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
 import { Chat } from '@ai-sdk/react';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type {
@@ -57,7 +57,7 @@ export class ChatFacade {
 
   private provider: LLMProvider;
   private _isDisposed = false;
-  private model: LanguageModelV2;
+  private model: LanguageModelV3;
   private responseOptions: ModelResponseOptions;
   private throttleTime: number;
 
@@ -231,11 +231,11 @@ export class ChatFacade {
     id: string;
     messages: ChatUiMessage[];
     provider: LLMProvider;
-    model: LanguageModelV2;
+    model: LanguageModelV3;
     responseOptions: ModelResponseOptions;
     throttleTime: number;
   }) {
-    const transport = provider.createTransport(model, responseOptions);
+    const transport = provider.createTextStream(model, responseOptions);
 
     const chat = new Chat({
       id,

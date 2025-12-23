@@ -2,7 +2,7 @@ import {
   createOpenAI,
   type OpenAIResponsesProviderOptions,
 } from '@ai-sdk/openai';
-import type { LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
+import type { LanguageModelV3, SpeechModelV3 } from '@ai-sdk/provider';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
@@ -52,18 +52,18 @@ export class OpenAiProvider implements LLMProvider {
     return OpenAiProvider.validateConnection(this.apiKey);
   }
 
-  public getModel(modelId: string): LanguageModelV2 {
+  public getModel(modelId: string): LanguageModelV3 {
     // throw error if modelId is not valid
     const parsedModelId: OpenAiModelId = OpenAiModelIdSchema.parse(modelId);
     return this.client(parsedModelId);
   }
 
-  public getSpeechModel(modelId: string): SpeechModelV2 {
+  public getSpeechModel(modelId: string): SpeechModelV3 {
     return this.client.speech(modelId);
   }
 
-  public createTransport(
-    model: LanguageModelV2,
+  public createTextStream(
+    model: LanguageModelV3,
     options?: ModelResponseOptions,
   ): ChatTransport<UIMessage<UIMessageMetadata>> {
     const modelId = model.modelId;
@@ -76,7 +76,7 @@ export class OpenAiProvider implements LLMProvider {
         return await streamText({
           abortSignal,
           model: model,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           providerOptions: {
             openai: providerOptions,
           },

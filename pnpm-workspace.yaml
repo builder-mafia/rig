@@ -35,12 +35,12 @@ catalogs:
     uuid: ^11.1.0
     ts-pattern: ^5.9.0
   ai:
-    ai: 5.0.100
-    "@ai-sdk/openai": 2.0.71
-    "@ai-sdk/google": 2.0.42
-    "@ai-sdk/react": 2.0.100
-    "@ai-sdk/provider": ^2
-    "@ai-sdk/provider-utils": ^3
+    ai: ^6
+    "@ai-sdk/openai": ^3
+    "@ai-sdk/google": ^3
+    "@ai-sdk/react": ^3
+    "@ai-sdk/provider": ^3
+    "@ai-sdk/provider-utils": ^4
   test:
     "vitest": ^3.2.4
   tw:

@@ -1,6 +1,6 @@
 import type { ConfigSchema } from '@allin/db-schema';
 import { useEffect, useMemo } from 'react';
-import type z from 'zod';
+import type { z } from 'zod/v3';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';

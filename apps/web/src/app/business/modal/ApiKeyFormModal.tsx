@@ -29,7 +29,7 @@ import { useSetAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
-import z from 'zod';
+import { z } from 'zod/v3';
 import { dbAtoms } from '@/idb/db-store';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';
 

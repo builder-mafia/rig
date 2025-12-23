@@ -10,9 +10,7 @@
     "build": "turbo build",
     "test": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream test:watch",
     "test:once": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream test",
-    "create:mcp": "node inquirer.mjs",
-    "build:tools": "pnpm --filter '@mcp-server/*' build",
-    "model-spec": "pnpm --filter 'web' generate:model-spec"
+    "check-ts": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream check-ts"
   },
   "keywords": [],
   "author": "",

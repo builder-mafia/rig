@@ -25,7 +25,7 @@
     "dev": "pnpm run generate:model-spec && tsup --watch",
     "build": "pnpm run generate:model-spec && tsup",
     "generate:model-spec": "tsx src/provider/google/script/fetch-google-model-spec.ts && tsx src/provider/openai/script/fetch-openai-model-spec.ts",
-    "ts-check": "tsc --noEmit",
+    "check-ts": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest run --watch"
   },
