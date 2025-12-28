@@ -1,8 +1,8 @@
 {
-  "name": "@allin/extension-quiz",
+  "name": "@allin/api",
   "version": "0.1.0",
   "private": false,
-  "description": "DB Schema for ALLIN",
+  "description": "ALLIN API for extensions",
   "type": "module",
   "files": [
     "dist"
@@ -27,18 +27,13 @@
     "check-ts": "tsc --noEmit"
   },
   "peerDependencies": {
-    "ai": "catalog:ai",
-    "zod": "catalog:utils",
     "react": "catalog:react19"
   },
   "devDependencies": {
     "typescript": "catalog:types",
     "tsup": "catalog:build",
-    "ai": "catalog:ai",
-    "zod": "catalog:utils",
     "react": "catalog:react19",
     "@types/react": "catalog:react19",
-    "@allin/api": "workspace:*",
-    "@allin/extension": "workspace:*"
+    "zod": "catalog:utils"
   }
 }

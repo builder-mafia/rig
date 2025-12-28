@@ -1,23 +1,19 @@
-import type { Extension, ExtensionAPI } from '@allin/extension-api';
+import type { Extension } from '@allin/extension';
 
 export const quizExtension: Extension = {
   id: 'quiz',
   name: 'Quiz Extension',
-  version: '0.1.0',
+  version: '1.0.0-beta',
   description: 'An extension that creates a quiz when you select text',
-  activate(api: ExtensionAPI) {
-    api.selectionPopover.add('quiz', ({ close, selectedText }) => {
-      return (
-        <button
-          onClick={() => {
-            close();
-            console.log(selectedText);
-          }}
-          type='button'
-        >
-          Create Quiz
-        </button>
-      );
-    });
+  activate(api) {
+    api.TextSelectionFloatingButtonList.add(
+      'quiz',
+      ({ close, selectedText }) => {
+        return <span>Create Quiz</span>;
+      },
+    );
+  },
+  deactivate(api) {
+    api.TextSelectionFloatingButtonList.remove('quiz');
   },
 };

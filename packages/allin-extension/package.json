@@ -1,8 +1,8 @@
 {
-  "name": "@allin/extension-api",
+  "name": "@allin/extension",
   "version": "0.1.0",
   "private": false,
-  "description": "Extension Interface for ALLIN",
+  "description": "this package serves extension interface to implement extensions",
   "type": "module",
   "files": [
     "dist"
@@ -26,13 +26,7 @@
     "build": "tsup",
     "check-ts": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "react": "catalog:react19"
-  },
   "devDependencies": {
-    "typescript": "catalog:types",
-    "tsup": "catalog:build",
-    "react": "catalog:react19",
-    "@types/react": "catalog:react19"
+    "@allin/api": "workspace:*"
   }
 }

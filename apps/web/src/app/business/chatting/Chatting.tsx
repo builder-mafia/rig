@@ -1,13 +1,12 @@
 import type { ConfigSchema } from '@allin/db-schema';
-import { Popover, PopoverContent } from '@allin/ui';
 import { useEffect, useMemo } from 'react';
 import type { z } from 'zod/v3';
-import { SelectionPopoverRenderer } from '@/extensions/components/SelectionPopoverRenderer';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { useTextSelection } from '@/hooks/use-text-selection';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
 import { registerProvider } from '../helper/register-provider';
+import { TextSelectionFloatingButtonList } from './TextSelectionFloatingButtonList';
 import { ThreadList } from './ThreadList';
 import { messagesToThreads } from './thread-util';
 import { useChat } from './useChat';
@@ -52,21 +51,11 @@ export const Chatting = () => {
       >
         <ThreadList threads={threads} status={status} regenerate={regenerate} />
       </div>
-      <Popover open={isTextSelected}>
-        <PopoverContent
-          side='top'
-          align='center'
-          className='w-auto p-0'
-          style={{
-            position: 'fixed',
-            left: selectionBoundingRect.left,
-            top: selectionBoundingRect.top,
-            transform: 'translate(-50%, -100%)',
-          }}
-        >
-          <SelectionPopoverRenderer selectedText={selectedText} />
-        </PopoverContent>
-      </Popover>
+      <TextSelectionFloatingButtonList
+        isOpen={isTextSelected}
+        selectedText={selectedText}
+        selectionBoundingRect={selectionBoundingRect}
+      />
     </>
   );
 };

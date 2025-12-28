@@ -1,22 +1,38 @@
+import { Sidebar, SidebarContent, SidebarHeader, Skeleton } from '@allin/ui';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Sidebar } from '@allin/ui';
-import { Skeleton } from '@allin/ui';
+import { match, P } from 'ts-pattern';
 import { ChannelList } from './ChannelList';
 
+type PanelId = 'channels' | string;
+
 export const LeftPanel = () => {
+  // TODO: Add panel switching logic when needed
+
   return (
     <Sidebar>
       <ErrorBoundary
-        fallbackRender={({ error }) => <div>Error: {error.message}</div>}
+        fallbackRender={({ error }) => (
+          <div className='p-4'>Error: {error.message}</div>
+        )}
       >
         <Suspense
           fallback={
-            <div className='w-full h-full flex flex-col gap-2 mt-16 px-2 overflow-hidden'>
-              {Array.from({ length: 10 }).map((_, index) => (
-                <Skeleton key={index} className='w-full h-10 rounded-2xl' />
-              ))}
-            </div>
+            <>
+              <SidebarHeader>
+                <div className='w-full h-[24px]'></div>
+              </SidebarHeader>
+              <SidebarContent>
+                <div className='w-full h-full flex flex-col gap-2 mt-4 px-2'>
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <Skeleton
+                      key={`skeleton-${index}`}
+                      className='w-full h-10 rounded-2xl'
+                    />
+                  ))}
+                </div>
+              </SidebarContent>
+            </>
           }
         >
           <ChannelList />
