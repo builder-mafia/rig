@@ -1,14 +1,11 @@
 import { Sidebar, SidebarContent, SidebarHeader, Skeleton } from '@allin/ui';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { match, P } from 'ts-pattern';
 import { ChannelList } from './ChannelList';
 
 type PanelId = 'channels' | string;
 
 export const LeftPanel = () => {
-  // TODO: Add panel switching logic when needed
-
   return (
     <Sidebar>
       <ErrorBoundary
