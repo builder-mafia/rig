@@ -193,8 +193,6 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
     [chatFacade],
   );
 
-  console.log(uiMessages);
-
   return {
     uiMessages,
     status,

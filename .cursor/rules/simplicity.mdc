@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# Code Simplicity Guidelines
+
+## Core Principles
+
+- **YAGNI (You Aren't Gonna Need It)**: Don't implement features until explicitly requested. Use TODO comments for future extensions.
+- **Minimal Implementation**: Implement only the requested core functionality. Add extras only when asked.
+- **Simplicity First**: Prefer simple solutions over complex architectures. Refactor when needed, not in advance.
+
+## Implementation Checklist
+
+Before submitting code, verify:
+- Does it include only the requested core feature?
+- Are there unnecessary UI decorations (icons, animations, effects)?
+- Is there premature abstraction for future extensibility?
+- Are extension points marked with TODO comments?
+
+## Examples
+
+**Bad:**
+- Need tab switching → Add icons, badges, hover effects, animations
+- Need panel switching → Create complex state management and multiple components
+
+**Good:**
+- Need tab switching → Add `activePanelId` variable, mark "TODO: Add switching logic"
+- Need panel switching → Implement match branching with default value
