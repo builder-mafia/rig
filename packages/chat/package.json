@@ -22,7 +22,7 @@
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "pnpm run generate:model-spec && tsup --watch",
+    "dev": "tsup --watch",
     "build": "pnpm run generate:model-spec && tsup",
     "generate:model-spec": "tsx src/provider/google/script/fetch-google-model-spec.ts && tsx src/provider/openai/script/fetch-openai-model-spec.ts",
     "check-ts": "tsc --noEmit",
