@@ -15,5 +15,6 @@ export const isProviderEnabled = (
   return match(providerName)
     .with('google', () => !!config.apiKeys.google)
     .with('openai', () => !!config.apiKeys.openai)
+    .with('anthropic', () => !!config.apiKeys.anthropic)
     .exhaustive();
 };

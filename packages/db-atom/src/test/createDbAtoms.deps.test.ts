@@ -2,7 +2,7 @@ import type { ChannelSchema, ConfigSchema } from '@allin/db-schema';
 import type { UIMessage } from 'ai';
 import { createStore } from 'jotai/vanilla';
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod/v3';
+import type { z } from 'zod/v3';
 import { type AllinDbAdapter, createDbAtoms } from '../index';
 
 type Channel = z.infer<typeof ChannelSchema>;
@@ -61,6 +61,7 @@ function createInMemoryDbAdapter(initial: InMemoryDbState) {
 
     getMessages: async () => [],
     addMessage: async (_channelId: string, _message: UIMessage) => {},
+    deleteMessage: async (_messageId: string) => {},
     deleteMessagesByChannelId: async (_channelId: string) => {},
   };
 
