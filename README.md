@@ -1,67 +1,80 @@
-## ALLIN – AI All‑in‑One Kit Open Source Project
+# ALLIN
 
-**ALLIN** is an open source project aiming to become an **AI all‑in‑one kit** that bundles various AI‑powered features in a single place.
+An open-source AI all-in-one kit with chat interface and extensible features.
 
-Right now, ALLIN focuses primarily on a **chat-based interface**, similar to ChatGPT or Gemini,  
-where you can have conversations with an AI.
+## About
 
-But this is just the starting point.  
-The long‑term goal is to **keep adding useful, creative AI features on top of this foundation.**
+ALLIN is a platform that bundles various AI-powered features in a single place. Currently focused on providing a ChatGPT/Gemini-like chat interface, with plans to continuously add more creative AI features.
 
-> If you have ideas or features you’d love to see,  
-> feel free to open an issue anytime – your creativity and input are very welcome.
+## Project Structure
 
----
+```
+ALLIN/
+├── apps/
+│   ├── web/              # Next.js web application
+│   └── desktop-app/      # Tauri desktop application
+├── packages/
+│   ├── allin-api/        # API definitions for extensions
+│   ├── allin-extension/  # Extension system core
+│   ├── chat/             # Chat functionality (providers, facades)
+│   ├── db-atom/          # Database state management
+│   ├── db-schema/        # Database schemas
+│   ├── message-metadata-schema/  # Message metadata types
+│   └── ui/               # Shared UI components (shadcn/ui)
+└── extensions/
+    └── quiz/             # Example extension (quiz feature)
+```
 
-### Tech Stack
+## Tech Stack
 
-ALLIN is built with the following stack:
+- **Framework**: Next.js 15, React 19
+- **Desktop**: Tauri (Rust)
+- **State Management**: Jotai + RxJS
+- **UI**: shadcn/ui, Tailwind CSS, Lucide Icons
+- **Database**: IndexedDB
+- **AI Providers**: OpenAI, Google AI, Anthropic
+- **Testing**: Vitest
+- **Monorepo**: Turbo + pnpm
 
-* **State Management**
-    * `jotai`
-* **Event Streams / Reactive Logic**
-    * `jotai` + `rxjs`
-* **UI**
-    * `shadcn/ui`
-    * `lucide-react` (icons)
-    * `tailwindcss`
-* **Data Persistence**
-    * `IndexedDB`
-* **Testing**
-    * `vitest`
+## Getting Started
 
-With this setup, the project aims to be a **lightweight, flexible, and extensible AI platform**.
+### Prerequisites
 
----
+- Node.js 18+
+- pnpm 9.6.0+
 
-### Built with the Community, for the Community
+### Installation
 
-ALLIN is not meant to be a solo project.  
-I’d love to **build and grow it together with creative and talented developers.**
+```bash
+# Install dependencies
+pnpm install
 
-Contributions are welcome in any form, including:
+# Run web app in development mode
+pnpm dev
 
-* New AI feature ideas
-* UX/UI improvements
-* Performance optimizations
-* Test coverage and refactoring
-* Documentation and examples
+# Run desktop app
+pnpm dev:app
 
-If you’re interested in AI, frontend, state management, or just want to play with an AI toolkit, you’re more than welcome to join.
+# Build all apps
+pnpm build
 
----
+# Run tests
+pnpm test
+```
 
-### How to Reach Out & Contribute
+## Contributing
 
-* **Feature requests / bug reports / refactoring ideas**
-    * Please open an issue in the **Issues** tab of the repository.
-* **Development‑related questions**
-    * Also use the **Issues** tab to ask questions – I’ll check and respond there.
-* **More personal or in‑depth questions**
-    * Feel free to contact me directly (via email or any contact info provided in my GitHub profile).
+Contributions are welcome in any form:
 
-The goal for ALLIN is to become an **“AI playground and all‑in‑one kit”**  
-where we can experiment, plug in features, and build something genuinely useful together.
+- New AI feature ideas
+- UX/UI improvements
+- Performance optimizations
+- Test coverage and refactoring
+- Documentation
 
-Looking forward to hacking on this with you.
+Please open an issue to discuss your ideas or submit a pull request.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
