@@ -8,7 +8,7 @@ export * from './modal';
 export * from './sidebar';
 export * from './text-selection';
 
-export interface AllinAPI {
+export interface ExtensionContext {
   AI: AI;
   Modal: Modal;
   Sidebar: Sidebar;

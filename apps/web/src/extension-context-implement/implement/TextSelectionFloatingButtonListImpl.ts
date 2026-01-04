@@ -1,4 +1,4 @@
-import type { TextSelectionFloatingButtonList } from '@allin/api';
+import type { TextSelectionFloatingButtonList } from '@allin/context';
 import { getDefaultStore } from 'jotai';
 import { textSelectionFloatingButtonListAtom } from '@/app/business/chatting/TextSelectionFloatingButtonList';
 

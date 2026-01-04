@@ -1,4 +1,4 @@
-import type { Sidebar } from '@allin/api';
+import type { Sidebar } from '@allin/context';
 
 export const SidebarImpl: Sidebar = {
   add: (id, item) => {

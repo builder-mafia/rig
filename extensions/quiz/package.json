@@ -38,7 +38,7 @@
     "zod": "catalog:utils",
     "react": "catalog:react19",
     "@types/react": "catalog:react19",
-    "@allin/api": "workspace:*",
+    "@allin/context": "workspace:*",
     "@allin/extension": "workspace:*"
   }
 }

@@ -1,4 +1,4 @@
-import type { AllinAPI } from '@allin/api';
+import type { ExtensionContext } from '@allin/context';
 
 export interface Extension {
   /** Unique extension ID */
@@ -9,6 +9,6 @@ export interface Extension {
   version: string;
   /** Extension description */
   description?: string;
-  activate(api: AllinAPI): void | Promise<void>;
-  deactivate?(api: AllinAPI): void | Promise<void>;
+  activate(context: ExtensionContext): void | Promise<void>;
+  deactivate?(context: ExtensionContext): void | Promise<void>;
 }
