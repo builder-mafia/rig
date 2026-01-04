@@ -2,7 +2,7 @@
   "name": "@allin/ui",
   "version": "0.1.0",
   "private": false,
-  "description": "UI for ALLIN",
+  "description": "UI components for ALLIN",
   "type": "module",
   "files": [
     "dist"

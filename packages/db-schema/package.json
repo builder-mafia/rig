@@ -2,7 +2,7 @@
   "name": "@allin/db-schema",
   "version": "0.1.0",
   "private": false,
-  "description": "DB Schema for ALLIN",
+  "description": "This package provides the ALLIN DB schema",
   "type": "module",
   "files": [
     "dist"
