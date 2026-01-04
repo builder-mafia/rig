@@ -1,6 +1,6 @@
-# Extension API
+# Extension Context
 
-API interface package for the ALLIN app extension system.
+Context interface package for the ALLIN app extension system.
 
 ## Overview
 
@@ -25,12 +25,12 @@ Extension Execution
 
 ## Core APIs
 
-### ExtensionAPI
+### ExtensionContext
 
 Interface for extensions to access app features:
 
 ```typescript
-interface ExtensionAPI {
+interface ExtensionContext {
   selectionPopover: SelectionPopoverAPI;  // Text selection popover
   modal: ModalAPI;                        // Modal management
   sidebar: SidebarAPI;                    // Sidebar panel management
@@ -134,7 +134,8 @@ pnpm init
 
 ```typescript
 // src/index.ts
-import type { Extension, ExtensionAPI } from '@allin/extension-api';
+import type { Extension } from '@allin/extension';
+import type { ExtensionContext } from '@allin/context';
 
 export const myExtension: Extension = {
   id: 'my-extension',
@@ -142,9 +143,9 @@ export const myExtension: Extension = {
   version: '1.0.0',
   description: 'My custom extension',
 
-  async activate(api: ExtensionAPI) {
+  async activate(context: ExtensionContext) {
     // Extension initialization logic
-    api.selectionPopover.add('my-feature', ({ close, selectedText }) => {
+    context.selectionPopover.add('my-feature', ({ close, selectedText }) => {
       return <button onClick={() => console.log(selectedText)}>Run</button>;
     });
   },
@@ -169,7 +170,8 @@ export const myExtension: Extension = {
     }
   },
   "peerDependencies": {
-    "@allin/extension-api": "workspace:*",
+    "@allin/context": "workspace:*",
+    "@allin/extension": "workspace:*",
     "react": "catalog:react"
   }
 }
@@ -177,14 +179,14 @@ export const myExtension: Extension = {
 
 ## Using Extensions in the App
 
-### 1. Create ExtensionAPI Implementation
+### 1. Create ExtensionContext Implementation
 
 ```typescript
-// apps/web/src/extension/api.ts
-import type { ExtensionAPI } from '@allin/extension-api';
+// apps/web/src/extension-context-implement/ExtensionContextImpl.ts
+import type { ExtensionContext } from '@allin/context';
 
-export const extensionAPI: ExtensionAPI = {
-  // Implement the API
+export const extensionContextImpl: ExtensionContext = {
+  // Implement the context
   // This should integrate with your app's state management system
 };
 ```
@@ -194,9 +196,9 @@ You need to implement this to integrate with your app's state management system.
 ### 2. Dynamic Extension Loading
 
 ```typescript
-import { ExtensionLoader } from '@allin/extension-api';
+import { ExtensionLoader } from './ExtensionLoader';
 
-const loader = new ExtensionLoader(extensionAPI);
+const loader = new ExtensionLoader(extensionContextImpl);
 
 // Load only user-activated extensions
 const activeExtensions = ['@allin/extension-quiz', '@allin/extension-summary'];
@@ -215,8 +217,8 @@ console.log(loader.list());
 ```typescript
 // SelectionPopover.tsx
 function SelectionPopover({ text }) {
-  const api = useExtensionAPI();
-  const items = api.selectionPopover.list();
+  const context = useExtensionContext();
+  const items = context.selectionPopover.list();
 
   return (
     <div>
@@ -241,15 +243,15 @@ export const quizExtension: Extension = {
   name: 'Quiz Generator',
   version: '0.1.0',
 
-  async activate(api) {
+  async activate(context) {
     // Add selection popover item
-    api.selectionPopover.add('quiz', ({ close, selectedText }) => (
+    context.selectionPopover.add('quiz', ({ close, selectedText }) => (
       <button onClick={async () => {
         close();
-        const response = await api.ai.ask(
+        const response = await context.ai.ask(
           `Create 3 quizzes from this text: ${selectedText}`
         );
-        api.modal.open(({ close }) => (
+        context.modal.open(({ close }) => (
           <div>
             <h2>Quiz</h2>
             <pre>{response.content}</pre>
@@ -274,9 +276,9 @@ export const historyExtension: Extension = {
   name: 'Chat History',
   version: '0.1.0',
 
-  async activate(api) {
+  async activate(context) {
     // Add sidebar panel
-    api.sidebar.add('history-panel', {
+    context.sidebar.add('history-panel', {
       title: 'History',
       icon: '📜',
       content: ({ close, isOpen }) => {
@@ -329,12 +331,12 @@ export const historyExtension: Extension = {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { ExtensionLoader } from '@allin/extension-api';
+import { ExtensionLoader } from './ExtensionLoader';
 
 describe('ExtensionLoader', () => {
   it('should load extension', async () => {
-    const mockAPI = createMockAPI();
-    const loader = new ExtensionLoader(mockAPI);
+    const mockContext = createMockContext();
+    const loader = new ExtensionLoader(mockContext);
     
     await loader.load('@allin/extension-quiz');
     

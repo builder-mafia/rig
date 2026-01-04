@@ -1,4 +1,4 @@
-import type { TextSelectionFloatingButtonComponent } from '@allin/api';
+import type { TextSelectionFloatingButtonComponent } from '@allin/context';
 import { Button, ButtonGroup, Popover, PopoverContent } from '@allin/ui';
 import { atom, useAtomValue } from 'jotai';
 

@@ -1,7 +1,7 @@
-import type { AllinAPI } from '@allin/api';
+import type { ExtensionContext } from '@allin/context';
 import type { Extension } from '@allin/extension';
 import quizExtension from '@allin/extension-quiz';
-import { AllinApiImpl } from '@/allin-api-implement/AllinApiImpl';
+import { extensionContextImpl } from '@/extension-context-implement/ExtensionContextImpl';
 
 export type LoadedExtension = {
   extension: Extension;
@@ -10,15 +10,15 @@ export type LoadedExtension = {
 
 class ExtensionLoader {
   private loadedExtensions = new Map<string, LoadedExtension>();
-  private api: AllinAPI;
+  private context: ExtensionContext;
 
   // we could change this to dynamic import in the future
   private registry: Record<string, Extension> = {
     '@allin/extension-quiz': quizExtension,
   };
 
-  constructor(api: AllinAPI) {
-    this.api = api;
+  constructor(context: ExtensionContext) {
+    this.context = context;
   }
 
   async load(extensionName: string) {
@@ -62,7 +62,7 @@ class ExtensionLoader {
       return;
     }
 
-    await loaded.extension.activate(this.api);
+    await loaded.extension.activate(this.context);
     loaded.isActive = true;
   }
 
@@ -77,7 +77,7 @@ class ExtensionLoader {
       return;
     }
 
-    await loaded.extension.deactivate?.(this.api);
+    await loaded.extension.deactivate?.(this.context);
     loaded.isActive = false;
   }
 
@@ -88,4 +88,4 @@ class ExtensionLoader {
   }
 }
 
-export const extensionLoader = new ExtensionLoader(AllinApiImpl);
+export const extensionLoader = new ExtensionLoader(extensionContextImpl);

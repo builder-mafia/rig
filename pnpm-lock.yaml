@@ -219,12 +219,12 @@ importers:
       '@ai-sdk/react':
         specifier: catalog:ai
         version: 3.0.1(react@19.2.1)(zod@3.25.76)
-      '@allin/api':
-        specifier: workspace:*
-        version: link:../../packages/allin-api
       '@allin/chat':
         specifier: workspace:*
         version: link:../../packages/chat
+      '@allin/context':
+        specifier: workspace:*
+        version: link:../../packages/allin-context
       '@allin/db-atom':
         specifier: workspace:*
         version: link:../../packages/db-atom
@@ -478,9 +478,9 @@ importers:
 
   extensions/quiz:
     devDependencies:
-      '@allin/api':
+      '@allin/context':
         specifier: workspace:*
-        version: link:../../packages/allin-api
+        version: link:../../packages/allin-context
       '@allin/extension':
         specifier: workspace:*
         version: link:../../packages/allin-extension
@@ -503,7 +503,7 @@ importers:
         specifier: catalog:utils
         version: 3.25.76
 
-  packages/allin-api:
+  packages/allin-context:
     devDependencies:
       '@types/react':
         specifier: catalog:react19
@@ -523,9 +523,9 @@ importers:
 
   packages/allin-extension:
     devDependencies:
-      '@allin/api':
+      '@allin/context':
         specifier: workspace:*
-        version: link:../allin-api
+        version: link:../allin-context
 
   packages/chat:
     devDependencies:

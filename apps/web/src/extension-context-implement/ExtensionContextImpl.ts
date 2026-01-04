@@ -1,10 +1,10 @@
-import type { AllinAPI } from '@allin/api';
+import type { ExtensionContext } from '@allin/context';
 import { AIImpl } from './implement/AiImpl';
 import { ModalImpl } from './implement/ModalImpl';
 import { SidebarImpl } from './implement/SidebarImpl';
 import { TextSelectionFloatingButtonListImpl } from './implement/TextSelectionFloatingButtonListImpl';
 
-export const AllinApiImpl: AllinAPI = {
+export const extensionContextImpl: ExtensionContext = {
   AI: AIImpl,
   Modal: ModalImpl,
   Sidebar: SidebarImpl,

@@ -27,6 +27,6 @@
     "check-ts": "tsc --noEmit"
   },
   "devDependencies": {
-    "@allin/api": "workspace:*"
+    "@allin/context": "workspace:*"
   }
 }

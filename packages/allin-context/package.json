@@ -1,8 +1,8 @@
 {
-  "name": "@allin/api",
+  "name": "@allin/context",
   "version": "0.1.0",
   "private": false,
-  "description": "This package provides the ALLIN API interface",
+  "description": "This package provides the Extension Context interface",
   "type": "module",
   "files": [
     "dist"

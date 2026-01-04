@@ -22,7 +22,7 @@
     "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@allin/message-metadata-schema": "workspace:*",
-    "@allin/api": "workspace:*",
+    "@allin/context": "workspace:*",
     "@allin/extension": "workspace:*",
     "@allin/extension-quiz": "workspace:*",
     "@gsap/react": "catalog:animation",
