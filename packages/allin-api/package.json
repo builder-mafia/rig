@@ -2,7 +2,7 @@
   "name": "@allin/api",
   "version": "0.1.0",
   "private": false,
-  "description": "ALLIN API for extensions",
+  "description": "This package provides the ALLIN API interface",
   "type": "module",
   "files": [
     "dist"

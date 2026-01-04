@@ -4,12 +4,14 @@ export const ModelCostSchema = z.object({
   input: z.number().optional(),
   output: z.number().optional(),
   cache_read: z.number().optional(),
+  cache_write: z.number().optional(),
   input_audio: z.number().optional(),
   context_over_200k: z
     .object({
       input: z.number().optional(),
       output: z.number().optional(),
       cache_read: z.number().optional(),
+      cache_write: z.number().optional(),
     })
     .optional(),
 });

@@ -2,7 +2,7 @@
   "name": "@allin/extension",
   "version": "0.1.0",
   "private": false,
-  "description": "this package serves extension interface to implement extensions",
+  "description": "This package provides extension interface",
   "type": "module",
   "files": [
     "dist"
