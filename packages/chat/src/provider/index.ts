@@ -1,4 +1,5 @@
 export * from './all-models';
+export * from './anthropic';
 export * from './google';
 export * from './LLMProvider';
 export * from './openai';

@@ -38,6 +38,7 @@ catalogs:
     ai: ^6
     "@ai-sdk/openai": ^3
     "@ai-sdk/google": ^3
+    "@ai-sdk/anthropic": ^3
     "@ai-sdk/react": ^3
     "@ai-sdk/provider": ^3
     "@ai-sdk/provider-utils": ^4

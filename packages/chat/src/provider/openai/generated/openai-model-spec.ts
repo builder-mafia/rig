@@ -117,8 +117,7 @@
         "image"
       ],
       "output": [
-        "text",
-        "image"
+        "text"
       ]
     },
     "open_weights": false,

@@ -72,3 +72,5 @@ packages/**/.turbo
 
 localhost.pem
 localhost-key.pem
+
+session-ses*.md

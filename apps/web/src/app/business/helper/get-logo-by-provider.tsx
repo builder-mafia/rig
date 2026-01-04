@@ -1,5 +1,5 @@
 import type { LLMProviderName } from '@allin/chat';
-import { Google, OpenAI } from '@lobehub/icons';
+import { Anthropic, Google, OpenAI } from '@lobehub/icons';
 import { match } from 'ts-pattern';
 
 export const getLogoByProvider = (
@@ -9,5 +9,6 @@ export const getLogoByProvider = (
   return match(providerName)
     .with('openai', () => <OpenAI className={className} />)
     .with('google', () => <Google className={className} />)
+    .with('anthropic', () => <Anthropic className={className} />)
     .exhaustive();
 };

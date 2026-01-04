@@ -1,4 +1,5 @@
 import {
+  AnthropicProvider,
   GoogleProvider,
   type LLMProviderName,
   LLMProviderNameSchema,
@@ -25,6 +26,12 @@ export const registerProvider = (config: z.infer<typeof ConfigSchema>) => {
       })
       .with('openai', () => {
         providerRegistry.register('openai', new OpenAiProvider({ apiKey }));
+      })
+      .with('anthropic', () => {
+        providerRegistry.register(
+          'anthropic',
+          new AnthropicProvider({ apiKey }),
+        );
       })
       .exhaustive();
   });
