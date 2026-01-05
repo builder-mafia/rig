@@ -8,7 +8,7 @@ import { Chatting } from './chatting/Chatting';
 import { ChattingSuspenseFallbackView } from './chatting/ChattingSuspenseFallbackView';
 import { ExtensionDock } from './dock/ExtensionDock';
 import { CenterHeader } from './header/CenterHeader';
-import { ChatListButton } from './header/LeftHeader';
+import { ChannelListButton } from './header/ChannelListButton';
 import { RightHeader } from './header/RightHeader';
 import { Initializer } from './Initializer';
 
@@ -35,7 +35,6 @@ export const RootView = React.memo(() => {
     <div className={'w-full h-full flex flex-row'}>
       <Initializer />
       <ExtensionDock />
-
       {!renderProps && (
         <motion.div
           // when left panel is open, the main chatting area should be animated.
@@ -46,10 +45,9 @@ export const RootView = React.memo(() => {
             <RightHeader />
           </Suspense>
           <div className='fixed top-2 left-2 flex z-20'>
-            <ChatListButton />
+            <ChannelListButton />
           </div>
           {/* <LeftPanelRenderer /> */}
-
           <CenterHeader />
           <Suspense fallback={<ChattingSuspenseFallbackView />}>
             <Chatting />
