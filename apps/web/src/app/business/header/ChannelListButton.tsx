@@ -152,7 +152,7 @@ export const ChannelListButton = () => {
             </button>
           </div>
           {/* Channel List */}
-          <ScrollArea className='h-[calc(100dvh-110px)]'>
+          <ScrollArea className='h-[calc(100dvh-150px)]'>
             <div className='p-3'>
               {pinnedChannels.length > 0 && (
                 <div className='mb-2'>
