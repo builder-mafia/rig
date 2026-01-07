@@ -286,7 +286,7 @@ export class ChatFacade {
    * In most cases, when the provider changes, the modelId should change accordingly.
    *
    * For example:
-   * - When switching from google to openai, the modelId should change from gemini to gpt.
+   * - When switching from google to openai, the modelId should change from gemini-flash to gpt-4o (example).
    */
   public updateProvider(provider: LLMProvider, modelId: string) {
     this.provider = provider;
