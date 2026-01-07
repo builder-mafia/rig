@@ -2,7 +2,8 @@
 
 import { useStore } from 'jotai';
 import { useEffect } from 'react';
-import { useExtensionLoader } from '@/extension-adaptor/useExtensionLoader';
+import { loadExtensions } from '@/extension/loader';
+import { extensionContextImpl } from '@/extension-context-implement/ExtensionContextImpl';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { observeAddMessage } from '@/idb/db-store-side-effect';
 import { selectedChannelSideEffectAtom } from '@/idb/side-effects/selected-channel-side-effect';
@@ -10,7 +11,6 @@ import { selectedChannelSideEffectAtom } from '@/idb/side-effects/selected-chann
 export const Initializer = () => {
   const store = useStore();
   useSwrAtomValue(selectedChannelSideEffectAtom);
-  const loader = useExtensionLoader();
 
   useEffect(() => {
     const unsubAddMessage = observeAddMessage(store);
@@ -21,15 +21,8 @@ export const Initializer = () => {
   }, [store]);
 
   useEffect(() => {
-    if (!loader) return;
+    loadExtensions(extensionContextImpl);
+  }, []);
 
-    console.log('==> loading and activating extension');
-    try {
-      loader?.loadAndActivate('@allin/extension-quiz');
-    } catch (error) {
-      console.error('==> error loading and activating extension', error);
-    }
-  }, [loader]);
-
-  return <></>;
+  return null;
 };

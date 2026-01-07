@@ -34,6 +34,7 @@
     "tsup": "catalog:build",
     "react": "catalog:react19",
     "@types/react": "catalog:react19",
-    "zod": "catalog:utils"
+    "zod": "catalog:utils",
+    "rxjs": "catalog:utils"
   }
 }
