@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type ModelSpec, ModelSpecSchema } from '../../model-spec';
@@ -44,7 +44,11 @@ async function generateGoogleModelSpec(): Promise<void> {
   targetModels.forEach(model => ModelSpecSchema.parse(model));
 
   const generatedDir = path.join(__dirname, '../generated');
-  await fs.mkdir(generatedDir, { recursive: true });
+  await fs.mkdir(generatedDir, { recursive: true }, err => {
+    if (err) {
+      throw new Error(`Failed to create directory: ${err.message}`);
+    }
+  });
   const outputPath = path.join(generatedDir, OUTPUT_FILENAME);
 
   // 4. convert model spec array to record with OpenAiModelId as key
@@ -63,7 +67,11 @@ async function generateGoogleModelSpec(): Promise<void> {
   export const googleModelSpec = ${JSON.stringify(modelSpec, null, 2)} as const satisfies Record<GoogleAiModelId, ModelSpec>;`;
 
   // 5. write model spec to ts file
-  await fs.writeFile(outputPath, ts, 'utf-8');
+  await fs.writeFile(outputPath, ts, 'utf-8', err => {
+    if (err) {
+      throw new Error(`Failed to write file: ${err.message}`);
+    }
+  });
 }
 
 generateGoogleModelSpec()
