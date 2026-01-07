@@ -11,8 +11,8 @@ import { BehaviorSubject, type Observable, Subject } from 'rxjs';
 import type {
   LLMProvider,
   ModelResponseOptions,
-} from '../provider/LLMProvider';
-import type { Setter } from '../utils/setter';
+} from '@allin/chat';
+import type { Setter } from './setter';
 import { UIMessageStore } from './UiMessageStore';
 
 type ChatUiMessage = UIMessage<UIMessageMetadata>;
@@ -286,7 +286,7 @@ export class ChatFacade {
    * In most cases, when the provider changes, the modelId should change accordingly.
    *
    * For example:
-   * - When switching from google to openai, the modelId should change from gemini-flash to gpt-4o (example).
+   * - When switching from google to openai, the modelId should change from gemini to gpt.
    */
   public updateProvider(provider: LLMProvider, modelId: string) {
     this.provider = provider;

@@ -1,10 +1,9 @@
 import {
-  ChatFacade,
-  ChatFacadeManager,
   generateUIMessage,
   LLMProviderNameSchema,
   providerRegistry,
 } from '@allin/chat';
+import { ChatFacade, ChatFacadeManager } from './facade';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';

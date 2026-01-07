@@ -1,12 +1,12 @@
 import {
   type AllModelIds,
   AllModelIdsSchema,
-  ChatFacadeManager,
   generateUIMessage,
   type LLMProviderName,
   LLMProviderNameSchema,
   type ReasoningEffort,
 } from '@allin/chat';
+import { ChatFacadeManager } from './facade';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Button, ButtonGroup, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';

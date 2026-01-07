@@ -1,8 +1,5 @@
-import {
-  ChatFacadeManager,
-  type LLMProviderName,
-  providerRegistry,
-} from '@allin/chat';
+import { type LLMProviderName, providerRegistry } from '@allin/chat';
+import { ChatFacadeManager } from '@/app/business/chatting/facade';
 import type { ChannelSchema } from '@allin/db-schema';
 import type { z } from 'zod/v3';
 

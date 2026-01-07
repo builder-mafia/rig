@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockProvider } from '../../provider/test/mockProvider';
-import { ChatFacade } from '../ChatFacade';
-import { ChatFacadeManager } from '../ChatFacadeManager';
 import {
+  createMockProvider,
   generateUIMessage,
   getAssistantMessageText,
   getUserMessageText,
-} from '../message-util';
+} from '@allin/chat';
+import { ChatFacade } from '../ChatFacade';
+import { ChatFacadeManager } from '../ChatFacadeManager';
 
 describe('ChatFacade', () => {
   beforeEach(() => {
