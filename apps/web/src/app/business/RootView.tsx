@@ -44,9 +44,15 @@ export const RootView = React.memo(() => {
           <Suspense fallback={<div>Loading...</div>}>
             <RightHeader />
           </Suspense>
+          {/* need Suspense to prevent layout shift */}
+          {/* if we don't use Suspense, promise is thrown to the root view and every UI components are flickering */}
+
           <div className='fixed top-2 left-2 flex z-20'>
-            <ChannelListButton />
+            <Suspense fallback={<div />}>
+              <ChannelListButton />
+            </Suspense>
           </div>
+
           {/* <LeftPanelRenderer /> */}
           <CenterHeader />
           <Suspense fallback={<ChattingSuspenseFallbackView />}>
