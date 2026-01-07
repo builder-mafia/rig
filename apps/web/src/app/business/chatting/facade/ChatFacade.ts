@@ -1,7 +1,6 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider';
-import type { Chat } from '@ai-sdk/react';
+import { Chat } from '@ai-sdk/react';
 import type { LLMProvider, ModelResponseOptions } from '@allin/chat';
-import { createChat } from '@allin/chat';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type {
   ChatOnDataCallback,
@@ -235,7 +234,7 @@ export class ChatFacade {
   }) {
     const transport = provider.createTextStream(model, responseOptions);
 
-    const chat = createChat<ChatUiMessage>({
+    const chat = new Chat<ChatUiMessage>({
       id,
       transport,
       messages,

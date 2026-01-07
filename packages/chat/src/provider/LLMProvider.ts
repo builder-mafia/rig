@@ -30,6 +30,9 @@ export interface LLMProvider {
    * Otherwise, return null.
    */
   getSpeechModel: (modelId: string) => SpeechModelV3 | null;
+  /**
+   * create a text stream transport
+   */
   createTextStream: (
     model: LanguageModelV3,
     options?: ModelResponseOptions,
