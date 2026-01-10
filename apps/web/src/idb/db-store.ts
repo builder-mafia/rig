@@ -1,6 +1,7 @@
 import { type AllinDbAdapter, createDbAtoms } from '@allin/db-atom';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
+import { getDefaultStore } from 'jotai';
 import { DB } from './db';
 
 const dbAdapter = {
@@ -25,6 +26,31 @@ const dbAdapter = {
   },
 } satisfies AllinDbAdapter;
 
-const dbAtoms = createDbAtoms(dbAdapter);
+export const dbAtoms = createDbAtoms(dbAdapter);
 
-export { dbAtoms };
+/**
+ * get current model id and provider name.
+ */
+export const getConfig = async () => {
+  const [selectedChannel, selectedChannelMessages] = await Promise.all([
+    getDefaultStore().get(dbAtoms.selectedChannelAtom),
+    getDefaultStore().get(dbAtoms.selectedChannelMessagesAtom),
+  ]);
+
+  if (!selectedChannel) {
+    throw new Error('Selected channel is not found.');
+  }
+
+  return {
+    messages: selectedChannelMessages,
+    modelId: selectedChannel.model,
+    provider: selectedChannel.providerName,
+    prompt: selectedChannel.prompt,
+    reasoningEffort: selectedChannel.reasoningEffort,
+    reasoningSummary: selectedChannel.reasoningSummary,
+  };
+};
+
+export const getSelectedChannelMessages = async () => {
+  return await getDefaultStore().get(dbAtoms.selectedChannelMessagesAtom);
+};
