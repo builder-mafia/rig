@@ -1,51 +1,31 @@
-import {
-  Agent,
-  generateUIMessage,
-  type LLMProviderName,
-  LLMProviderNameSchema,
-  Prompt,
-  providerRegistry,
-} from '@allin/chat';
+import { generateUIMessage, providerRegistry } from '@allin/chat';
+import type { ChannelSchema } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { merge } from 'es-toolkit';
-import { getDefaultStore, useSetAtom } from 'jotai';
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
-import z from 'zod/v3';
-import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
-import { isMessagesConsistent } from './consistency-check';
+import { useSetAtom } from 'jotai';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import type z from 'zod/v3';
+import { dbAtoms, getConfig } from '@/idb/db-store';
 import { ChatFacade, ChatFacadeManager } from './facade';
 import { handleExceptionOnOpenAi } from './open-ai-exception-handling';
+import { useAutoChannelTitle } from './useAutoChannelTitle';
 
 /**
  * It must be declared as a constant to avoid infinite re-rendering.
  */
 const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
 
-type UseChatOptions = {
-  id: string;
-};
-
-const store = getDefaultStore();
-
 /**
  * if chatFacade is changed, the uiMessages and status will be updated.
  */
 export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   id,
-}: UseChatOptions) => {
-  const addMessageOnDB = useSetAtom(dbAtoms.addMessageAtom);
-  const deleteMessageOnDB = useSetAtom(dbAtoms.deleteMessageAtom);
-  const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
-  const needUpdateTitleRef = useRef(false);
+  title,
+}: z.infer<typeof ChannelSchema>) => {
+  const addMessageToDB = useSetAtom(dbAtoms.addMessageAtom);
+  const deleteMessageFromDB = useSetAtom(dbAtoms.deleteMessageAtom);
   /**
    * useSuspenseQuery's only purpose is to trigger the suspense.
    */
@@ -56,34 +36,18 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
         return ChatFacadeManager.getInstance().getChatFacade(id);
       }
 
-      const allMessages = await store.get(dbAtoms.allMessagesAtom);
-      const channels = await store.get(dbAtoms.allChannelsAtom);
-
-      const currentChannel = channels.find(channel => channel.id === id);
-      const messages = allMessages.filter(message => message.channelId === id);
-
-      assert(currentChannel, 'useChat: channel is not found.');
-      assert(messages, 'useChat: channel messages are not found.');
-
-      needUpdateTitleRef.current = Boolean(!currentChannel.title);
-
-      console.log('valid', isMessagesConsistent(messages));
-      // in db, providerName is stored as string.
-      // so we need to parse it to LLMProviderName.
-      const safeProviderName = LLMProviderNameSchema.parse(
-        currentChannel.providerName,
-      );
-      const provider = providerRegistry.get(safeProviderName);
+      const { modelId, provider, reasoningEffort, reasoningSummary, messages } =
+        await getConfig();
 
       const facade = new ChatFacade({
         id,
-        provider,
-        modelId: currentChannel.model,
-        responseOptions: {
-          reasoning: currentChannel.reasoningEffort,
-          reasoningSummary: currentChannel.reasoningSummary,
-        },
         messages,
+        provider: providerRegistry.get(provider),
+        modelId,
+        responseOptions: {
+          reasoning: reasoningEffort,
+          reasoningSummary: reasoningSummary,
+        },
       });
 
       ChatFacadeManager.getInstance().setChatFacade(id, facade);
@@ -98,7 +62,7 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
       const metadata: UIMessageMetadata = {
         createdAt: Date.now(),
       };
-      addMessageOnDB(
+      addMessageToDB(
         chatFacade.getId(),
         merge(message, {
           metadata,
@@ -106,20 +70,23 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
       );
     });
 
-    // save assistant response to db after finishing
+    // save assistant response to DB after response is finished.
     const subscription2 = chatFacade.finish$.subscribe(
       ({ message, isAbort, isDisconnect, isError }) => {
         const isAbnormalFinish = isAbort || isDisconnect || isError;
         let messageToSave: UIMessage<UIMessageMetadata> = message;
+        let isChanged = false;
 
+        // remove message.metadata when openai request is aborted.
+        // issue: https://github.com/vercel/ai/issues/8811
         if (chatFacade.getProviderName() === 'openai') {
+          isChanged = true;
           messageToSave = handleExceptionOnOpenAi(messageToSave);
         }
 
         if (isAbnormalFinish) {
-          // when streaming is finished with error,
-          // we add error metadata to the message.
-          // and replace the context message and ui message to show the error.
+          isChanged = true;
+          // apply error metadata to the message
           const error = chatFacade.getError();
           const metadataAboutError: UIMessageMetadata = {
             isError: isError,
@@ -130,38 +97,15 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
           messageToSave = merge(message, {
             metadata: metadataAboutError,
           });
-
-          // the reason we replace the context message is for handling openai exception. (see handleExceptionOnOpenAi)
-          chatFacade.replaceContextMessage(messageToSave);
-          // the reason we upsert the ui message is for showing the error message to the user.
-          // because basicallly the uiMessage is updated in only when message is streaming. (see `@allin/chat`)
-          chatFacade.upsertUiMessage(messageToSave);
         }
 
-        // update channel title if it is not set yet.
-        if (needUpdateTitleRef.current) {
-          needUpdateTitleRef.current = false;
-
-          const model = providerRegistry
-            .get(chatFacade.getProviderName() as LLMProviderName)
-            .getModel(chatFacade.getModelId());
-
-          const messages = chatFacade.getMessages();
-          Agent.generate({
-            messages,
-            description: Prompt.title,
-            model,
-            schema: z.object({
-              title: z.string(),
-            }),
-          }).then(res => {
-            updateChannel(chatFacade.getId(), {
-              title: res.title,
-            });
-          });
+        // apply message changes to the context
+        // (openai exception or abnormal finish)
+        if (isChanged) {
+          chatFacade.createOrReplaceMessage(messageToSave);
         }
 
-        addMessageOnDB(chatFacade.getId(), messageToSave);
+        addMessageToDB(chatFacade.getId(), messageToSave);
       },
     );
 
@@ -169,7 +113,9 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
       subscription1.unsubscribe();
       subscription2.unsubscribe();
     };
-  }, [chatFacade, addMessageOnDB]);
+  }, [chatFacade, addMessageToDB]);
+
+  useAutoChannelTitle(chatFacade, Boolean(title?.trim() ?? false));
 
   const subscribeToMessages = useCallback(
     (onChange: () => void) => {
@@ -223,10 +169,10 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
 
   const regenerate = useCallback(
     (messageId: string) => {
-      deleteMessageOnDB(messageId);
+      deleteMessageFromDB(messageId);
       return chatFacade.regenerateMessage(messageId);
     },
-    [chatFacade],
+    [chatFacade, deleteMessageFromDB],
   );
 
   return {

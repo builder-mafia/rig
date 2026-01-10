@@ -12,22 +12,17 @@ import { messagesToThreads } from './thread-util';
 import { useChat } from './useChat';
 
 export const Chatting = () => {
-  const selectedChannelId = useSwrAtomValue(dbAtoms.selectedChannelIdAtom);
+  const channel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
 
+  assert(channel, 'Chatting: channel is not found.');
   // Text selection hook
   const { selectedText, isTextSelected, selectionBoundingRect, containerRef } =
     useTextSelection();
 
-  // TODO: add selectedChannel change sideEffect that update the chatFacade.
-
-  assert(selectedChannelId, 'Chatting: selectedChannelId is not found.');
-
   registerProvider(config as z.infer<typeof ConfigSchema>);
 
-  const { uiMessages, status, setSystemPrompt, regenerate } = useChat({
-    id: selectedChannelId,
-  });
+  const { uiMessages, status, setSystemPrompt, regenerate } = useChat(channel);
 
   // add system prompt to the chat
   useEffect(() => {
