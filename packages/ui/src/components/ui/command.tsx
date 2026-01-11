@@ -2,6 +2,7 @@
 
 import { Command as CommandPrimitive } from 'cmdk';
 import { SearchIcon } from 'lucide-react';
+import { cn } from '../../utils/cn';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
-import { cn } from '../../utils/cn';
 
 function Command({
   className,
