@@ -35,5 +35,5 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   // rust analyzer path settings.
-  "rust-analyzer.linkedProjects": ["apps/desktop-app/src-tauri/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["apps/tauri/src-tauri/Cargo.toml"]
 }
