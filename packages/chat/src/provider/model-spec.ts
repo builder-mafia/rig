@@ -19,6 +19,7 @@ export const ModelCostSchema = z.object({
 export const ModelLimitSchema = z.object({
   context: z.number().optional(),
   output: z.number().optional(),
+  input: z.number().optional(),
 });
 
 export const ModalitySchema = z.enum([

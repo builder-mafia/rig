@@ -6,7 +6,7 @@
   "gpt-4.1-nano": {
     "id": "gpt-4.1-nano",
     "name": "GPT-4.1 nano",
-    "family": "gpt-4.1-nano",
+    "family": "gpt-nano",
     "attachment": true,
     "reasoning": false,
     "tool_call": true,
@@ -38,7 +38,7 @@
   "gpt-5.1-codex": {
     "id": "gpt-5.1-codex",
     "name": "GPT-5.1 Codex",
-    "family": "gpt-5-codex",
+    "family": "gpt-codex",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
@@ -64,13 +64,14 @@
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
   "gpt-4.1-mini": {
     "id": "gpt-4.1-mini",
     "name": "GPT-4.1 mini",
-    "family": "gpt-4.1-mini",
+    "family": "gpt-mini",
     "attachment": true,
     "reasoning": false,
     "tool_call": true,
@@ -102,7 +103,7 @@
   "gpt-5.1-codex-mini": {
     "id": "gpt-5.1-codex-mini",
     "name": "GPT-5.1 Codex mini",
-    "family": "gpt-5-codex-mini",
+    "family": "gpt-codex",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
@@ -128,13 +129,14 @@
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
   "gpt-5.1": {
     "id": "gpt-5.1",
     "name": "GPT-5.1",
-    "family": "gpt-5",
+    "family": "gpt",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
@@ -165,7 +167,7 @@
   "gpt-5-nano": {
     "id": "gpt-5-nano",
     "name": "GPT-5 Nano",
-    "family": "gpt-5-nano",
+    "family": "gpt-nano",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
@@ -197,7 +199,7 @@
   "gpt-5-codex": {
     "id": "gpt-5-codex",
     "name": "GPT-5-Codex",
-    "family": "gpt-5-codex",
+    "family": "gpt-codex",
     "attachment": false,
     "reasoning": true,
     "tool_call": true,
@@ -229,7 +231,7 @@
   "gpt-4.1": {
     "id": "gpt-4.1",
     "name": "GPT-4.1",
-    "family": "gpt-4.1",
+    "family": "gpt",
     "attachment": true,
     "reasoning": false,
     "tool_call": true,
@@ -261,7 +263,7 @@
   "gpt-5-mini": {
     "id": "gpt-5-mini",
     "name": "GPT-5 Mini",
-    "family": "gpt-5-mini",
+    "family": "gpt-mini",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
@@ -293,7 +295,7 @@
   "gpt-5": {
     "id": "gpt-5",
     "name": "GPT-5",
-    "family": "gpt-5",
+    "family": "gpt",
     "attachment": true,
     "reasoning": true,
     "tool_call": true,
