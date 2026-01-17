@@ -1,0 +1,57 @@
+# Extension Development
+
+ALLIN provides a powerful extension system that allows you to add custom features.
+
+## Overview
+
+Extensions are self-contained modules that can:
+
+- Add custom UI components
+- Integrate with the chat system
+- Add sidebar panels
+- Create floating action buttons
+
+## Creating an Extension
+
+1. Create a new directory in `extensions/`:
+
+```bash
+mkdir extensions/my-extension
+cd extensions/my-extension
+pnpm init
+```
+
+2. Install the extension package:
+
+```bash
+pnpm add @allin/extension
+```
+
+3. Create your extension entry point:
+
+```tsx
+// src/index.ts
+import { defineExtension } from '@allin/extension'
+
+export default defineExtension({
+  name: 'my-extension',
+  displayName: 'My Extension',
+  
+  setup(ctx) {
+    // Extension initialization logic
+  }
+})
+```
+
+## Extension Context API
+
+The `ctx` object provides access to:
+
+- `ctx.ai` - AI chat integration
+- `ctx.sidebar` - Sidebar panel management
+- `ctx.modal` - Modal dialogs
+- `ctx.events` - Event system
+
+## Example: Quiz Extension
+
+Check out the built-in [quiz extension](https://github.com/your-username/allin/tree/main/extensions/quiz) for a complete example.

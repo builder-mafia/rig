@@ -1,0 +1,45 @@
+# ALLIN Documentation
+
+Welcome to the official ALLIN documentation.
+
+## What is ALLIN?
+
+**ALLIN** is an open-source AI all-in-one kit with a chat interface and extensible features. It provides a ChatGPT/Gemini-like chat experience with the ability to extend functionality through plugins.
+
+## Features
+
+- **Multi-Provider Support**: OpenAI, Google AI, Anthropic
+- **Desktop App**: Native desktop application powered by Tauri
+- **Extension System**: Build custom features with the extension API
+- **Modern Stack**: React 19, Next.js 15, TypeScript
+
+## Quick Links
+
+- [Getting Started](/docs/getting-started) - Set up ALLIN in minutes
+- [Extension Development](/docs/extensions) - Build your own extensions
+ 
+## Project Structure
+
+```
+ALLIN/
+├── apps/
+│   ├── web/              # Next.js web application
+│   └── tauri/            # Tauri desktop application
+├── packages/
+│   ├── allin-extension/  # Extension system core
+│   ├── chat/             # Chat functionality
+│   └── ui/               # Shared UI components
+└── extensions/
+    └── quiz/             # Example extension
+```
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 15, React 19 |
+| Desktop | Tauri (Rust) |
+| State | Jotai + RxJS |
+| UI | shadcn/ui, Tailwind CSS |
+| Database | IndexedDB |
+| AI | OpenAI, Google AI, Anthropic |
