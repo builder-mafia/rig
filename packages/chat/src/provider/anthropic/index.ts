@@ -1,2 +1,2 @@
-export * from './AnthropicProvider';
+export * from './AnthropicResponseOptionAdaptor';
 export * from './anthropic-models';

@@ -1,2 +1,2 @@
-export * from './GoogleProvider';
 export * from './google-models';
+export * from './GoogleResponseOptionAdaptor';

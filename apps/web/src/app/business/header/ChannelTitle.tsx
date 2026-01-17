@@ -1,4 +1,3 @@
-import { Agent, Prompt, providerRegistry } from '@allin/chat';
 import {
   Button,
   InputGroup,
@@ -17,9 +16,8 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Subject } from 'rxjs';
 import { toast } from 'sonner';
-import z from 'zod/v3';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
-import { dbAtoms, getConfig } from '@/idb/db-store';
+import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
 
 const DEFAULT_NAME = 'Untitled';
@@ -38,53 +36,12 @@ export const ChannelTitle = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // check if there are messages in the selected channel.
-  // if not, user cannot generate title. (because there is no context to generate title.)
   const hasMessages = selectedChannelMessages.length > 0;
 
   const handleGenerateTitle = useCallback(async () => {
     if (!hasMessages || isGenerating) return;
-
-    try {
-      setIsGenerating(true);
-      const { modelId, provider } = await getConfig();
-      const model = providerRegistry.get(provider).getModel(modelId);
-
-      const res = await Agent.generate({
-        messages: selectedChannelMessages,
-        description: Prompt.title,
-        model,
-        schema: z.object({
-          title: z.string(),
-        }),
-      });
-
-      if (inputRef.current) {
-        inputRef.current.value = res.title;
-      }
-
-      updateChannel(selectedChannel.id, {
-        title: res.title,
-      });
-    } catch (error) {
-      console.error('Failed to generate title:', error);
-      toast.error(
-        `Failed to generate title. ${error instanceof Error ? error.message : 'Unknown error'}`,
-        {
-          position: 'top-center',
-          duration: 3000,
-        },
-      );
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [
-    hasMessages,
-    isGenerating,
-    selectedChannel.id,
-    updateChannel,
-    selectedChannelMessages,
-  ]);
+    toast.info('Title generation is temporarily disabled.');
+  }, [hasMessages, isGenerating]);
 
   const onSubmit = useCallback(() => {
     const value = inputRef.current?.value;

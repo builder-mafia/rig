@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  createMockProvider,
+  createMockTransport,
   generateUIMessage,
   getAssistantMessageText,
   getUserMessageText,
@@ -21,15 +21,12 @@ describe('ChatFacade', () => {
     const chatFacade = new ChatFacade({
       id: 'chat-facade-id',
       messages: [],
-      provider: createMockProvider({
+      transport: createMockTransport({
         textDeltaChunks: ['Hello', ' I am assistant.'],
-        modelIds: ['mock-model-id'],
+        modelId: 'mock-model-id',
       }),
+      providerName: 'openai',
       modelId: 'mock-model-id',
-      responseOptions: {
-        reasoning: 'low',
-        reasoningSummary: false,
-      },
     });
 
     const response = await chatFacade.sendMessage(
@@ -51,15 +48,12 @@ describe('ChatFacade', () => {
         generateUIMessage('user', 'Hi I am user.'),
         generateUIMessage('assistant', 'Hello I am assistant.'),
       ],
-      provider: createMockProvider({
+      transport: createMockTransport({
         textDeltaChunks: ['Hello', ' I am assistant.'],
-        modelIds: ['mock-model-id'],
+        modelId: 'mock-model-id',
       }),
+      providerName: 'openai',
       modelId: 'mock-model-id',
-      responseOptions: {
-        reasoning: 'low',
-        reasoningSummary: false,
-      },
     });
 
     chatFacade.getUiMessages$().subscribe(currentMessages => {
@@ -77,15 +71,12 @@ describe('ChatFacade', () => {
       const chatFacade = new ChatFacade({
         id: 'chat-facade-id',
         messages: [],
-        provider: createMockProvider({
+        transport: createMockTransport({
           textDeltaChunks: ['Hello', ' I am assistant.'],
-          modelIds: ['mock-model-id'],
+          modelId: 'mock-model-id',
         }),
+        providerName: 'openai',
         modelId: 'mock-model-id',
-        responseOptions: {
-          reasoning: 'low',
-          reasoningSummary: false,
-        },
       });
 
       chatFacade.sendMessage(generateUIMessage('user', 'Say Hello World.'));
@@ -119,60 +110,36 @@ describe('ChatFacade', () => {
       });
     }));
 
-  it('updateModelId: updates Chat instance when modelId changes', () => {
+  it('updateTransport: updates Chat instance when transport changes', () => {
     const chatFacade = new ChatFacade({
       id: 'chat-facade-id',
       messages: [],
-      provider: createMockProvider({
+      transport: createMockTransport({
         textDeltaChunks: ['Hello', ' I am assistant.'],
-        modelIds: ['gpt-4', 'gpt-5'],
+        modelId: 'gpt-4',
+        providerName: 'openai',
       }),
+      providerName: 'openai',
       modelId: 'gpt-4',
-      responseOptions: {
-        reasoning: 'low',
-        reasoningSummary: false,
-      },
       throttleTime: 50,
     });
 
     expect(chatFacade.getModelId()).toBe('gpt-4');
+    expect(chatFacade.getProviderName()).toBe('openai');
     const chatWithGPT4 = chatFacade.__getChat();
 
-    chatFacade.updateModelId('gpt-5');
-
-    expect(chatFacade.getModelId()).toBe('gpt-5');
-    expect(chatFacade.__getChat()).not.toBe(chatWithGPT4);
-  });
-
-  it('updateProvider: updates Chat instance when provider changes', () => {
-    const chatFacade = new ChatFacade({
-      id: 'chat-facade-id',
-      messages: [],
-      provider: createMockProvider({
-        providerName: 'openai',
+    chatFacade.updateTransport(
+      createMockTransport({
         textDeltaChunks: ['Hello', ' I am assistant.'],
-        modelIds: ['gpt-4', 'gpt-5'],
+        modelId: 'gpt-5',
+        providerName: 'anthropic',
       }),
-      modelId: 'gpt-4',
-      responseOptions: {
-        reasoning: 'low',
-        reasoningSummary: false,
-      },
-    });
-
-    expect(chatFacade.getProviderName()).toBe('openai');
-    const chatWithOpenAI = chatFacade.__getChat();
-
-    chatFacade.updateProvider(
-      createMockProvider({
-        providerName: 'opencode',
-        textDeltaChunks: ['Hello', ' I am assistant.'],
-        modelIds: ['gpt-4', 'gpt-5'],
-      }),
+      'anthropic',
       'gpt-5',
     );
 
-    expect(chatFacade.getProviderName()).toBe('opencode');
-    expect(chatFacade.__getChat()).not.toBe(chatWithOpenAI);
+    expect(chatFacade.getModelId()).toBe('gpt-5');
+    expect(chatFacade.getProviderName()).toBe('anthropic');
+    expect(chatFacade.__getChat()).not.toBe(chatWithGPT4);
   });
 });

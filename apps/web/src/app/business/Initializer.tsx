@@ -4,13 +4,10 @@ import { useStore } from 'jotai';
 import { useEffect } from 'react';
 import { loadExtensions } from '@/extension/loader';
 import { extensionContextImpl } from '@/extension-context-implement/ExtensionContextImpl';
-import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { observeAddMessage } from '@/idb/db-store-side-effect';
-import { selectedChannelSideEffectAtom } from '@/idb/side-effects/selected-channel-side-effect';
 
 export const Initializer = () => {
   const store = useStore();
-  useSwrAtomValue(selectedChannelSideEffectAtom);
 
   useEffect(() => {
     const unsubAddMessage = observeAddMessage(store);

@@ -2,7 +2,6 @@ import {
   type LLMProviderName,
   LLMProviderNameSchema,
   MODEL_IDS_PER_PROVIDER,
-  validateApiKey,
 } from '@allin/chat';
 import {
   Button,
@@ -32,6 +31,7 @@ import { v4 } from 'uuid';
 import { z } from 'zod/v3';
 import { dbAtoms } from '@/idb/db-store';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';
+import { validateApiKey } from '../helper/validate-api-key';
 
 const FormValuesSchema = z.object({
   apiKey: z.string(),

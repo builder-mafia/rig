@@ -28,26 +28,27 @@ const dbAdapter = {
 
 export const dbAtoms = createDbAtoms(dbAdapter);
 
-/**
- * get current model id and provider name.
- */
 export const getConfig = async () => {
-  const [selectedChannel, selectedChannelMessages] = await Promise.all([
+  const [selectedChannel, selectedChannelMessages, config] = await Promise.all([
     getDefaultStore().get(dbAtoms.selectedChannelAtom),
     getDefaultStore().get(dbAtoms.selectedChannelMessagesAtom),
+    getDefaultStore().get(dbAtoms.configAtom),
   ]);
 
   if (!selectedChannel) {
     throw new Error('Selected channel is not found.');
   }
 
+  const apiKey = config.apiKeys[selectedChannel.providerName];
+
   return {
     messages: selectedChannelMessages,
     modelId: selectedChannel.model,
-    provider: selectedChannel.providerName,
+    providerName: selectedChannel.providerName,
     prompt: selectedChannel.prompt,
     reasoningEffort: selectedChannel.reasoningEffort,
     reasoningSummary: selectedChannel.reasoningSummary,
+    apiKey,
   };
 };
 

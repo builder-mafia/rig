@@ -1,7 +1,7 @@
 import type { AnthropicProviderOptions } from '@ai-sdk/anthropic';
 import { match } from 'ts-pattern';
-import type { ModelResponseOptions, ReasoningEffort } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
+import type { ModelResponseOptions, ReasoningEffort } from '../types';
 import { anthropicModelSpec } from './generated/anthropic-model-spec';
 import {
   type AnthropicModelId,

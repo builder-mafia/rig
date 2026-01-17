@@ -1,32 +1,20 @@
 'use client';
 
-import {
-  type LLMProviderName,
-  providerRegistry,
-  speak as speakAudio,
-} from '@allin/chat';
+import type { LLMProviderName } from '@allin/chat';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { createSpeech, type SpeakOptions } from '@/app/business/transport';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 import { assert } from '@/utils/assert';
 
-type SpeakOptions = {
-  /**
-   * If not provided, uses the currently selected channel provider.
-   */
+type UseTtsPlayerSpeakOptions = Omit<SpeakOptions, 'text'> & {
   providerName?: LLMProviderName;
-  modelId?: string;
-  voice?: string;
-  outputFormat?: 'mp3' | 'wav' | (string & {});
-  instructions?: string;
-  speed?: number;
-  language?: string;
 };
 
 export function useTtsPlayer() {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
-  useSwrAtomValue(dbAtoms.configAtom); // ensures config is loaded (providers are registered elsewhere)
+  const config = useSwrAtomValue(dbAtoms.configAtom);
 
   assert(selectedChannel, 'useTtsPlayer: selectedChannel is not found.');
 
@@ -42,7 +30,7 @@ export function useTtsPlayer() {
   }, []);
 
   const speak = useCallback(
-    async (text: string, options?: SpeakOptions) => {
+    async (text: string, options?: UseTtsPlayerSpeakOptions) => {
       const providerName =
         options?.providerName ?? selectedChannel.providerName;
 
@@ -50,48 +38,43 @@ export function useTtsPlayer() {
 
       stop();
 
-      if (!providerRegistry.has(providerName)) {
+      if (providerName !== 'openai') {
+        toast.error(`Provider ${providerName} does not support speech.`);
         return;
       }
 
-      const defaultModelId =
-        providerName === 'openai'
-          ? 'tts-1'
-          : providerName === 'google'
-            ? 'google-tts'
-            : 'tts';
-
-      const provider = providerRegistry.get(providerName);
-      if (!provider.getSpeechModel(defaultModelId)) {
-        toast.error(`Provider ${providerName} does not support speech.`);
+      const apiKey = config.apiKeys[providerName];
+      if (!apiKey) {
+        toast.error(`API key for ${providerName} is not configured.`);
         return;
       }
 
       const abortController = new AbortController();
       abortRef.current = abortController;
 
-      const defaultVoice =
-        providerName === 'openai'
-          ? 'alloy'
-          : providerName === 'google'
-            ? 'ko-KR-Standard-A'
-            : undefined;
+      const defaultModelId = 'tts-1';
+      const defaultVoice = 'alloy';
 
-      const result = await speakAudio({
-        provider,
-        text,
-        modelId: options?.modelId ?? defaultModelId,
-        voice: options?.voice ?? defaultVoice,
-        outputFormat: options?.outputFormat ?? 'mp3',
-        instructions: options?.instructions,
-        speed: options?.speed,
-        language: options?.language,
-        abortSignal: abortController.signal,
-      });
+      try {
+        const result = await createSpeech(providerName, apiKey, {
+          text,
+          modelId: options?.modelId ?? defaultModelId,
+          voice: options?.voice ?? defaultVoice,
+          outputFormat: options?.outputFormat ?? 'mp3',
+          instructions: options?.instructions,
+          speed: options?.speed,
+          language: options?.language,
+          abortSignal: abortController.signal,
+        });
 
-      stopRef.current = result.stop;
+        stopRef.current = result.stop;
+      } catch (error) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          toast.error(`Failed to play speech: ${error.message}`);
+        }
+      }
     },
-    [selectedChannel?.providerName, stop],
+    [selectedChannel?.providerName, config.apiKeys, stop],
   );
 
   return { speak, stop };

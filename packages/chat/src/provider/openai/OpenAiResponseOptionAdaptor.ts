@@ -1,7 +1,7 @@
 import type { OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
 import { match } from 'ts-pattern';
-import type { ModelResponseOptions, ReasoningEffort } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
+import type { ModelResponseOptions, ReasoningEffort } from '../types';
 import { openaiModelSpec } from './generated/openai-model-spec';
 import { type OpenAiModelId, OpenAiModelIdSchema } from './openai-models';
 

@@ -1,8 +1,4 @@
-import {
-  type LLMProviderName,
-  LLMProviderNameSchema,
-  validateApiKey,
-} from '@allin/chat';
+import { type LLMProviderName, LLMProviderNameSchema } from '@allin/chat';
 import {
   Button,
   Card,
@@ -27,6 +23,7 @@ import { z } from 'zod/v3';
 import { DB } from '@/idb/db';
 import { dbAtoms } from '@/idb/db-store';
 import { getLogoByProvider } from '../helper/get-logo-by-provider';
+import { validateApiKey } from '../helper/validate-api-key';
 
 const FormValuesSchema = z.object(
   Object.fromEntries(
@@ -110,19 +107,14 @@ export const ApiKeyConfigModal = ({
 
       try {
         const apiKey = values[providerName];
-        const error = new Error('invalid-api-key');
 
         if (!apiKey) {
-          throw error;
+          throw new Error('empty-api-key');
         }
 
-        const isValid = await validateApiKey({
-          apiKey,
-          providerName,
-        });
-
+        const isValid = await validateApiKey({ apiKey, providerName });
         if (!isValid) {
-          throw error;
+          throw new Error('invalid-api-key');
         }
 
         isSuccessful = true;

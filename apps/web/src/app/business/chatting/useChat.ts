@@ -1,4 +1,4 @@
-import { generateUIMessage, providerRegistry } from '@allin/chat';
+import { generateUIMessage } from '@allin/chat';
 import type { ChannelSchema } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -8,27 +8,20 @@ import { useSetAtom } from 'jotai';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import type z from 'zod/v3';
 import { dbAtoms, getConfig } from '@/idb/db-store';
+import { createTransport } from '../transport';
 import { ChatFacade, ChatFacadeManager } from './facade';
 import { handleExceptionOnOpenAi } from './open-ai-exception-handling';
 import { useAutoChannelTitle } from './useAutoChannelTitle';
 
-/**
- * It must be declared as a constant to avoid infinite re-rendering.
- */
 const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
 
-/**
- * if chatFacade is changed, the uiMessages and status will be updated.
- */
 export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   id,
   title,
 }: z.infer<typeof ChannelSchema>) => {
   const addMessageToDB = useSetAtom(dbAtoms.addMessageAtom);
   const deleteMessageFromDB = useSetAtom(dbAtoms.deleteMessageAtom);
-  /**
-   * useSuspenseQuery's only purpose is to trigger the suspense.
-   */
+
   const { data: chatFacade } = useSuspenseQuery<ChatFacade>({
     queryKey: ['chat-facade', id],
     queryFn: async () => {
@@ -36,18 +29,30 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
         return ChatFacadeManager.getInstance().getChatFacade(id);
       }
 
-      const { modelId, provider, reasoningEffort, reasoningSummary, messages } =
-        await getConfig();
+      const {
+        modelId,
+        providerName,
+        reasoningEffort,
+        reasoningSummary,
+        messages,
+        apiKey,
+      } = await getConfig();
+
+      if (!apiKey) {
+        throw new Error(`API key for ${providerName} is not configured.`);
+      }
+
+      const transport = createTransport(providerName, modelId, apiKey, {
+        reasoning: reasoningEffort,
+        reasoningSummary: reasoningSummary,
+      });
 
       const facade = new ChatFacade({
         id,
         messages,
-        provider: providerRegistry.get(provider),
+        transport,
+        providerName,
         modelId,
-        responseOptions: {
-          reasoning: reasoningEffort,
-          reasoningSummary: reasoningSummary,
-        },
       });
 
       ChatFacadeManager.getInstance().setChatFacade(id, facade);
@@ -57,7 +62,6 @@ export const useChat = <UI_MESSAGE extends UIMessage<UIMessageMetadata>>({
   });
 
   useEffect(() => {
-    // save user message to db before sending
     const subscription1 = chatFacade.getOnBeforeSend$().subscribe(message => {
       const metadata: UIMessageMetadata = {
         createdAt: Date.now(),

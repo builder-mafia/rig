@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockProvider } from '@allin/chat';
+import { createMockTransport } from '@allin/chat';
 import { ChatFacade } from '../ChatFacade';
 import { ChatFacadeManager } from '../ChatFacadeManager';
 
@@ -16,15 +16,12 @@ describe('ChatFacadeManager', () => {
     const chatFacade = new ChatFacade({
       id: 'chat-facade-id',
       messages: [],
-      provider: createMockProvider({
+      transport: createMockTransport({
         textDeltaChunks: ['Hello', 'World'],
-        modelIds: ['mock-model-id'],
+        modelId: 'mock-model-id',
       }),
+      providerName: 'openai',
       modelId: 'mock-model-id',
-      responseOptions: {
-        reasoning: 'low',
-        reasoningSummary: false,
-      },
     });
 
     ChatFacadeManager.getInstance().setChatFacade('chat-facade-id', chatFacade);

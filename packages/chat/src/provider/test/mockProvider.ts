@@ -1,4 +1,3 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,
@@ -6,79 +5,50 @@ import {
   streamText,
   type UIMessage,
 } from 'ai';
-import type { LLMProvider } from '../LLMProvider';
-import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
 import { createMockLanguageModel } from './mockLanguageModel';
-import { MockResponseOptionAdaptor } from './mockResponseOptionAdaptor';
 
-class MockProvider implements LLMProvider {
-  public name: string;
-  private readonly textDeltaChunks: string[];
-  private readonly modelIds: string[];
-  readonly responseOptionAdaptor: ModelResponseOptionAdaptor;
-
-  constructor({
-    textDeltaChunks,
-    modelIds,
-    providerName = 'mock-provider',
-  }: { textDeltaChunks: string[]; modelIds: string[]; providerName?: string }) {
-    this.textDeltaChunks = textDeltaChunks;
-    this.modelIds = modelIds;
-    this.name = providerName;
-    this.responseOptionAdaptor = new MockResponseOptionAdaptor();
-  }
-
-  validateConnection() {
-    return Promise.resolve(true);
-  }
-
-  getModel(modelId: string): LanguageModelV3 {
-    if (!this.modelIds.includes(modelId)) {
-      throw new Error(`Model ID ${modelId} is not supported by this provider`);
-    }
-
-    return createMockLanguageModel({
-      modelId,
-      textDeltaChunks: this.textDeltaChunks,
-    });
-  }
-
-  getSpeechModel(): null {
-    return null;
-  }
-
-  createTextStream(
-    model: LanguageModelV3,
-  ): ChatTransport<UIMessage<UIMessageMetadata>> {
-    return {
-      sendMessages: async ({ messages }) => {
-        return await streamText({
-          model: model,
-          messages: await convertToModelMessages(messages),
-          onError: err => {
-            throw new Error(
-              err instanceof Error
-                ? err.message
-                : 'Failed to fetch the chat response.',
-            );
-          },
-        }).toUIMessageStream();
-      },
-      reconnectToStream: () => {
-        throw new Error('Not implemented');
-      },
-    };
-  }
-}
-
-export const createMockProvider = ({
-  textDeltaChunks,
-  modelIds,
-  providerName,
-}: {
+export type CreateMockTransportOptions = {
   textDeltaChunks: string[];
-  modelIds: string[];
+  modelId: string;
   providerName?: string;
-}): MockProvider => {
-  return new MockProvider({ textDeltaChunks, modelIds, providerName });
+};
+
+export const createMockTransport = ({
+  textDeltaChunks,
+  modelId,
+  providerName = 'mock-provider',
+}: CreateMockTransportOptions): ChatTransport<UIMessage<UIMessageMetadata>> => {
+  const model = createMockLanguageModel({
+    modelId,
+    textDeltaChunks,
+  });
+
+  return {
+    sendMessages: async ({ messages }) => {
+      return await streamText({
+        model,
+        messages: await convertToModelMessages(messages),
+        onError: err => {
+          throw new Error(
+            err instanceof Error
+              ? err.message
+              : 'Failed to fetch the chat response.',
+          );
+        },
+      }).toUIMessageStream({
+        messageMetadata: ({ part }) => {
+          if (part.type === 'start') {
+            return {
+              modelId,
+              provider: providerName,
+              createdAt: Date.now(),
+            } as UIMessageMetadata;
+          }
+        },
+      });
+    },
+    reconnectToStream: () => {
+      throw new Error('Not implemented');
+    },
+  };
 };
