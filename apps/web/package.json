@@ -23,6 +23,7 @@
     "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@allin/message-metadata-schema": "workspace:*",
+    "@allin/utils": "workspace:*",
     "@allin/context": "workspace:*",
     "@allin/extension": "workspace:*",
     "@allin/extension-quiz": "workspace:*",

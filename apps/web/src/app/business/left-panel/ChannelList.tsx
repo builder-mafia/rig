@@ -14,7 +14,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@allin/ui';
-import { sortBy } from 'es-toolkit';
+import { AssertionError } from '@allin/utils';
+import { assert, sortBy } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import {
   InfoIcon,
@@ -25,10 +26,9 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { z } from 'zod/v3';
+import type { z } from 'zod/v3';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 import { channelTitleOpenStatus$ } from '../header/ChannelTitle';
 
 const formatDate = (timestamp: number): string => {
@@ -59,8 +59,14 @@ export const ChannelList = () => {
   );
   const updateChannel = useSetAtom(dbAtoms.updateChannelAtom);
 
-  assert(allChannels, 'ChannelList: allChannels is not found.');
-  assert(selectedChannel, 'ChannelList: selectedChannel is not found.');
+  assert(
+    allChannels,
+    new AssertionError('ChannelList: allChannels is not found.'),
+  );
+  assert(
+    selectedChannel,
+    new AssertionError('ChannelList: selectedChannel is not found.'),
+  );
 
   const onClick = async (channelId: string) => {
     if (selectedChannel.id === channelId) return;

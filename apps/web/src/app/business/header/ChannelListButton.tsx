@@ -6,7 +6,8 @@ import {
   PopoverTrigger,
   ScrollArea,
 } from '@allin/ui';
-import { sortBy } from 'es-toolkit';
+import { AssertionError } from '@allin/utils';
+import { assert, sortBy } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import { ListIcon, XIcon } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,7 +15,6 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import type { z } from 'zod/v3';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp);
@@ -40,8 +40,14 @@ export const ChannelListButton = () => {
   );
   const deleteChannel = useSetAtom(dbAtoms.deleteChannelAtom);
 
-  assert(allChannels, 'ChannelListButton: allChannels is not found.');
-  assert(selectedChannel, 'ChannelListButton: selectedChannel is not found.');
+  assert(
+    allChannels,
+    new AssertionError('ChannelListButton: allChannels is not found.'),
+  );
+  assert(
+    selectedChannel,
+    new AssertionError('ChannelListButton: selectedChannel is not found.'),
+  );
 
   const pinnedChannels = allChannels.filter(channel => Boolean(channel.pin));
   const unpinnedChannels = allChannels.filter(channel => !channel.pin);

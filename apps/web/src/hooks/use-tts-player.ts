@@ -1,12 +1,13 @@
 'use client';
 
 import type { LLMProviderName } from '@allin/chat';
+import { AssertionError } from '@allin/utils';
+import { assert } from 'es-toolkit';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { createSpeech, type SpeakOptions } from '@/app/business/transport';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 
 type UseTtsPlayerSpeakOptions = Omit<SpeakOptions, 'text'> & {
   providerName?: LLMProviderName;
@@ -16,7 +17,10 @@ export function useTtsPlayer() {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
 
-  assert(selectedChannel, 'useTtsPlayer: selectedChannel is not found.');
+  assert(
+    selectedChannel,
+    new AssertionError('useTtsPlayer: selectedChannel is not found.'),
+  );
 
   const stopRef = useRef<null | (() => void)>(null);
   const abortRef = useRef<AbortController | null>(null);

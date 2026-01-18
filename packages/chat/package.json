@@ -42,6 +42,9 @@
     "uuid": "catalog:utils",
     "zod": "catalog:utils"
   },
+  "dependencies": {
+    "es-toolkit": "catalog:utils"
+  },
   "devDependencies": {
     "@ai-sdk/anthropic": "catalog:ai",
     "@ai-sdk/google": "catalog:ai",
@@ -51,6 +54,7 @@
     "@ai-sdk/react": "catalog:ai",
     "@allin/db-schema": "workspace:*",
     "@allin/message-metadata-schema": "workspace:*",
+    "@allin/utils": "workspace:*",
     "@types/node": "^25.0.3",
     "ai": "catalog:ai",
     "rxjs": "catalog:utils",
