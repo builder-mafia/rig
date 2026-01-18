@@ -14,12 +14,16 @@
     "@ai-sdk/ui-utils": "^1.2.11",
     "@allin/db-atom": "workspace:*",
     "@allin/db-schema": "workspace:*",
+    "@allin/ai": "workspace:*",
+    "@allin/utils": "workspace:*",
+    "@allin/message-metadata-schema": "workspace:*",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-sql": "^2.3.1",
     "ai": "catalog:ai",
     "next": "16.0.10",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "rxjs": "catalog:utils"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

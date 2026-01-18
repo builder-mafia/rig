@@ -192,12 +192,21 @@ importers:
       '@ai-sdk/ui-utils':
         specifier: ^1.2.11
         version: 1.2.11(zod@4.3.5)
+      '@allin/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@allin/db-atom':
         specifier: workspace:*
         version: link:../../packages/db-atom
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../../packages/db-schema
+      '@allin/message-metadata-schema':
+        specifier: workspace:*
+        version: link:../../packages/message-metadata-schema
+      '@allin/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@tauri-apps/api':
         specifier: ^2
         version: 2.9.1
@@ -216,6 +225,9 @@ importers:
       react-dom:
         specifier: 19.2.1
         version: 19.2.1(react@19.2.1)
+      rxjs:
+        specifier: catalog:utils
+        version: 7.8.2
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4

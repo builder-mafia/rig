@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { invoke } from '@tauri-apps/api/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChatInput } from '../business/chatting/ChatInput';
+import { ChatInput } from '../business/chat/ChatInput';
 import { TauriChatTransport } from '../chat/tauri-chat-transport';
 
 // Storage types
