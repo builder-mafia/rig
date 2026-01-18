@@ -1,4 +1,4 @@
-import { generateUIMessage } from '@allin/chat';
+import { generateUIMessage } from '@allin/ai';
 import type { ChannelSchema } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { useSuspenseQuery } from '@tanstack/react-query';

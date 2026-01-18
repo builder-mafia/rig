@@ -1,6 +1,6 @@
+import { Skeleton } from '@allin/ui';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Skeleton } from '@allin/ui';
 import { ChannelTitle } from './ChannelTitle';
 
 export const CenterHeader = () => {

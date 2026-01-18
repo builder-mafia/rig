@@ -3,7 +3,7 @@ import {
   isAssistantMessage,
   isUserMessage,
   type UserMessage,
-} from '@allin/chat';
+} from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 

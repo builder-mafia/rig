@@ -1,6 +1,6 @@
+import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
 import { BehaviorSubject, type Observable } from 'rxjs';
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { type Setter, setValueOrFn } from './setter';
 
 /**

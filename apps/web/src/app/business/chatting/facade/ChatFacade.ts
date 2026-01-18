@@ -1,5 +1,5 @@
 import { Chat } from '@ai-sdk/react';
-import type { LLMProviderName } from '@allin/chat';
+import type { LLMProviderName } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type {
   ChatOnDataCallback,

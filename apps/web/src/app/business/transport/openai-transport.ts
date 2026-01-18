@@ -3,7 +3,7 @@ import {
   type ModelResponseOptions,
   OpenAiModelIdSchema,
   OpenAiResponseOptionAdaptor,
-} from '@allin/chat';
+} from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import {
   type ChatTransport,

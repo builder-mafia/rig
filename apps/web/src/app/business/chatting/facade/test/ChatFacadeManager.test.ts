@@ -1,5 +1,5 @@
+import { createMockTransport } from '@allin/ai';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createMockTransport } from '@allin/chat';
 import { ChatFacade } from '../ChatFacade';
 import { ChatFacadeManager } from '../ChatFacadeManager';
 

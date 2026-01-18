@@ -1,4 +1,4 @@
-import { type LLMProviderName, LLMProviderNameSchema } from '@allin/chat';
+import { type LLMProviderName, LLMProviderNameSchema } from '@allin/ai';
 import {
   Button,
   Card,
