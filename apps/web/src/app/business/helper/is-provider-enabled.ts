@@ -1,4 +1,4 @@
-import type { LLMProviderName } from '@allin/chat';
+import type { LLMProviderName } from '@allin/ai';
 import type { ConfigSchema } from '@allin/db-schema';
 import { match } from 'ts-pattern';
 import type { z } from 'zod/v3';

@@ -2,7 +2,7 @@ import {
   AllModelIdsSchema,
   type LLMProviderName,
   LLMProviderNameSchema,
-} from '@allin/chat';
+} from '@allin/ai';
 import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';

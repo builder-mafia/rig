@@ -1,8 +1,8 @@
 {
-  "name": "@allin/chat",
+  "name": "@allin/ai",
   "version": "0.1.0",
   "private": false,
-  "description": "Chat for ALLIN",
+  "description": "AI for ALLIN",
   "type": "module",
   "files": [
     "dist"

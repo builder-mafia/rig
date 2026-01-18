@@ -1,7 +1,7 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LLMProviderName } from '@allin/chat';
+import type { LLMProviderName } from '@allin/ai';
 import type { LanguageModel } from 'ai';
 import { generateText } from 'ai';
 

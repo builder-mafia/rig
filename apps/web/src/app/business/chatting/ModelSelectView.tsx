@@ -2,7 +2,7 @@ import {
   type AllModelIds,
   type LLMProviderName,
   MODEL_IDS_PER_PROVIDER,
-} from '@allin/chat';
+} from '@allin/ai';
 import {
   Select,
   SelectContent,

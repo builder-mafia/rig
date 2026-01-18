@@ -28,7 +28,7 @@
     "zod": "catalog:utils",
     "jotai": "^2.15.0",
     "@allin/db-schema": "workspace:*",
-    "@allin/chat": "workspace:*"
+    "@allin/ai": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:types",
@@ -37,7 +37,7 @@
     "zod": "catalog:utils",
     "jotai": "^2.15.0",
     "@allin/db-schema": "workspace:*",
-    "@allin/chat": "workspace:*",
+    "@allin/ai": "workspace:*",
     "@allin/message-metadata-schema": "workspace:*",
     "vitest": "catalog:test"
   }

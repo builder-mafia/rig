@@ -1,9 +1,9 @@
+import { SidebarProvider } from '@allin/ui';
 import { atom, useAtom } from 'jotai';
 import { AnimatePresence } from 'motion/react';
 import type { CSSProperties } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { COOKIES, setCookie } from '@/app/cookie';
-import { SidebarProvider } from '@allin/ui';
 import { HotKeyList } from '../hotkey/hotkey-list';
 import { LeftPanel } from './LeftPanel';
 import { leftPanelAtoms } from './left-panel-store';

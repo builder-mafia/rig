@@ -1,4 +1,4 @@
-import { getUserMessageText } from '@allin/chat';
+import { getUserMessageText } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Badge } from '@allin/ui';
 import { AssertionError } from '@allin/utils';

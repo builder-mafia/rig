@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "biome check --write .",
     "check-ts": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest run --watch"
@@ -18,7 +19,7 @@
     "@ai-sdk/provider": "catalog:ai",
     "@ai-sdk/provider-utils": "catalog:ai",
     "@ai-sdk/react": "catalog:ai",
-    "@allin/chat": "workspace:*",
+    "@allin/ai": "workspace:*",
     "@allin/db-atom": "workspace:*",
     "@allin/ui": "workspace:*",
     "@allin/db-schema": "workspace:*",

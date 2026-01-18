@@ -1,7 +1,7 @@
 'use client';
 
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LLMProviderName } from '@allin/chat';
+import type { LLMProviderName } from '@allin/ai';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
 
 export type SpeakOptions = {

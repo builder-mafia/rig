@@ -1,4 +1,4 @@
-import type { ReasoningEffort } from '@allin/chat';
+import type { ReasoningEffort } from '@allin/ai';
 import {
   Button,
   Label,

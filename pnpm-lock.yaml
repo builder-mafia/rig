@@ -265,9 +265,9 @@ importers:
       '@ai-sdk/react':
         specifier: catalog:ai
         version: 3.0.1(react@19.2.1)(zod@3.25.76)
-      '@allin/chat':
+      '@allin/ai':
         specifier: workspace:*
-        version: link:../../packages/chat
+        version: link:../../packages/ai
       '@allin/context':
         specifier: workspace:*
         version: link:../../packages/context
@@ -552,7 +552,7 @@ importers:
         specifier: catalog:utils
         version: 3.25.76
 
-  packages/chat:
+  packages/ai:
     dependencies:
       es-toolkit:
         specifier: catalog:utils
@@ -639,9 +639,9 @@ importers:
 
   packages/db-atom:
     devDependencies:
-      '@allin/chat':
+      '@allin/ai':
         specifier: workspace:*
-        version: link:../chat
+        version: link:../ai
       '@allin/db-schema':
         specifier: workspace:*
         version: link:../db-schema

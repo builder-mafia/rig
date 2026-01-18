@@ -1,5 +1,5 @@
 import type { useChat } from '@ai-sdk/react';
-import { getAssistantMessageText } from '@allin/chat';
+import { getAssistantMessageText } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Spinner } from '@allin/ui';
 import { AssertionError } from '@allin/utils';

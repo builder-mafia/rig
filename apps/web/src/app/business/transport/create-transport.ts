@@ -1,4 +1,4 @@
-import type { LLMProviderName, ModelResponseOptions } from '@allin/chat';
+import type { LLMProviderName, ModelResponseOptions } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { ChatTransport, UIMessage } from 'ai';
 import { match } from 'ts-pattern';
@@ -13,9 +13,7 @@ export function createTransport(
   options?: ModelResponseOptions,
 ): ChatTransport<UIMessage<UIMessageMetadata>> {
   return match(providerName)
-    .with('anthropic', () =>
-      createAnthropicTransport(modelId, apiKey, options),
-    )
+    .with('anthropic', () => createAnthropicTransport(modelId, apiKey, options))
     .with('google', () => createGoogleTransport(modelId, apiKey, options))
     .with('openai', () => createOpenAiTransport(modelId, apiKey, options))
     .exhaustive();

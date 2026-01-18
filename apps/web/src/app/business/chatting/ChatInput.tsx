@@ -5,7 +5,7 @@ import {
   type LLMProviderName,
   LLMProviderNameSchema,
   type ReasoningEffort,
-} from '@allin/chat';
+} from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Button, ButtonGroup, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import { AssertionError, waitUntil } from '@allin/utils';

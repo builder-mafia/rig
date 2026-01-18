@@ -2,7 +2,7 @@ import {
   type LLMProviderName,
   LLMProviderNameSchema,
   MODEL_IDS_PER_PROVIDER,
-} from '@allin/chat';
+} from '@allin/ai';
 import {
   Button,
   Card,

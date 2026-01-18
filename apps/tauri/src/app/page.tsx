@@ -3,6 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { invoke } from '@tauri-apps/api/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChatInput } from '../business/chatting/ChatInput';
 import { TauriChatTransport } from '../chat/tauri-chat-transport';
 
 // Storage types
@@ -32,7 +33,6 @@ interface StorageMessage {
 const generateId = () => crypto.randomUUID();
 
 export default function Home() {
-  const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -243,16 +243,13 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading || !currentChannelId) return;
-
-    const userMessage = input.trim();
-    setInput('');
-
-    // Save user message first
-    await sendMessage({ text: userMessage });
-  };
+  const handleSendMessage = useCallback(
+    async (text: string) => {
+      if (!currentChannelId) return;
+      await sendMessage({ text });
+    },
+    [currentChannelId, sendMessage],
+  );
 
   // Helper to get text content from message
   const getMessageText = (message: (typeof messages)[number]): string => {
@@ -465,29 +462,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Input */}
-      <form
-        onSubmit={handleSubmit}
-        className='border-t border-zinc-200 p-4 dark:border-zinc-700'
-      >
-        <div className='mx-auto flex max-w-3xl gap-2'>
-          <input
-            type='text'
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder='Type your message...'
-            disabled={isLoading}
-            className='flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-800 placeholder-zinc-400 focus:border-blue-500 focus:outline-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500'
-          />
-          <button
-            type='submit'
-            disabled={isLoading || !input.trim()}
-            className='rounded-lg bg-blue-500 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50'
-          >
-            {isLoading ? 'Sending...' : 'Send'}
-          </button>
-        </div>
-      </form>
+      <ChatInput
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        disabled={!currentChannelId}
+      />
     </div>
   );
 }

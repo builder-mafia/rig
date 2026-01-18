@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createMockTransport,
   generateUIMessage,
   getAssistantMessageText,
   getUserMessageText,
-} from '@allin/chat';
+} from '@allin/ai';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ChatFacade } from '../ChatFacade';
 import { ChatFacadeManager } from '../ChatFacadeManager';
 

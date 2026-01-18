@@ -1,6 +1,6 @@
 'use client';
 
-import type { LLMProviderName } from '@allin/chat';
+import type { LLMProviderName } from '@allin/ai';
 import { AssertionError } from '@allin/utils';
 import { assert } from 'es-toolkit';
 import { useCallback, useRef } from 'react';
