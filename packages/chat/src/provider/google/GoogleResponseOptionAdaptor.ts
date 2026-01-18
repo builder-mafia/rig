@@ -1,7 +1,7 @@
 import type { GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
 import { match } from 'ts-pattern';
-import type { ModelResponseOptions, ReasoningEffort } from '../LLMProvider';
 import type { ModelResponseOptionAdaptor } from '../ModelResponseOptionAdaptor';
+import type { ModelResponseOptions, ReasoningEffort } from '../types';
 import { googleModelSpec } from './generated/google-model-spec';
 import { type GoogleAiModelId, GoogleAiModelIdSchema } from './google-models';
 

@@ -1,0 +1,23 @@
+{
+  "name": "docs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "15.3.6",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
+    "nextra": "^4",
+    "nextra-theme-docs": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "typescript": "catalog:types"
+  }
+}

@@ -1,11 +1,11 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
 import { Chat } from '@ai-sdk/react';
-import type { LLMProvider, ModelResponseOptions } from '@allin/chat';
+import type { LLMProviderName } from '@allin/chat';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type {
   ChatOnDataCallback,
   ChatOnFinishCallback,
   ChatStatus,
+  ChatTransport,
   UIMessage,
 } from 'ai';
 import { BehaviorSubject, type Observable, Subject } from 'rxjs';
@@ -17,8 +17,8 @@ type ChatUiMessage = UIMessage<UIMessageMetadata>;
 type CreateChatFacadeParams = {
   id: string;
   messages: ChatUiMessage[];
-  provider: LLMProvider;
-  responseOptions: ModelResponseOptions;
+  transport: ChatTransport<ChatUiMessage>;
+  providerName: LLMProviderName;
   modelId: string;
   throttleTime?: number;
 };
@@ -26,22 +26,8 @@ type CreateChatFacadeParams = {
 export class ChatFacade {
   private id: string;
   private chat: Chat<ChatUiMessage>;
-  /**
-   * @description Set messages to Display to the user.
-   */
   private uiMessageStore: UIMessageStore<ChatUiMessage>;
-  /**
-   * status of the chat.
-   * see: https://ai-sdk.dev/docs/ai-sdk-ui/chatbot#status
-   * - 'ready'
-   * - 'streaming'
-   * - 'submitted'
-   * - 'error'
-   */
   private status$ = new BehaviorSubject<ChatStatus>('ready');
-  /**
-   * current LLM provider and model
-   */
 
   private onData$ = new Subject<
     Parameters<ChatOnDataCallback<ChatUiMessage>>[0]
@@ -52,33 +38,29 @@ export class ChatFacade {
   private onError$ = new Subject<Error>();
   private onBeforeSend$ = new Subject<ChatUiMessage & { role: 'user' }>();
 
-  private provider: LLMProvider;
+  private providerName: LLMProviderName;
+  private modelId: string;
   private _isDisposed = false;
-  private model: LanguageModelV3;
-  private responseOptions: ModelResponseOptions;
   private throttleTime: number;
 
   constructor({
     id,
-    provider,
+    transport,
+    providerName,
     modelId,
-    responseOptions,
     messages,
     throttleTime = 50,
   }: CreateChatFacadeParams) {
     this.uiMessageStore = new UIMessageStore<ChatUiMessage>();
     this.id = id;
-    this.provider = provider;
-    this.responseOptions = responseOptions;
-    this.model = provider.getModel(modelId);
+    this.providerName = providerName;
+    this.modelId = modelId;
     this.throttleTime = throttleTime;
 
-    this.chat = this.updateChat({
+    this.chat = this.createChat({
       id,
       messages,
-      provider,
-      responseOptions: this.responseOptions,
-      model: this.model,
+      transport,
       throttleTime,
     });
 
@@ -114,16 +96,13 @@ export class ChatFacade {
   }
 
   public getModelId() {
-    return this.model.modelId;
+    return this.modelId;
   }
 
   public getOnData$() {
     return this.onData$.asObservable();
   }
 
-  /**
-   * emit when chat is finished.
-   */
   public get finish$() {
     return this.onFinish$.asObservable();
   }
@@ -136,27 +115,18 @@ export class ChatFacade {
     return this.onBeforeSend$.asObservable();
   }
 
-  /**
-   * this must be used for testing only.
-   */
   public __getChat() {
     return this.chat;
   }
 
-  /**
-   * @example return 'openai'
-   */
   public getProviderName() {
-    return this.provider.name;
+    return this.providerName;
   }
 
   public setUiMessages(setter: Setter<ChatUiMessage[]>) {
     this.uiMessageStore.setUiMessages(setter);
   }
 
-  /**
-   * replace the message in the context
-   */
   public replaceMessage(message: ChatUiMessage) {
     const existingMessageIndex = this.getUiMessages().findIndex(
       m => m.id === message.id,
@@ -177,9 +147,6 @@ export class ChatFacade {
     this.setUiMessages(newMessages);
   }
 
-  /**
-   * create or replace the message in the context
-   */
   public createOrReplaceMessage(message: ChatUiMessage) {
     const existingMessageIndex = this.getUiMessages().findIndex(
       m => m.id === message.id,
@@ -201,9 +168,6 @@ export class ChatFacade {
     this.chat.messages = [...this.chat.messages, message];
   }
 
-  /**
-   * check if the message is in the context
-   */
   public hasMessage(messageId: string) {
     return this.chat.messages.some(msg => msg.id === messageId);
   }
@@ -215,7 +179,6 @@ export class ChatFacade {
 
     this.onBeforeSend$.next(message);
     await this.chat.sendMessage(message);
-    // return response message
     return this.chat.lastMessage;
   }
 
@@ -241,23 +204,17 @@ export class ChatFacade {
     }
   }
 
-  private updateChat({
+  private createChat({
     id,
     messages,
-    provider,
-    model,
-    responseOptions,
+    transport,
     throttleTime,
   }: {
     id: string;
     messages: ChatUiMessage[];
-    provider: LLMProvider;
-    model: LanguageModelV3;
-    responseOptions: ModelResponseOptions;
+    transport: ChatTransport<ChatUiMessage>;
     throttleTime: number;
   }) {
-    const transport = provider.createTextStream(model, responseOptions);
-
     const chat = new Chat<ChatUiMessage>({
       id,
       transport,
@@ -289,49 +246,18 @@ export class ChatFacade {
     return chat;
   }
 
-  public updateModelId(modelId: string) {
-    const newModel = this.provider.getModel(modelId);
-    this.model = newModel;
+  public updateTransport(
+    transport: ChatTransport<ChatUiMessage>,
+    providerName: LLMProviderName,
+    modelId: string,
+  ) {
+    this.providerName = providerName;
+    this.modelId = modelId;
 
-    this.updateChat({
+    this.createChat({
       id: this.chat.id,
       messages: this.chat.messages,
-      provider: this.provider,
-      model: this.model,
-      responseOptions: this.responseOptions,
-      throttleTime: this.throttleTime,
-    });
-  }
-
-  /**
-   * In most cases, when the provider changes, the modelId should change accordingly.
-   *
-   * For example:
-   * - When switching from google to openai, the modelId should change from gemini to gpt.
-   */
-  public updateProvider(provider: LLMProvider, modelId: string) {
-    this.provider = provider;
-    this.model = this.provider.getModel(modelId);
-
-    this.updateChat({
-      id: this.chat.id,
-      messages: this.chat.messages,
-      provider: this.provider,
-      model: this.model,
-      responseOptions: this.responseOptions,
-      throttleTime: this.throttleTime,
-    });
-  }
-
-  public updateModelResponseOptions(options: ModelResponseOptions) {
-    this.responseOptions = options;
-
-    this.updateChat({
-      id: this.chat.id,
-      messages: this.chat.messages,
-      provider: this.provider,
-      model: this.model,
-      responseOptions: this.responseOptions,
+      transport,
       throttleTime: this.throttleTime,
     });
   }

@@ -1,11 +1,11 @@
 'use client';
 
+import { createOpenAI } from '@ai-sdk/openai';
+import type { LLMProviderName } from '@allin/chat';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
-import type { LLMProvider } from '../provider/LLMProvider';
 
 export type SpeakOptions = {
   text: string;
-  provider: LLMProvider;
   modelId: string;
   voice?: string;
   outputFormat?: 'mp3' | 'wav' | (string & {});
@@ -20,22 +20,28 @@ export type SpeakResult = {
   stop: () => void;
 };
 
-export async function speak({
-  provider,
-  modelId,
-  text,
-  voice,
-  outputFormat,
-  instructions,
-  speed,
-  language,
-  abortSignal,
-}: SpeakOptions): Promise<SpeakResult> {
-  const speechModel = provider.getSpeechModel(modelId);
+export async function createSpeech(
+  providerName: LLMProviderName,
+  apiKey: string,
+  options: SpeakOptions,
+): Promise<SpeakResult> {
+  const {
+    text,
+    modelId,
+    voice,
+    outputFormat,
+    instructions,
+    speed,
+    language,
+    abortSignal,
+  } = options;
 
-  if (!speechModel) {
-    throw new Error(`Provider ${provider.name} does not support TTS.`);
+  if (providerName !== 'openai') {
+    throw new Error(`Provider ${providerName} does not support TTS.`);
   }
+
+  const client = createOpenAI({ apiKey });
+  const speechModel = client.speech(modelId);
 
   const { audio } = await generateSpeech({
     model: speechModel,
