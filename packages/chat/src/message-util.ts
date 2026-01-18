@@ -1,7 +1,7 @@
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { UIMessage } from 'ai';
+import { assert } from 'es-toolkit/util';
 import { v4 } from 'uuid';
-import { assert } from '../utils/assert';
 
 export type UserMessage = UIMessage<UIMessageMetadata> & {
   role: 'user';

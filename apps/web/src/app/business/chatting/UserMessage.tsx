@@ -1,15 +1,19 @@
 import { getUserMessageText } from '@allin/chat';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Badge } from '@allin/ui';
+import { AssertionError } from '@allin/utils';
 import type { UIMessage } from 'ai';
-import { assert } from '@/utils/assert';
+import { assert } from 'es-toolkit';
 
 type UserMessageProps = {
   message: UIMessage<UIMessageMetadata>;
 };
 
 export const UserMessage = ({ message }: UserMessageProps) => {
-  assert(message.role === 'user', 'UserMessage: message is not a user message');
+  assert(
+    message.role === 'user',
+    new AssertionError('UserMessage: message is not a user message'),
+  );
 
   const userMessage: string = getUserMessageText(message);
 

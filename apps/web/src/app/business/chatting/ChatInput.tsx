@@ -6,11 +6,12 @@ import {
   LLMProviderNameSchema,
   type ReasoningEffort,
 } from '@allin/chat';
-import { ChatFacadeManager } from './facade';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Button, ButtonGroup, Kbd, KbdGroup, Textarea } from '@allin/ui';
+import { AssertionError, waitUntil } from '@allin/utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
+import { assert } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import {
   type ChangeEvent,
@@ -25,9 +26,8 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { filter } from 'rxjs';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
-import { waitUntil } from '@/utils/wait-until';
 import { HotKeyList } from '../hotkey/hotkey-list';
+import { ChatFacadeManager } from './facade';
 import { ModelSelectView } from './ModelSelectView';
 import { ModelSettingView } from './ModelSettingView';
 
@@ -35,8 +35,11 @@ export const ChatInput = () => {
   const selectedChannel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
   const config = useSwrAtomValue(dbAtoms.configAtom);
 
-  assert(selectedChannel, 'ChatInput: selectedChannel is not found.');
-  assert(config, 'ChatInput: config is not found.');
+  assert(
+    selectedChannel,
+    new AssertionError('ChatInput: selectedChannel is not found.'),
+  );
+  assert(config, new AssertionError('ChatInput: config is not found.'));
 
   // chat facade is created asynchronously after the channel is selected. (see useChat.ts)
   // so we need to wait until the chat facade is created.

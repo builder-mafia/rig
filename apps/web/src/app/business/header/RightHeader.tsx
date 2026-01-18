@@ -6,6 +6,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@allin/ui';
+import { AssertionError } from '@allin/utils';
+import { assert } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import { ChevronDown, KeyRound, MessageCirclePlus } from 'lucide-react';
 import { useCallback } from 'react';
@@ -13,7 +15,6 @@ import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 import { isGhostChannel } from '../left-panel/ChannelList';
 import { modalManager } from '../modal/modalManager';
 
@@ -24,7 +25,10 @@ export const RightHeader = () => {
   );
   const createChannel = useSetAtom(dbAtoms.createChannelAtom);
 
-  assert(selectedChannel, 'RightHeader: selectedChannel is not found');
+  assert(
+    selectedChannel,
+    new AssertionError('RightHeader: selectedChannel is not found'),
+  );
 
   const onClickNewChannel = useCallback(async () => {
     if (isGhostChannel(selectedChannel)) {

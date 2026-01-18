@@ -2,11 +2,12 @@ import type { useChat } from '@ai-sdk/react';
 import { getAssistantMessageText } from '@allin/chat';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { Spinner } from '@allin/ui';
+import { AssertionError } from '@allin/utils';
 import type { UIMessage } from 'ai';
+import { assert } from 'es-toolkit';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { assert } from '@/utils/assert';
 import { cn } from '@/utils/cn';
 import { AssistantMessageErrorUI } from './AssistantMessageErrorUI';
 import { Markdown } from './Markdown';
@@ -26,7 +27,9 @@ export const AssistantMessage = ({
 }: AssistantMessageProps) => {
   assert(
     message.role === 'assistant',
-    `AssistantMessage: message is not a assistant message. message: ${JSON.stringify(message)}`,
+    new AssertionError(
+      `AssistantMessage: message is not a assistant message. message: ${JSON.stringify(message)}`,
+    ),
   );
 
   const textMessage = getAssistantMessageText(message);

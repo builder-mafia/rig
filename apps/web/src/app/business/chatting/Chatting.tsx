@@ -1,8 +1,9 @@
+import { AssertionError } from '@allin/utils';
+import { assert } from 'es-toolkit';
 import { useEffect, useMemo } from 'react';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { useTextSelection } from '@/hooks/use-text-selection';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 import { TextSelectionFloatingButtonList } from './TextSelectionFloatingButtonList';
 import { ThreadList } from './ThreadList';
 import { messagesToThreads } from './thread-util';
@@ -11,7 +12,7 @@ import { useChat } from './useChat';
 export const Chatting = () => {
   const channel = useSwrAtomValue(dbAtoms.selectedChannelAtom);
 
-  assert(channel, 'Chatting: channel is not found.');
+  assert(channel, new AssertionError('Chatting: channel is not found.'));
 
   const { selectedText, isTextSelected, selectionBoundingRect, containerRef } =
     useTextSelection();

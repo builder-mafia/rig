@@ -1,18 +1,18 @@
 'use client';
 
+import { isAssertionError } from '@allin/utils';
 import { sortBy } from 'es-toolkit';
 import { getDefaultStore } from 'jotai';
 import type { FallbackProps } from 'react-error-boundary';
 import { toast } from 'sonner';
 import { dbAtoms } from '@/idb/db-store';
-import { AssertionError } from '@/utils/assert';
 
 export function RootErrorFallback({
   error,
   resetErrorBoundary,
 }: FallbackProps) {
   const onClickReset = async () => {
-    if (error.name === AssertionError.name) {
+    if (isAssertionError(error)) {
       if (error.message.includes('selectedChannelId')) {
         const allChannels = await getDefaultStore().get(
           dbAtoms.allChannelsAtom,
@@ -36,7 +36,7 @@ export function RootErrorFallback({
     resetErrorBoundary();
   };
 
-  if (error.name === AssertionError.name) {
+  if (isAssertionError(error)) {
     return (
       <div className='flex flex-col items-center justify-center gap-3 p-4 text-sm'>
         <p className='font-medium'>An unexpected state was detected.</p>

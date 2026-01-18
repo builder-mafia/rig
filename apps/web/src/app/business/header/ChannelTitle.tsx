@@ -11,6 +11,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@allin/ui';
+import { AssertionError } from '@allin/utils';
+import { assert } from 'es-toolkit';
 import { useSetAtom } from 'jotai';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,7 +20,6 @@ import { Subject } from 'rxjs';
 import { toast } from 'sonner';
 import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
-import { assert } from '@/utils/assert';
 
 const DEFAULT_NAME = 'Untitled';
 
@@ -30,7 +31,10 @@ export const ChannelTitle = () => {
   const selectedChannelMessages = useSwrAtomValue(
     dbAtoms.selectedChannelMessagesAtom,
   );
-  assert(selectedChannel, 'CenterHeader: selectedChannel is not found.');
+  assert(
+    selectedChannel,
+    new AssertionError('CenterHeader: selectedChannel is not found.'),
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
