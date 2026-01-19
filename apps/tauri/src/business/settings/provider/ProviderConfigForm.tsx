@@ -1,0 +1,122 @@
+import { Button, Input, toast } from '@allin/ui';
+import { invoke } from '@tauri-apps/api/core';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { getProviderIcon } from '@/business/logo/ProviderIconMap';
+
+type ProviderId = 'openai' | 'google' | 'anthropic';
+
+const PROVIDER_INFO: Record<ProviderId, { name: string; placeholder: string }> =
+  {
+    openai: {
+      name: 'OpenAI',
+      placeholder: 'sk-...',
+    },
+    google: {
+      name: 'Google AI',
+      placeholder: 'AIza...',
+    },
+    anthropic: {
+      name: 'Anthropic',
+      placeholder: 'sk-ant-...',
+    },
+  };
+
+type ProviderConfigFormProps = {
+  providerId: ProviderId;
+  onSave: (apiKey: string) => Promise<boolean>;
+  onClose: () => void;
+};
+
+export const ProviderConfigForm = ({
+  providerId,
+  onSave,
+  onClose,
+}: ProviderConfigFormProps) => {
+  const [apiKey, setApiKey] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const info = PROVIDER_INFO[providerId];
+
+  const handleSave = async () => {
+    if (!apiKey.trim() || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const isValid = await onSave(apiKey.trim());
+      if (!isValid) {
+        toast.error(
+          'Invalid API key. Please check your key and try again. Your balance may be insufficient.',
+          {
+            position: 'top-center',
+            duration: 15000,
+            closeButton: true,
+          },
+        );
+        return;
+      }
+
+      if (isValid) {
+        await invoke('save_api_key', { apiKey });
+        toast.success('API key saved successfully', {
+          position: 'top-center',
+          duration: 3000,
+        });
+      }
+    } finally {
+      onClose();
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+
+  return (
+    <div className='p-4 flex flex-col gap-4'>
+      <div className='flex items-center gap-2'>
+        {getProviderIcon(providerId, 'size-5')}
+        <h3 className='font-semibold'>{info.name}</h3>
+      </div>
+      <div className='flex flex-col gap-2'>
+        <label htmlFor='apiKey' className='text-sm text-muted-foreground'>
+          API Key
+        </label>
+        <Input
+          id='apiKey'
+          type='password'
+          value={apiKey}
+          onChange={e => setApiKey(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={info.placeholder}
+          autoFocus
+          disabled={isLoading}
+        />
+      </div>
+      <div className='flex justify-end'>
+        <Button
+          size='sm'
+          disabled={!apiKey.trim() || isLoading}
+          className='gap-2'
+          onClick={handleSave}
+        >
+          {isLoading ? (
+            <Loader2 className='size-4 animate-spin' />
+          ) : (
+            <>
+              Save
+              <kbd className='bg-primary-foreground/20 pointer-events-none inline-flex h-5 items-center rounded px-1.5 font-mono text-[10px] font-medium'>
+                Enter
+              </kbd>
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export type { ProviderId };
