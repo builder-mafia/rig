@@ -107,15 +107,12 @@ impl Storage {
     }
 
     // Channel operations
-    pub async fn get_all_channels(&self) -> Result<Vec<types::ChannelInfo>, String> {
+    pub async fn get_all_channels(&self) -> Result<Vec<types::Channel>, String> {
         let channel_ids = self.list_dirs(&["channel"]).await.unwrap_or_default();
 
         let mut channels = Vec::new();
         for id in channel_ids {
-            if let Ok(info) = self
-                .read::<types::ChannelInfo>(&["channel", &id, "info"])
-                .await
-            {
+            if let Ok(info) = self.read::<types::Channel>(&["channel", &id, "info"]).await {
                 channels.push(info);
             }
         }
@@ -125,15 +122,15 @@ impl Storage {
         Ok(channels)
     }
 
-    pub async fn get_channel(&self, id: &str) -> Result<types::ChannelInfo, String> {
+    pub async fn get_channel(&self, id: &str) -> Result<types::Channel, String> {
         self.read(&["channel", id, "info"]).await
     }
 
-    pub async fn create_channel(&self, info: &types::ChannelInfo) -> Result<(), String> {
+    pub async fn create_channel(&self, info: &types::Channel) -> Result<(), String> {
         self.write(&["channel", &info.id, "info"], info).await
     }
 
-    pub async fn update_channel(&self, info: &types::ChannelInfo) -> Result<(), String> {
+    pub async fn update_channel(&self, info: &types::Channel) -> Result<(), String> {
         self.write(&["channel", &info.id, "info"], info).await
     }
 

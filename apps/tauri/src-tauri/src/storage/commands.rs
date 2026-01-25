@@ -1,29 +1,29 @@
 use super::{
-    types::{ChannelInfo, Message},
+    types::{Channel, Message},
     Storage,
 };
 use tauri::AppHandle;
 
 #[tauri::command]
-pub async fn get_channels(app: AppHandle) -> Result<Vec<ChannelInfo>, String> {
+pub async fn get_channels(app: AppHandle) -> Result<Vec<Channel>, String> {
     let storage = Storage::new(&app);
     storage.get_all_channels().await
 }
 
 #[tauri::command]
-pub async fn get_channel(app: AppHandle, id: String) -> Result<ChannelInfo, String> {
+pub async fn get_channel(app: AppHandle, id: String) -> Result<Channel, String> {
     let storage = Storage::new(&app);
     storage.get_channel(&id).await
 }
 
 #[tauri::command]
-pub async fn create_channel(app: AppHandle, info: ChannelInfo) -> Result<(), String> {
+pub async fn create_channel(app: AppHandle, info: Channel) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.create_channel(&info).await
 }
 
 #[tauri::command]
-pub async fn update_channel(app: AppHandle, info: ChannelInfo) -> Result<(), String> {
+pub async fn update_channel(app: AppHandle, info: Channel) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.update_channel(&info).await
 }

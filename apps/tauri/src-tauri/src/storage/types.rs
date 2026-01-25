@@ -2,16 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChannelInfo {
+pub struct Channel {
     pub id: String,
-    pub model: String,
-    pub provider_name: String,
-    pub reasoning_effort: String,
-    pub reasoning_summary: bool,
+    pub agent_id: Option<String>,
     pub title: Option<String>,
     pub description: Option<String>,
-    pub prompt: Option<String>,
-    pub is_empty: bool,
     pub pin: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
