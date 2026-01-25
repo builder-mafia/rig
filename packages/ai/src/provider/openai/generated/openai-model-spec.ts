@@ -161,6 +161,7 @@
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
@@ -189,10 +190,11 @@
     "cost": {
       "input": 0.05,
       "output": 0.4,
-      "cache_read": 0.01
+      "cache_read": 0.005
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
@@ -225,6 +227,7 @@
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
@@ -285,10 +288,11 @@
     "cost": {
       "input": 0.25,
       "output": 2,
-      "cache_read": 0.03
+      "cache_read": 0.025
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   },
@@ -317,10 +321,11 @@
     "cost": {
       "input": 1.25,
       "output": 10,
-      "cache_read": 0.13
+      "cache_read": 0.125
     },
     "limit": {
       "context": 400000,
+      "input": 272000,
       "output": 128000
     }
   }
