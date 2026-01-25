@@ -1,0 +1,81 @@
+'use client';
+
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
+} from '@allin/ui';
+import { Bot, CreditCard, Plug, Settings, User } from 'lucide-react';
+import * as React from 'react';
+import {
+  useCommandDialog,
+  useCommandDialogView,
+} from '../useCommandDialogView';
+
+export function HomeCommandView() {
+  const { isOpen } = useCommandDialogView('home');
+  const { navigate, close } = useCommandDialog();
+  const [value, setValue] = React.useState('');
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      close();
+      setValue('');
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <CommandDialog
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      value={value}
+      onValueChange={setValue}
+    >
+      <CommandInput placeholder='Type a command or search...' />
+      <CommandEmpty>No results found.</CommandEmpty>
+      <CommandList>
+        <CommandGroup
+          heading={
+            <span className='text-blue-500 font-semibold'>Providers</span>
+          }
+        >
+          <CommandItem onSelect={() => navigate('providers')}>
+            <Plug />
+            <span>Connect Provider</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandGroup
+          heading={<span className='text-blue-500 font-semibold'>Models</span>}
+        >
+          <CommandItem onSelect={() => navigate('model-select')}>
+            <Bot />
+            <span>Switch Model</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandGroup heading='Settings'>
+          <CommandItem>
+            <User />
+            <span>Profile</span>
+            <CommandShortcut>⌘P</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <CreditCard />
+            <span>Billing</span>
+            <CommandShortcut>⌘B</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <Settings />
+            <span>Settings</span>
+            <CommandShortcut>⌘S</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
+  );
+}

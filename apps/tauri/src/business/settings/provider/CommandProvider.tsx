@@ -1,5 +1,4 @@
 import { CommandGroup, CommandItem } from '@allin/ui';
-import { Bot } from 'lucide-react';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 
 const PROVIDERS = [
@@ -13,6 +12,7 @@ type CommandProviderProps = {
 };
 
 export const CommandProvider = ({ onSelectProvider }: CommandProviderProps) => {
+  console.log('CommandProvider');
   return (
     <CommandGroup
       heading={<span className='text-blue-500 font-semibold'>Providers</span>}
