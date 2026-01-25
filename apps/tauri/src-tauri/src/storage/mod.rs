@@ -1,5 +1,9 @@
+mod agent;
+mod channel;
 pub mod commands;
-pub mod types;
+pub mod entities;
+mod message;
+mod setting;
 
 use serde::{de::DeserializeOwned, Serialize};
 use std::path::PathBuf;
@@ -20,6 +24,9 @@ impl Storage {
         Self { base_path }
     }
 
+    /// # Example
+    /// get_path(&["channel", "123", "info"])
+    /// -> {app_data_dir}/storage/channel/123/info.json
     fn get_path(&self, keys: &[&str]) -> PathBuf {
         let mut path = self.base_path.clone();
         for key in keys {
@@ -39,7 +46,6 @@ impl Storage {
     pub async fn write<T: Serialize>(&self, keys: &[&str], content: &T) -> Result<(), String> {
         let path = self.get_path(keys);
 
-        // Ensure parent directory exists
         if let Some(parent) = path.parent() {
             tokio::fs::create_dir_all(parent)
                 .await
@@ -53,6 +59,10 @@ impl Storage {
             .map_err(|e| format!("Failed to write file: {}", e))
     }
 
+    /// Removes a single JSON file.
+    /// # Example
+    /// storage.remove(&["channel", "abc123", "info"]).await?;
+    /// // Deletes: storage/channel/abc123/info.json
     pub async fn remove(&self, keys: &[&str]) -> Result<(), String> {
         let path = self.get_path(keys);
         tokio::fs::remove_file(&path)
@@ -60,6 +70,10 @@ impl Storage {
             .map_err(|e| format!("Failed to remove file: {}", e))
     }
 
+    /// Removes a directory and all its contents (cascade delete).
+    /// # Example
+    /// storage.remove_dir(&["channel", "abc123"]).await?;
+    /// // Deletes: storage/channel/abc123/ (including info.json, messages.json)
     pub async fn remove_dir(&self, keys: &[&str]) -> Result<(), String> {
         let mut path = self.base_path.clone();
         for key in keys {
@@ -70,13 +84,16 @@ impl Storage {
             .map_err(|e| format!("Failed to remove directory: {}", e))
     }
 
+    /// Lists subdirectory names at 1 depth only (not recursive).
+    /// # Example
+    /// let channel_ids = storage.list_dirs(&["channel"]).await?;
+    /// // Returns: ["abc123", "def456"]
     pub async fn list_dirs(&self, prefix: &[&str]) -> Result<Vec<String>, String> {
         let mut path = self.base_path.clone();
         for key in prefix {
             path = path.join(key);
         }
 
-        // Return empty vec if directory doesn't exist
         if !path.exists() {
             return Ok(Vec::new());
         }
@@ -104,61 +121,5 @@ impl Storage {
         }
 
         Ok(dirs)
-    }
-
-    // Channel operations
-    pub async fn get_all_channels(&self) -> Result<Vec<types::Channel>, String> {
-        let channel_ids = self.list_dirs(&["channel"]).await.unwrap_or_default();
-
-        let mut channels = Vec::new();
-        for id in channel_ids {
-            if let Ok(info) = self.read::<types::Channel>(&["channel", &id, "info"]).await {
-                channels.push(info);
-            }
-        }
-
-        // Sort by updatedAt descending
-        channels.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
-        Ok(channels)
-    }
-
-    pub async fn get_channel(&self, id: &str) -> Result<types::Channel, String> {
-        self.read(&["channel", id, "info"]).await
-    }
-
-    pub async fn create_channel(&self, info: &types::Channel) -> Result<(), String> {
-        self.write(&["channel", &info.id, "info"], info).await
-    }
-
-    pub async fn update_channel(&self, info: &types::Channel) -> Result<(), String> {
-        self.write(&["channel", &info.id, "info"], info).await
-    }
-
-    pub async fn delete_channel(&self, id: &str) -> Result<(), String> {
-        self.remove_dir(&["channel", id]).await
-    }
-
-    // Message operations
-    pub async fn get_messages(&self, channel_id: &str) -> Result<Vec<types::Message>, String> {
-        match self
-            .read::<types::MessagesFile>(&["channel", channel_id, "messages"])
-            .await
-        {
-            Ok(file) => Ok(file.messages),
-            Err(_) => Ok(Vec::new()), // Return empty if file doesn't exist
-        }
-    }
-
-    pub async fn save_messages(
-        &self,
-        channel_id: &str,
-        messages: &[types::Message],
-    ) -> Result<(), String> {
-        println!("save_messages: {:?}", messages);
-        let file = types::MessagesFile {
-            messages: messages.to_vec(),
-        };
-        self.write(&["channel", channel_id, "messages"], &file)
-            .await
     }
 }

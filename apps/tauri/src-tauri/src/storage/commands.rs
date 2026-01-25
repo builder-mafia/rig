@@ -1,7 +1,8 @@
 use super::{
-    types::{Channel, Message},
+    entities::{Channel, Message},
     Storage,
 };
+use crate::storage::entities::{Agent, AppSettings};
 use tauri::AppHandle;
 
 #[tauri::command]
@@ -48,4 +49,46 @@ pub async fn save_messages(
 ) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.save_messages(&channel_id, &messages).await
+}
+
+#[tauri::command]
+pub async fn get_all_agents(app: AppHandle) -> Result<Vec<Agent>, String> {
+    let storage = Storage::new(&app);
+    storage.get_all_agents().await
+}
+
+#[tauri::command]
+pub async fn get_agent(app: AppHandle, id: String) -> Result<Agent, String> {
+    let storage = Storage::new(&app);
+    storage.get_agent(&id).await
+}
+
+#[tauri::command]
+pub async fn create_agent(app: AppHandle, agent: Agent) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.create_agent(&agent).await
+}
+
+#[tauri::command]
+pub async fn update_agent(app: AppHandle, agent: Agent) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.update_agent(&agent).await
+}
+
+#[tauri::command]
+pub async fn delete_agent(app: AppHandle, id: String) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.delete_agent(&id).await
+}
+
+#[tauri::command]
+pub async fn get_app_settings(app: AppHandle) -> Result<AppSettings, String> {
+    let storage = Storage::new(&app);
+    storage.get_app_settings().await
+}
+
+#[tauri::command]
+pub async fn save_app_settings(app: AppHandle, settings: AppSettings) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.save_app_settings(&settings).await
 }

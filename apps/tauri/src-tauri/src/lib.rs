@@ -32,6 +32,13 @@ pub fn run() {
             storage::commands::delete_channel,
             storage::commands::get_messages,
             storage::commands::save_messages,
+            storage::commands::get_all_agents,
+            storage::commands::get_agent,
+            storage::commands::create_agent,
+            storage::commands::update_agent,
+            storage::commands::delete_agent,
+            storage::commands::get_app_settings,
+            storage::commands::save_app_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
