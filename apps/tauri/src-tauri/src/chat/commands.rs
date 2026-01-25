@@ -1,29 +1,162 @@
 use aisdk::{
-    core::{LanguageModelRequest, Message},
+    core::{
+        capabilities::TextInputSupport, DynamicModel, LanguageModel, LanguageModelRequest, Message,
+        Messages,
+    },
     integrations::vercel_aisdk_ui::{VercelUIMessage, VercelUIStream, VercelUIStreamOptions},
-    providers::openai::{Gpt52, OpenAI},
+    providers::{anthropic::Anthropic, google::Google, openai::OpenAI, vercel::Vercel},
 };
 use futures::StreamExt;
+use std::str::FromStr;
 use tauri::{ipc::Channel, AppHandle};
 use tauri_plugin_keyring::KeyringExt;
 
-use crate::api_key::constants::{KEYRING_SERVICE, OPENAI_API_KEY_NAME};
+use crate::api_key::constants::{
+    ANTHROPIC_API_KEY_NAME, GOOGLE_API_KEY_NAME, KEYRING_SERVICE, OPENAI_API_KEY_NAME,
+    VERCEL_API_KEY_NAME,
+};
 
-#[tauri::command]
-pub async fn chat_stream(
-    app: AppHandle,
-    messages: Vec<VercelUIMessage>,
-    on_event: Channel<VercelUIStream>,
+enum Provider {
+    OpenAI,
+    Google,
+    Anthropic,
+    Vercel,
+}
+
+impl FromStr for Provider {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "openai" => Ok(Provider::OpenAI),
+            "google" => Ok(Provider::Google),
+            "anthropic" => Ok(Provider::Anthropic),
+            "vercel" => Ok(Provider::Vercel),
+            _ => Err(format!("Invalid provider: {}", s)),
+        }
+    }
+}
+
+async fn do_text_request<M: LanguageModel + TextInputSupport>(
+    model: M,
+    messages: Messages,
+    tx: tokio::sync::mpsc::Sender<VercelUIStream>,
 ) -> Result<(), String> {
-    // Get API key from keychain
-    let api_key = app
+    let response = LanguageModelRequest::builder()
+        .model(model)
+        .system("You are a helpful assistant.")
+        .messages(messages)
+        .build()
+        .stream_text()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let options = VercelUIStreamOptions {
+        send_reasoning: true,
+        send_start: true,
+        send_finish: true,
+        generate_message_id: None,
+    };
+
+    let mut stream = response.into_vercel_ui_stream(options);
+
+    while let Some(chunk) = stream.next().await {
+        let ui_chunk = match chunk {
+            Ok(c) => c,
+            Err(e) => VercelUIStream::Error {
+                error_text: e.to_string(),
+            },
+        };
+
+        if tx.send(ui_chunk).await.is_err() {
+            break;
+        }
+    }
+
+    Ok(())
+}
+
+fn get_api_key(
+    app: AppHandle,
+    provider_name: &String,
+    key_name: &String,
+) -> Result<String, String> {
+    let result = app
         .keyring()
-        .get_password(KEYRING_SERVICE, OPENAI_API_KEY_NAME)
+        .get_password(KEYRING_SERVICE, key_name)
         .map_err(|e| e.to_string())?
         .ok_or_else(|| {
-            "API key not set. Please configure your OpenAI API key in settings.".to_string()
+            format!(
+                "API key not set. Please configure your {} API key in settings.",
+                provider_name
+            )
         })?;
+    Ok(result)
+}
 
+async fn do_stream(
+    app: AppHandle,
+    provider_name: String,
+    model_id: String,
+    messages: Messages,
+    tx: tokio::sync::mpsc::Sender<VercelUIStream>,
+) -> Result<(), String> {
+    let provider: Provider = provider_name.parse()?;
+    let key_name = match provider {
+        Provider::OpenAI => OPENAI_API_KEY_NAME,
+        Provider::Google => GOOGLE_API_KEY_NAME,
+        Provider::Anthropic => ANTHROPIC_API_KEY_NAME,
+        Provider::Vercel => VERCEL_API_KEY_NAME,
+    };
+
+    let api_key = get_api_key(app, &provider_name, &key_name.to_string())?;
+
+    match provider {
+        Provider::OpenAI => {
+            let model = OpenAI::<DynamicModel>::builder()
+                .model_name(model_id)
+                .api_key(api_key)
+                .build()
+                .map_err(|e| e.to_string())?;
+            do_text_request(model, messages, tx).await?;
+        }
+        Provider::Google => {
+            let model = Google::<DynamicModel>::builder()
+                .model_name(model_id)
+                .api_key(api_key)
+                .build()
+                .map_err(|e| e.to_string())?;
+            do_text_request(model, messages, tx).await?;
+        }
+        Provider::Anthropic => {
+            let model = Anthropic::<DynamicModel>::builder()
+                .model_name(model_id)
+                .api_key(api_key)
+                .build()
+                .map_err(|e| e.to_string())?;
+            do_text_request(model, messages, tx).await?;
+        }
+        Provider::Vercel => {
+            let model = Vercel::<DynamicModel>::builder()
+                .model_name(model_id)
+                .api_key(api_key)
+                .build()
+                .map_err(|e| e.to_string())?;
+            do_text_request(model, messages, tx).await?;
+        }
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn stream_text(
+    app: AppHandle,
+    messages: Vec<VercelUIMessage>,
+    provider_name: String,
+    model_id: String,
+    on_event: Channel<VercelUIStream>,
+) -> Result<(), String> {
     // Convert UI messages to model messages
     let model_messages = Message::from_vercel_ui_message(&messages);
 
@@ -37,39 +170,7 @@ pub async fn chat_stream(
             .unwrap();
 
         rt.block_on(async move {
-            let openai = OpenAI::<Gpt52>::builder().api_key(api_key).build().unwrap();
-
-            let response = LanguageModelRequest::builder()
-                .model(openai)
-                .system("You are a helpful assistant.")
-                .messages(model_messages)
-                .build()
-                .stream_text()
-                .await
-                .map_err(|e| e.to_string())?;
-
-            let options = VercelUIStreamOptions {
-                send_reasoning: true,
-                send_start: true,
-                send_finish: true,
-                generate_message_id: None,
-            };
-
-            let mut stream = response.into_vercel_ui_stream(options);
-
-            while let Some(chunk) = stream.next().await {
-                let ui_chunk = match chunk {
-                    Ok(c) => c,
-                    Err(e) => VercelUIStream::Error {
-                        error_text: e.to_string(),
-                    },
-                };
-
-                if tx.send(ui_chunk).await.is_err() {
-                    break;
-                }
-            }
-
+            do_stream(app, provider_name, model_id, model_messages, tx).await?;
             Ok::<(), String>(())
         })
     });
@@ -86,6 +187,5 @@ pub async fn chat_stream(
 
     // Wait for the thread to complete
     handle.join().map_err(|_| "Thread panicked".to_string())??;
-
     Ok(())
 }

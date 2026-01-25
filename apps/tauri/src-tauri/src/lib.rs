@@ -20,7 +20,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            chat::commands::chat_stream,
+            chat::commands::stream_text,
             api_key::commands::save_api_key,
             api_key::commands::get_api_key,
             api_key::commands::delete_api_key,
