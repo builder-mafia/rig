@@ -138,6 +138,7 @@ export class SessionMap {
 - Implement only requested functionality
 - Use TODO comments for future extensions
 - No premature abstraction
+- **If a field/type/feature has no consumer yet, don't add it**
 
 ### Simplicity First
 - Prefer simple solutions over complex architectures
@@ -147,6 +148,63 @@ export class SessionMap {
 - **Ask when uncertain** - don't make assumptions
 - Keep responses concise and clear
 - All comments and documentation in English
+
+## Owner's Coding Style
+
+### Architecture: View / State Separation
+- React components handle **rendering only**
+- State logic lives in separate Singleton classes with RxJS `BehaviorSubject`
+- Example: `ChatInputView.tsx` (UI) + `ChatInputState.ts` (state)
+- This allows state to be accessed from outside React components
+
+### Component Communication: RxJS Subject as Event Bus
+- Use `Subject` to pass events between components that don't share focus
+- Example: `modifierKeyEvent$` Subject created in parent, injected into child via props
+- Preferred over prop callback chains for cross-component event flow
+
+```typescript
+// Parent creates Subject, child subscribes
+const modifierKeyEvent$ = useMemo(
+  () => new Subject<'ArrowUp' | 'ArrowDown' | 'Enter'>(),
+  [],
+);
+// Pass to child as prop, child subscribes in useEffect
+```
+
+### Conditional Rendering over Open/Close Props
+- Prefer `{isOpen && <Component />}` (mount/unmount) over `<Component isOpen={isOpen} />`
+- The component itself is always "open" — parent controls its existence
+- Popover with `open` always `true`, parent decides whether to render it at all
+
+### Naming: Semantic Placeholders
+- Use descriptive names that convey purpose: `$INPUT` (user text), `$HINT` (selected hint)
+- Avoid generic/CLI-style names like `$ARGUMENTS`, `$1`, `$2`
+
+### Manager = Pure Registry
+- Manager/Singleton classes should only handle registration and data access
+- **No filtering, searching, or UI logic inside Managers**
+- Filtering belongs in the UI layer (e.g., `Fzf` fuzzy search in component)
+
+### Cursor-Aware Input Handling
+- Use `selectionStart` to determine cursor position in textarea
+- Input behavior should depend on **where** the cursor is, not just **what** the value is
+- Example: Popover opens only when cursor is within the `/command` token
+
+```typescript
+const firstPhrase = currentInput.split(/\s+/)[0];
+if (firstPhrase.startsWith('/') && currentSelection <= firstPhrase.length) {
+  setIsOpen(true);
+}
+```
+
+### Fuzzy Search with fzf
+- Use `fzf` library for fuzzy matching instead of simple `includes()` filtering
+- Create `Fzf` instance with `selector` for object lists, memoize with `useMemo`
+
+### File Naming
+- View components: `*View.tsx` (e.g., `ChatInputView.tsx`)
+- State classes: `*State.ts` (e.g., `ChatInputState.ts`)
+- Manager singletons: `*Manager.ts` (e.g., `SlashCommandManager.ts`)
 
 ## Error Handling
 

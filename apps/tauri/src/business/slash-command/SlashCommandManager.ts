@@ -14,37 +14,15 @@ export class SlashCommandManager {
     return SlashCommandManager.instance;
   }
 
-  getCommands$(): Observable<SlashCommand[]> {
+  public getCommands$(): Observable<SlashCommand[]> {
     return this.commands$.asObservable();
   }
 
-  getCommands(): SlashCommand[] {
+  public getCommands(): SlashCommand[] {
     return this.commands$.getValue();
   }
 
-  getFilteredCommands(query: string): SlashCommand[] {
-    const commands = this.getCommands();
-    const normalizedQuery = query.toLowerCase().trim();
-
-    if (!normalizedQuery) {
-      return commands.filter(cmd => cmd.enabled !== false);
-    }
-
-    return commands
-      .filter(cmd => cmd.enabled !== false)
-      .filter(cmd => {
-        const nameMatch = cmd.name.toLowerCase().includes(normalizedQuery);
-        const descMatch = cmd.description
-          .toLowerCase()
-          .includes(normalizedQuery);
-        const keywordMatch = cmd.keywords?.some(k =>
-          k.toLowerCase().includes(normalizedQuery),
-        );
-        return nameMatch || descMatch || keywordMatch;
-      });
-  }
-
-  registerCommand(command: SlashCommand): void {
+  public registerCommand(command: SlashCommand): void {
     const currentCommands = this.commands$.getValue();
     const exists = currentCommands.some(cmd => cmd.id === command.id);
 
@@ -55,18 +33,18 @@ export class SlashCommandManager {
     this.commands$.next([...currentCommands, command]);
   }
 
-  registerCommands(commands: SlashCommand[]): void {
+  public registerCommands(commands: SlashCommand[]): void {
     for (const cmd of commands) {
       this.registerCommand(cmd);
     }
   }
 
-  unregisterCommand(id: string): void {
+  public unregisterCommand(id: string): void {
     const currentCommands = this.commands$.getValue();
     this.commands$.next(currentCommands.filter(cmd => cmd.id !== id));
   }
 
-  resolveTemplate(
+  public resolveTemplate(
     command: TemplateSlashCommand,
     args: string,
     hintSelection?: string,
@@ -77,7 +55,7 @@ export class SlashCommandManager {
       resolved = resolved.replace('$1', hintSelection);
     }
 
-    resolved = resolved.replace('$ARGUMENTS', args);
+    resolved = resolved.replace('$ALL', args);
 
     const positionalArgs = args.split(/\s+/);
     for (let i = 0; i < positionalArgs.length; i++) {

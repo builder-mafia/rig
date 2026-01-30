@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react';
 
-export type SlashCommandCategory = 'ai' | 'tools' | 'general' | 'custom';
-
 type SlashCommandBase = {
   id: string;
   name: string;
   description: string;
-  category: SlashCommandCategory;
   icon?: ReactNode;
   keywords?: string[];
   enabled?: boolean;

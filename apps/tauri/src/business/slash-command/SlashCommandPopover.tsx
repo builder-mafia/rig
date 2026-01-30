@@ -3,217 +3,103 @@
 import {
   Command,
   CommandEmpty,
-  CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   Popover,
   PopoverAnchor,
   PopoverContent,
 } from '@allin/ui';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { slashCommandManager } from './SlashCommandManager';
-import type {
-  SlashCommand,
-  SlashCommandCategory,
-  TemplateSlashCommand,
-} from './types';
+import { Fzf } from 'fzf';
+import { useEffect, useMemo, useState } from 'react';
+import type { Subject } from 'rxjs';
+import { SlashCommandManager } from './SlashCommandManager';
+import type { SlashCommand } from './types';
 
 type SlashCommandPopoverProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  currentInput: string;
-  setInput: (value: string) => void;
+  query: string;
+  modifierKeyEvent$: Subject<'ArrowUp' | 'ArrowDown' | 'Enter'>;
+  onSelect: (command: SlashCommand) => void;
   anchorRef: React.RefObject<HTMLTextAreaElement | null>;
 };
 
-type PopoverPhase =
-  | { type: 'command-list' }
-  | { type: 'hint-selection'; command: TemplateSlashCommand };
-
-const CATEGORY_ORDER: SlashCommandCategory[] = [
-  'ai',
-  'tools',
-  'general',
-  'custom',
-];
-
-const CATEGORY_LABELS: Record<SlashCommandCategory, string> = {
-  ai: 'AI',
-  tools: 'Tools',
-  general: 'General',
-  custom: 'Custom',
-};
-
 export function SlashCommandPopover({
-  isOpen,
-  onClose,
-  currentInput,
-  setInput,
+  query,
+  onSelect,
   anchorRef,
+  modifierKeyEvent$,
 }: SlashCommandPopoverProps) {
-  const [query, setQuery] = useState('');
-  const [phase, setPhase] = useState<PopoverPhase>({ type: 'command-list' });
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [commands] = useState<SlashCommand[]>(
+    SlashCommandManager.getInstance().getCommands(),
+  );
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-    if (!isOpen) {
-      setQuery('');
-      setPhase({ type: 'command-list' });
-    }
-  }, [isOpen]);
-
-  const filteredCommands = useMemo(
-    () => slashCommandManager.getFilteredCommands(query),
-    [query],
+  const fzf = useMemo(
+    () => new Fzf(commands, { selector: (cmd: SlashCommand) => cmd.name }),
+    [commands],
   );
 
-  const groupedCommands = useMemo(() => {
-    const groups = filteredCommands.reduce(
-      (acc, cmd) => {
-        const category = cmd.category;
-        if (!acc[category]) {
-          acc[category] = [];
+  const filteredCommands = useMemo(
+    () => (query ? fzf.find(query).map(result => result.item) : commands),
+    [fzf, query, commands],
+  );
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
+  useEffect(() => {
+    const subscription = modifierKeyEvent$.subscribe(key => {
+      if (key === 'ArrowUp') {
+        setSelectedIndex(prev =>
+          prev <= 0 ? filteredCommands.length - 1 : prev - 1,
+        );
+      }
+      if (key === 'ArrowDown') {
+        setSelectedIndex(prev =>
+          prev >= filteredCommands.length - 1 ? 0 : prev + 1,
+        );
+      }
+      if (key === 'Enter') {
+        const selected = filteredCommands[selectedIndex];
+        if (selected) {
+          onSelect(selected);
         }
-        acc[category].push(cmd);
-        return acc;
-      },
-      {} as Record<string, SlashCommand[]>,
-    );
+      }
+    });
 
-    return Object.entries(groups).sort(
-      ([a], [b]) =>
-        CATEGORY_ORDER.indexOf(a as SlashCommandCategory) -
-        CATEGORY_ORDER.indexOf(b as SlashCommandCategory),
-    );
-  }, [filteredCommands]);
-
-  const handleSelectCommand = (command: SlashCommand) => {
-    if (command.mode === 'action') {
-      command.execute({ currentInput, setInput, close: onClose });
-      return;
-    }
-
-    if (command.hints && command.hints.length > 0) {
-      setPhase({ type: 'hint-selection', command });
-      setQuery('');
-      return;
-    }
-
-    setInput(`/${command.id} `);
-    onClose();
-  };
-
-  const handleSelectHint = (hint: string) => {
-    if (phase.type !== 'hint-selection') return;
-    setInput(`/${phase.command.id} ${hint} `);
-    onClose();
-  };
-
-  const handleClose = () => {
-    onClose();
-  };
-
-  if (phase.type === 'hint-selection') {
-    const { command } = phase;
-    const hints = command.hints ?? [];
-    const filtered = query
-      ? hints.filter(h => h.toLowerCase().includes(query.toLowerCase()))
-      : hints;
-
-    return (
-      <Popover open={isOpen} onOpenChange={open => !open && handleClose()}>
-        <PopoverAnchor virtualRef={anchorRef as React.RefObject<HTMLElement>} />
-        <PopoverContent
-          className='w-[320px] p-0'
-          align='start'
-          side='top'
-          sideOffset={8}
-          onOpenAutoFocus={e => e.preventDefault()}
-        >
-          <Command shouldFilter={false}>
-            <CommandInput
-              ref={inputRef}
-              placeholder={`Select for /${command.name}...`}
-              value={query}
-              onValueChange={setQuery}
-              onKeyDown={e => {
-                if (e.key === 'Escape') {
-                  setPhase({ type: 'command-list' });
-                  setQuery('');
-                }
-              }}
-            />
-            <CommandList>
-              <CommandEmpty>No options found.</CommandEmpty>
-              <CommandGroup heading={command.name}>
-                {filtered.map(hint => (
-                  <CommandItem
-                    key={hint}
-                    value={hint}
-                    onSelect={() => handleSelectHint(hint)}
-                  >
-                    {hint}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    );
-  }
+    return () => subscription.unsubscribe();
+  }, [modifierKeyEvent$, filteredCommands, selectedIndex, onSelect]);
 
   return (
-    <Popover open={isOpen} onOpenChange={open => !open && handleClose()}>
+    <Popover open>
       <PopoverAnchor virtualRef={anchorRef as React.RefObject<HTMLElement>} />
       <PopoverContent
-        className='w-[320px] p-0'
+        className='w-[calc(680px)] p-0'
         align='start'
         side='top'
         sideOffset={8}
         onOpenAutoFocus={e => e.preventDefault()}
       >
-        <Command shouldFilter={false}>
-          <CommandInput
-            ref={inputRef}
-            placeholder='Search commands...'
-            value={query}
-            onValueChange={setQuery}
-            onKeyDown={e => {
-              if (e.key === 'Escape') handleClose();
-            }}
-          />
+        <Command
+          shouldFilter={false}
+          value={filteredCommands[selectedIndex]?.name}
+          onValueChange={() => {}}
+        >
           <CommandList>
-            <CommandEmpty>No commands found.</CommandEmpty>
-            {groupedCommands.map(([category, commands]) => (
-              <CommandGroup
-                key={category}
-                heading={
-                  CATEGORY_LABELS[category as SlashCommandCategory] ?? category
-                }
+            <CommandEmpty>No matches found.</CommandEmpty>
+            {filteredCommands.map(command => (
+              <CommandItem
+                key={command.id}
+                value={command.name}
+                onSelect={() => onSelect(command)}
               >
-                {commands.map(cmd => (
-                  <CommandItem
-                    key={cmd.id}
-                    value={cmd.id}
-                    onSelect={() => handleSelectCommand(cmd)}
-                  >
-                    {cmd.icon && (
-                      <span className='mr-2 flex-shrink-0'>{cmd.icon}</span>
-                    )}
-                    <div className='flex flex-col'>
-                      <span className='font-medium'>{cmd.name}</span>
-                      <span className='text-xs text-muted-foreground'>
-                        {cmd.description}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                <span className='text-sm font-medium w-[160px]'>
+                  {command.name}
+                </span>
+                <span className='text-xs text-muted-foreground'>
+                  {command.description}
+                </span>
+              </CommandItem>
             ))}
           </CommandList>
         </Command>

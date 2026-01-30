@@ -1,7 +1,7 @@
 'use client';
 
 import { Toaster } from '@allin/ui';
-import { ChatInput } from '@/business/chat/ChatInput';
+import { ChatInputView } from '@/business/chat/ChatInputView';
 import { CommandSetting } from '@/business/settings/CommandSetting';
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
     <div>
       <Toaster richColors duration={3000} />
       <CommandSetting />
-      <ChatInput session={null} />
+      <ChatInputView session={null} />
     </div>
   );
 }
