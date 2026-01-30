@@ -1,13 +1,15 @@
 import { FileText, Image, Languages, Sparkles, Wand2 } from 'lucide-react';
-import type { SlashCommand } from './types';
+import type { SlashCommand, SlashCommandContext } from './types';
 
 export const defaultSlashCommands: SlashCommand[] = [
   {
-    id: 'summarize',
-    name: 'Summarize',
-    description: 'Summarize the conversation or text',
-    mode: 'template',
-    template: 'Summarize the following:\n\n$INPUT',
+    id: 'compact',
+    name: 'Compact',
+    description: 'Compact the conversation or text',
+    mode: 'action',
+    execute: (context: SlashCommandContext) => {
+      console.log(context);
+    },
     icon: <FileText className='size-4' />,
     keywords: ['summary', 'tldr', 'recap'],
   },
@@ -15,7 +17,6 @@ export const defaultSlashCommands: SlashCommand[] = [
     id: 'translate',
     name: 'Translate',
     description: 'Translate text to another language',
-
     mode: 'template',
     template: 'Translate the following to $HINT:\n\n$INPUT',
     hints: ['Korean', 'English', 'Japanese', 'Chinese', 'Spanish', 'French'],

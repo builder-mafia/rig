@@ -44,10 +44,6 @@ export function SlashCommandPopover({
   );
 
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
-
-  useEffect(() => {
     const subscription = modifierKeyEvent$.subscribe(key => {
       if (key === 'ArrowUp') {
         setSelectedIndex(prev =>
