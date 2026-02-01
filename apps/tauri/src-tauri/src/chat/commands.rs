@@ -7,16 +7,25 @@ use aisdk::{
     providers::{anthropic::Anthropic, google::Google, openai::OpenAI, vercel::Vercel},
 };
 use futures::StreamExt;
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 use tauri::{ipc::Channel, AppHandle};
 use tauri_plugin_keyring::KeyringExt;
 
 use crate::api_key::constants::KEYRING_SERVICE;
 use crate::provider::Provider;
 
+fn cancel_map() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
+    static MAP: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> = OnceLock::new();
+    MAP.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
 async fn do_text_request<M: LanguageModel + TextInputSupport>(
     model: M,
     messages: Messages,
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
+    cancel_flag: Arc<AtomicBool>,
 ) -> Result<(), String> {
     let response = LanguageModelRequest::builder()
         .model(model)
@@ -37,6 +46,9 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
     let mut stream = response.into_vercel_ui_stream(options);
 
     while let Some(chunk) = stream.next().await {
+        if cancel_flag.load(Ordering::Relaxed) {
+            break;
+        }
         let ui_chunk = match chunk {
             Ok(c) => c,
             Err(e) => VercelUIStream::Error {
@@ -76,7 +88,12 @@ async fn do_stream(
     model_id: String,
     messages: Messages,
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
+    cancel_flag: Arc<AtomicBool>,
 ) -> Result<(), String> {
+    if cancel_flag.load(Ordering::Relaxed) {
+        return Ok(());
+    }
+
     let provider: Provider = provider_name.parse()?;
     let api_key = get_api_key(app, &provider_name, provider.key_name())?;
 
@@ -87,7 +104,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx).await?;
+            do_text_request(model, messages, tx, cancel_flag).await?;
         }
         Provider::Google => {
             let model = Google::<DynamicModel>::builder()
@@ -95,7 +112,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx).await?;
+            do_text_request(model, messages, tx, cancel_flag).await?;
         }
         Provider::Anthropic => {
             let model = Anthropic::<DynamicModel>::builder()
@@ -103,7 +120,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx).await?;
+            do_text_request(model, messages, tx, cancel_flag).await?;
         }
         Provider::Vercel => {
             let model = Vercel::<DynamicModel>::builder()
@@ -111,7 +128,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx).await?;
+            do_text_request(model, messages, tx, cancel_flag).await?;
         }
     }
 
@@ -124,8 +141,16 @@ pub async fn stream_text(
     messages: Vec<VercelUIMessage>,
     provider_name: String,
     model_id: String,
+    request_id: String,
     on_event: Channel<VercelUIStream>,
 ) -> Result<(), String> {
+    let cancel_flag = Arc::new(AtomicBool::new(false));
+    let cancel_flag_for_forward = cancel_flag.clone();
+    {
+        let mut map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+        map.insert(request_id.clone(), cancel_flag.clone());
+    }
+
     // Convert UI messages to model messages
     let model_messages = Message::from_vercel_ui_message(&messages);
 
@@ -139,13 +164,24 @@ pub async fn stream_text(
             .unwrap();
 
         rt.block_on(async move {
-            do_stream(app, provider_name, model_id, model_messages, tx).await?;
+            do_stream(
+                app,
+                provider_name,
+                model_id,
+                model_messages,
+                tx,
+                cancel_flag,
+            )
+            .await?;
             Ok::<(), String>(())
         })
     });
 
     // Forward events from the channel to the IPC channel
     while let Some(event) = rx.recv().await {
+        if cancel_flag_for_forward.load(Ordering::Relaxed) {
+            break;
+        }
         let is_error = matches!(event, VercelUIStream::Error { .. });
         on_event.send(event).map_err(|e| e.to_string())?;
 
@@ -156,5 +192,21 @@ pub async fn stream_text(
 
     // Wait for the thread to complete
     handle.join().map_err(|_| "Thread panicked".to_string())??;
+
+    // Cleanup cancellation registry
+    {
+        let mut map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+        map.remove(&request_id);
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn abort_stream(request_id: String) -> Result<(), String> {
+    let map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+    if let Some(flag) = map.get(&request_id) {
+        flag.store(true, Ordering::Relaxed);
+    }
     Ok(())
 }

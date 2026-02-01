@@ -33,7 +33,8 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "rxjs": "catalog:utils",
-    "ts-pattern": "catalog:utils"
+    "ts-pattern": "catalog:utils",
+    "uuid": "catalog:utils"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

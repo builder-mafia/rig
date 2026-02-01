@@ -22,6 +22,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             chat::commands::stream_text,
+            chat::commands::abort_stream,
             api_key::commands::save_api_key,
             api_key::commands::get_api_key,
             api_key::commands::delete_api_key,

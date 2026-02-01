@@ -1,6 +1,7 @@
 import type { LLMProviderName } from '@allin/ai';
 import { Channel, invoke } from '@tauri-apps/api/core';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
+import { v4 } from 'uuid';
 
 /**
  * VercelUIStream from Rust backend (aisdk crate)
@@ -56,6 +57,8 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
   sendMessages: ChatTransport<UIMessage>['sendMessages'] = async options => {
     const { messages, abortSignal } = options;
 
+    const requestId = v4();
+
     // Rust VercelUIMessage schema may not accept extra fields (eg. metadata).
     // Send only the minimal UIMessage shape.
     const messagesForRust = messages.map(m => ({
@@ -64,37 +67,46 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
       parts: m.parts,
     }));
 
+    const onEvent = new Channel<VercelUIStream>();
+
+    const abortRustStream = () =>
+      invoke('abort_stream', {
+        requestId,
+      }).catch(() => {
+        // ignore
+      });
+
     const readableStream = new ReadableStream<UIMessageChunk>({
       start: controller => {
-        const onEvent = new Channel<VercelUIStream>();
-
         if (abortSignal) {
-          abortSignal.addEventListener('abort', () => {
-            controller.enqueue({ type: 'finish', finishReason: 'stop' });
-            controller.close();
-          });
+          abortSignal.addEventListener(
+            'abort',
+            () => {
+              abortRustStream();
+              controller.enqueue({ type: 'finish', finishReason: 'stop' });
+              controller.close();
+            },
+            { once: true },
+          );
         }
 
         onEvent.onmessage = event => {
           if (abortSignal?.aborted) {
-            controller.close();
             return;
           }
 
-          // Filter out not-supported events
           if (event.type === 'not-supported') {
             console.warn('Feature not supported:', event.error_text);
             return;
           }
 
-          // Convert error event (snake_case → camelCase)
           if (event.type === 'error') {
+            controller.error(new Error(event.error_text));
             controller.enqueue({ type: 'error', errorText: event.error_text });
             controller.error(new Error(event.error_text));
             return;
           }
 
-          // Pass through all other events directly
           controller.enqueue(event as UIMessageChunk);
         };
 
@@ -102,6 +114,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
           messages: messagesForRust,
           providerName: this.providerName,
           modelId: this.modelId,
+          requestId,
           onEvent,
         })
           .then(() => controller.close())
