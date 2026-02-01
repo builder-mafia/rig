@@ -1,5 +1,6 @@
 mod api_key;
 mod chat;
+mod provider;
 mod storage;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -31,6 +32,8 @@ pub fn run() {
             storage::commands::update_channel,
             storage::commands::delete_channel,
             storage::commands::get_messages,
+            storage::commands::append_message,
+            storage::commands::upsert_message,
             storage::commands::save_messages,
             storage::commands::get_all_agents,
             storage::commands::get_agent,

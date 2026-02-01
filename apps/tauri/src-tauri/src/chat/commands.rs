@@ -7,35 +7,11 @@ use aisdk::{
     providers::{anthropic::Anthropic, google::Google, openai::OpenAI, vercel::Vercel},
 };
 use futures::StreamExt;
-use std::str::FromStr;
 use tauri::{ipc::Channel, AppHandle};
 use tauri_plugin_keyring::KeyringExt;
 
-use crate::api_key::constants::{
-    ANTHROPIC_API_KEY_NAME, GOOGLE_API_KEY_NAME, KEYRING_SERVICE, OPENAI_API_KEY_NAME,
-    VERCEL_API_KEY_NAME,
-};
-
-enum Provider {
-    OpenAI,
-    Google,
-    Anthropic,
-    Vercel,
-}
-
-impl FromStr for Provider {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "openai" => Ok(Provider::OpenAI),
-            "google" => Ok(Provider::Google),
-            "anthropic" => Ok(Provider::Anthropic),
-            "vercel" => Ok(Provider::Vercel),
-            _ => Err(format!("Invalid provider: {}", s)),
-        }
-    }
-}
+use crate::api_key::constants::KEYRING_SERVICE;
+use crate::provider::Provider;
 
 async fn do_text_request<M: LanguageModel + TextInputSupport>(
     model: M,
@@ -79,7 +55,7 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
 fn get_api_key(
     app: AppHandle,
     provider_name: &String,
-    key_name: &String,
+    key_name: &str,
 ) -> Result<String, String> {
     let result = app
         .keyring()
@@ -102,14 +78,7 @@ async fn do_stream(
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
 ) -> Result<(), String> {
     let provider: Provider = provider_name.parse()?;
-    let key_name = match provider {
-        Provider::OpenAI => OPENAI_API_KEY_NAME,
-        Provider::Google => GOOGLE_API_KEY_NAME,
-        Provider::Anthropic => ANTHROPIC_API_KEY_NAME,
-        Provider::Vercel => VERCEL_API_KEY_NAME,
-    };
-
-    let api_key = get_api_key(app, &provider_name, &key_name.to_string())?;
+    let api_key = get_api_key(app, &provider_name, provider.key_name())?;
 
     match provider {
         Provider::OpenAI => {

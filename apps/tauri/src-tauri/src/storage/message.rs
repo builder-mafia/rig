@@ -11,6 +11,32 @@ impl Storage {
         }
     }
 
+    pub async fn append_message(
+        &self,
+        channel_id: &str,
+        message: &entities::Message,
+    ) -> Result<(), String> {
+        let mut messages = self.get_messages(channel_id).await?;
+        messages.push(message.clone());
+        self.save_messages(channel_id, &messages).await
+    }
+
+    pub async fn upsert_message(
+        &self,
+        channel_id: &str,
+        message: &entities::Message,
+    ) -> Result<(), String> {
+        let mut messages = self.get_messages(channel_id).await?;
+
+        if let Some(index) = messages.iter().position(|m| m.id == message.id) {
+            messages[index] = message.clone();
+        } else {
+            messages.push(message.clone());
+        }
+
+        self.save_messages(channel_id, &messages).await
+    }
+
     pub async fn save_messages(
         &self,
         channel_id: &str,

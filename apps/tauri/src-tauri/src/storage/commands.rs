@@ -42,6 +42,26 @@ pub async fn get_messages(app: AppHandle, channel_id: String) -> Result<Vec<Mess
 }
 
 #[tauri::command]
+pub async fn append_message(
+    app: AppHandle,
+    channel_id: String,
+    message: Message,
+) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.append_message(&channel_id, &message).await
+}
+
+#[tauri::command]
+pub async fn upsert_message(
+    app: AppHandle,
+    channel_id: String,
+    message: Message,
+) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.upsert_message(&channel_id, &message).await
+}
+
+#[tauri::command]
 pub async fn save_messages(
     app: AppHandle,
     channel_id: String,

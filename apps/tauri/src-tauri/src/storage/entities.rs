@@ -19,6 +19,7 @@ pub struct Message {
     pub id: String,
     pub role: String,
     pub parts: Vec<serde_json::Value>,
+    pub metadata: Option<serde_json::Value>,
     pub created_at: i64,
     pub is_summary: Option<bool>,
     pub compacted_at: Option<i64>,
