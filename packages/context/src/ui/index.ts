@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export interface AUI {
+export interface UI {
   render(props: {
     id: string;
     component: ReactNode;

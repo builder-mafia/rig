@@ -14,7 +14,7 @@ interface ExtensionContext {
   modal: Modal;                              // Modal management
   sidebar: Sidebar;                          // Sidebar panel control
   TextSelectionFloatingButtonList: TextSelectionFloatingButtonList;  // Text selection popover
-  aui: AUI;                                  // UI components
+  ui: UI;                                     // UI components
   event: Event;                              // Event system
 }
 ```

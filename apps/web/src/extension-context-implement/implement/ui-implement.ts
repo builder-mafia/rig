@@ -1,7 +1,7 @@
-import type { AUI } from '@allin/context';
+import type { UI } from '@allin/context';
 import { RootViewRenderComponent$ } from '@/app/business/RootView';
 
-export const AUIImpl: AUI = {
+export const UIImpl: UI = {
   render: props => {
     RootViewRenderComponent$.next(props);
   },

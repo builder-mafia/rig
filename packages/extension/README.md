@@ -41,7 +41,7 @@ The `context` parameter provides access to ALLIN APIs:
 - `modal` - Modal management
 - `sidebar` - Sidebar panel control
 - `TextSelectionFloatingButtonList` - Text selection popover
-- `aui` - UI components
+- `ui` - UI components
 - `event` - Event system
 
 See `@allin/context` for detailed API documentation.

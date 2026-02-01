@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --concurrency=15",
     "dev:app": "pnpm --filter 'desktop-app' tauri dev",
     "start": "turbo start",
     "build": "turbo build",
     "test": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream test:watch",
     "test:once": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream test",
-    "check-ts": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream check-ts"
+    "check-ts": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present --stream check-ts",
+    "new-extension": "node scripts/new-extension.mjs"
   },
   "keywords": [],
   "author": "",

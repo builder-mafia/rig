@@ -1,4 +1,4 @@
-import type { AUI } from '@allin/context';
+import type { UI } from '@allin/context';
 import { motion } from 'motion/react';
 import React, { Suspense, useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -13,12 +13,12 @@ import { RightHeader } from './header/RightHeader';
 import { Initializer } from './Initializer';
 
 export const RootViewRenderComponent$ = new Subject<
-  Parameters<AUI['render']>[0] | null
+  Parameters<UI['render']>[0] | null
 >();
 
 export const RootView = React.memo(() => {
   const [renderProps, setRenderProps] = useState<
-    Parameters<AUI['render']>[0] | null
+    Parameters<UI['render']>[0] | null
   >(null);
 
   useEffect(() => {
