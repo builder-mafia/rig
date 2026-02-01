@@ -3,17 +3,24 @@
 import { Button, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Subject } from 'rxjs';
-import type { Session } from '../session/Session';
 import { defaultSlashCommands } from '../slash-command/defaultCommands';
 import { slashCommandManager } from '../slash-command/SlashCommandManager';
 import { SlashCommandPopover } from '../slash-command/SlashCommandPopover';
 import { ChatInputState } from './ChatInputState';
 
 type ChatInputViewProps = {
-  session: Session | null;
+  onSubmitText: (text: string) => Promise<void>;
+  onStop?: () => void;
+  disabled?: boolean;
+  isStreaming?: boolean;
 };
 
-export const ChatInputView = ({ session }: ChatInputViewProps) => {
+export const ChatInputView = ({
+  onSubmitText,
+  onStop,
+  disabled = false,
+  isStreaming = false,
+}: ChatInputViewProps) => {
   const [input, _setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -28,8 +35,8 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
     ChatInputState.getInstance().setValue(value);
   };
 
-  const handleSubmit = () => {
-    if (!session) return;
+  const handleSubmit = async () => {
+    if (disabled) return;
 
     const trimmedInput = input.trimStart();
 
@@ -51,17 +58,17 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
 
       if (command && command.mode === 'template') {
         const resolved = slashCommandManager.resolveTemplate(
-          command as any,
+          command,
           userText,
         );
-        // TODO: send message via session with resolved text
+        await onSubmitText(resolved);
         setInput('');
         return;
       }
     }
 
     if (!input.trim()) return;
-    // TODO: send message via session
+    await onSubmitText(input.trim());
     setInput('');
   };
 
@@ -97,6 +104,13 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
         e.preventDefault();
       }
     }
+
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !isOpen) {
+      e.preventDefault();
+      handleSubmit().catch(err => {
+        console.error('Submit failed:', err);
+      });
+    }
   };
 
   return (
@@ -105,6 +119,7 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
         <Textarea
           ref={textAreaRef}
           value={input}
+          disabled={disabled}
           onKeyDown={handleKeyDown}
           onChange={handleChange}
           className='mx-auto max-w-2xl lg:max-w-4xl min-h-12 py-2.5 max-h-[500px] backdrop-blur-lg'
@@ -112,12 +127,26 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
         />
         <div className='w-full flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between mt-2 mb-4'>
           <div className='flex flex-row gap-2'>
+            {isStreaming && (
+              <Button
+                variant={'outline'}
+                size='sm'
+                className='pr-2'
+                onClick={onStop}
+              >
+                Stop
+              </Button>
+            )}
             <Button
               variant={'outline'}
               size='sm'
               className='pr-2'
-              onClick={handleSubmit}
-              disabled={input.trim().length === 0}
+              onClick={() => {
+                handleSubmit().catch(err => {
+                  console.error('Submit failed:', err);
+                });
+              }}
+              disabled={disabled || input.trim().length === 0}
             >
               Submit
               <KbdGroup>

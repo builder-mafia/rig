@@ -10,3 +10,44 @@
     @apply bg-background text-foreground font-mono;
   }
 }
+
+@layer utilities {
+  @keyframes energy-fill {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    45% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    80% {
+      transform: scaleX(1);
+      opacity: 0.35;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+
+  @keyframes energy-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .energy-bar {
+    transform-origin: left;
+    background-size: 200% 100%;
+    animation:
+      energy-fill 1.15s ease-in-out infinite,
+      energy-shimmer 1.15s linear infinite;
+  }
+}
