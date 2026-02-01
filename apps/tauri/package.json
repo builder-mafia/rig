@@ -8,7 +8,8 @@
     "app-frontend:start": "next start",
     "lint": "eslint",
     "tauri": "tauri",
-    "test": "vitest run"
+    "test": "vitest run",
+    "format": "biome check --write ."
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",

@@ -71,7 +71,7 @@ export function ProviderConfigCommandView() {
         return;
       }
 
-      await invoke('save_api_key', { apiKey });
+      await invoke('save_api_key', { providerName: providerId, apiKey });
       toast.success('API key saved successfully', {
         position: 'top-center',
         duration: 3000,

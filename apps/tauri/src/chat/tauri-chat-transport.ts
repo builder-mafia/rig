@@ -1,3 +1,4 @@
+import type { LLMProviderName } from '@allin/ai';
 import { Channel, invoke } from '@tauri-apps/api/core';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 
@@ -34,12 +35,34 @@ type VercelUIStream =
  * converts them to UIMessageChunk format for useChat consumption.
  */
 export class TauriChatTransport implements ChatTransport<UIMessage> {
+  private providerName: LLMProviderName;
+  private modelId: string;
+
+  constructor({
+    providerName,
+    modelId,
+  }: {
+    providerName: LLMProviderName;
+    modelId: string;
+  }) {
+    this.providerName = providerName;
+    this.modelId = modelId;
+  }
+
   /**
    * Sends messages to the Tauri backend and returns a ReadableStream
    * that emits UIMessageChunk events compatible with useChat.
    */
   sendMessages: ChatTransport<UIMessage>['sendMessages'] = async options => {
     const { messages, abortSignal } = options;
+
+    // Rust VercelUIMessage schema may not accept extra fields (eg. metadata).
+    // Send only the minimal UIMessage shape.
+    const messagesForRust = messages.map(m => ({
+      id: m.id,
+      role: m.role,
+      parts: m.parts,
+    }));
 
     const readableStream = new ReadableStream<UIMessageChunk>({
       start: controller => {
@@ -75,7 +98,12 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
           controller.enqueue(event as UIMessageChunk);
         };
 
-        invoke('chat_stream', { messages, onEvent })
+        invoke('stream_text', {
+          messages: messagesForRust,
+          providerName: this.providerName,
+          modelId: this.modelId,
+          onEvent,
+        })
           .then(() => controller.close())
           .catch(error => controller.error(error));
       },
@@ -83,11 +111,6 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 
     return readableStream;
   };
-
-  /**
-   * Reconnects to an existing stream.
-   * Not supported in Tauri IPC context - returns null.ㄱ
-   */
   reconnectToStream: ChatTransport<UIMessage>['reconnectToStream'] = async () =>
     null;
 }
