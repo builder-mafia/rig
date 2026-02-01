@@ -100,8 +100,23 @@ export const ChatInputView = ({ session }: ChatInputViewProps) => {
         <SlashCommandPopover
           query={input.replace(/^\/|\/$/g, '')}
           modifierKeyEvent$={modifierKeyEvent$}
-          onSelect={c => {
-            console.log(c);
+          onSelect={command => {
+            setIsOpen(false);
+
+            if (command.mode === 'action') {
+              const context = {
+                currentInput: input,
+                setInput,
+                close: () => setIsOpen(false),
+              };
+              setInput('');
+              Promise.resolve(command.execute(context)).catch(err => {
+                console.error('Action execute error:', err);
+              });
+            } else if (command.mode === 'template') {
+              setInput('/' + command.name + ' ');
+              textAreaRef.current?.focus();
+            }
           }}
           anchorRef={textAreaRef}
         />

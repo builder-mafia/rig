@@ -22,6 +22,12 @@ export class SlashCommandManager {
     return this.commands$.getValue();
   }
 
+  public findCommandByName(name: string): SlashCommand | undefined {
+    return this.commands$
+      .getValue()
+      .find(cmd => cmd.name.toLowerCase() === name.toLowerCase());
+  }
+
   public registerCommand(command: SlashCommand): void {
     const currentCommands = this.commands$.getValue();
     const exists = currentCommands.some(cmd => cmd.id === command.id);
@@ -52,15 +58,10 @@ export class SlashCommandManager {
     let resolved = command.template;
 
     if (hintSelection) {
-      resolved = resolved.replace('$1', hintSelection);
+      resolved = resolved.replace('$HINT', hintSelection);
     }
 
-    resolved = resolved.replace('$ALL', args);
-
-    const positionalArgs = args.split(/\s+/);
-    for (let i = 0; i < positionalArgs.length; i++) {
-      resolved = resolved.replaceAll(`$${i + 1}`, positionalArgs[i]);
-    }
+    resolved = resolved.replace('$INPUT', args);
 
     return resolved;
   }
