@@ -8,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@allin/ui';
+import { invoke } from '@tauri-apps/api/core';
 import * as React from 'react';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 import {
@@ -22,10 +23,54 @@ const PROVIDERS = [
   { id: 'anthropic', name: 'Anthropic', description: 'Claude 3.5, Claude 3' },
 ] as const;
 
+type ConnectionStatus = Record<ProviderId, boolean>;
+
+function useProviderConnectionStatus(isOpen: boolean) {
+  const [status, setStatus] = React.useState<ConnectionStatus>({
+    openai: false,
+    google: false,
+    anthropic: false,
+  });
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+
+    async function checkAll() {
+      const results = await Promise.all(
+        PROVIDERS.map(async p => {
+          try {
+            const has = await invoke<boolean>('has_api_key', {
+              providerName: p.id,
+            });
+            return [p.id, has] as const;
+          } catch {
+            return [p.id, false] as const;
+          }
+        }),
+      );
+
+      if (cancelled) return;
+
+      setStatus(Object.fromEntries(results) as ConnectionStatus);
+    }
+
+    checkAll();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  return status;
+}
+
 export function ProvidersCommandView() {
   const { isOpen } = useCommandDialogView('providers');
   const { navigate, close } = useCommandDialog();
   const [value, setValue] = React.useState('');
+  const connectionStatus = useProviderConnectionStatus(isOpen);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -61,8 +106,13 @@ export function ProvidersCommandView() {
               onSelect={() => handleSelectProvider(provider.id)}
             >
               {getProviderIcon(provider.id, 'size-4')}
-              <div className='flex flex-col'>
+              <div className='flex flex-1 items-center justify-between'>
                 <span>{provider.name}</span>
+                {connectionStatus[provider.id] && (
+                  <span className='text-xs text-green-500 font-medium'>
+                    Connected
+                  </span>
+                )}
               </div>
             </CommandItem>
           ))}

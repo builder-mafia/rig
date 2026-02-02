@@ -1,45 +1,38 @@
 'use client';
 
-import type { UIMessageMetadata } from '@allin/message-metadata-schema';
-import type { UIMessage } from 'ai';
+import { getAssistantMessageText, getUserMessageText } from '@allin/ai';
 import { useMemo } from 'react';
 import { ChatInputView } from '@/business/chat/ChatInputView';
 import { EnergyBar } from './EnergyBar';
+import type { StorageChannel } from './storage/types';
+import { useChannelState } from './useChannelState';
 import { useChat } from './useChat';
-import { useDefaultChannel } from './useDefaultChannel';
-
-function messageToText(message: UIMessage<UIMessageMetadata>) {
-  const parts = message.parts as unknown[];
-  const texts: string[] = [];
-
-  for (const part of parts) {
-    if (!part) continue;
-    if (typeof part === 'string') {
-      texts.push(part);
-      continue;
-    }
-
-    if (typeof part === 'object') {
-      const obj = part as Record<string, unknown>;
-      const maybeText = obj['text'];
-      if (typeof maybeText === 'string') {
-        texts.push(maybeText);
-        continue;
-      }
-
-      const maybeContent = obj['content'];
-      if (typeof maybeContent === 'string') {
-        texts.push(maybeContent);
-        continue;
-      }
-    }
-  }
-
-  return texts.join('');
-}
 
 export function ChattingView() {
-  const { channel, error: channelError } = useDefaultChannel();
+  const {
+    initialized,
+    selectedChannel,
+    error: channelError,
+  } = useChannelState();
+
+  if (!initialized) {
+    return <div className='p-4 text-muted-foreground'>Loading...</div>;
+  }
+
+  if (channelError) {
+    return (
+      <div className='p-4 text-red-600'>Error: {channelError.message}</div>
+    );
+  }
+
+  if (!selectedChannel) {
+    return <div className='p-4 text-muted-foreground'>No channel found</div>;
+  }
+
+  return <ChannelChatView channel={selectedChannel} />;
+}
+
+function ChannelChatView({ channel }: { channel: StorageChannel }) {
   const { uiMessages, status, sendText, stop, isReady, error } =
     useChat(channel);
   const isStreaming = status === 'streaming' || status === 'submitted';
@@ -52,8 +45,10 @@ export function ChattingView() {
   const renderedMessages = useMemo(
     () =>
       visibleMessages.map(msg => {
-        const text = messageToText(msg);
         const isUser = msg.role === 'user';
+        const text = isUser
+          ? getUserMessageText(msg)
+          : getAssistantMessageText(msg);
 
         return (
           <div
@@ -71,18 +66,8 @@ export function ChattingView() {
     [visibleMessages],
   );
 
-  if (channelError) {
-    return (
-      <div className='p-4 text-red-600'>Error: {channelError.message}</div>
-    );
-  }
-
   if (error) {
     return <div className='p-4 text-red-600'>Error: {error.message}</div>;
-  }
-
-  if (!channel) {
-    return <div className='p-4 text-muted-foreground'>Loading...</div>;
   }
 
   return (
@@ -111,7 +96,7 @@ export function ChattingView() {
             }}
             onSubmitText={async text => {
               await sendText(text);
-            }} 
+            }}
           />
         </div>
       </div>

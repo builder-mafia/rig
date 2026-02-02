@@ -115,14 +115,29 @@ export function useChat(channel: StorageChannel | null) {
       });
     });
 
-    const subscription2 = chatFacade.finish$.subscribe(({ message }) => {
-      upsertMessage(
-        chatFacade.getId(),
-        uiMessageToStorageMessage(message),
-      ).catch(err => {
-        console.error('upsertMessage failed:', err);
-      });
-    });
+    const subscription2 = chatFacade.finish$.subscribe(
+      ({ message, isAbort, isDisconnect, isError }) => {
+        const enrichedMessage: UIMessage<UIMessageMetadata> = {
+          ...message,
+          metadata: {
+            ...(message.metadata ?? {}),
+            provider: chatFacade.getProviderName(),
+            modelId: chatFacade.getModelId(),
+            isAborted: isAbort || undefined,
+            isDisconnected: isDisconnect || undefined,
+            isError: isError || undefined,
+            errorMessage: isError ? chatFacade.getError()?.message : undefined,
+          },
+        };
+
+        upsertMessage(
+          chatFacade.getId(),
+          uiMessageToStorageMessage(enrichedMessage),
+        ).catch(err => {
+          console.error('upsertMessage failed:', err);
+        });
+      },
+    );
 
     return () => {
       subscription1.unsubscribe();

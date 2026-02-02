@@ -1,29 +1,158 @@
 import type { LLMProviderName } from '@allin/ai';
 import { Channel, invoke } from '@tauri-apps/api/core';
-import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
+import type {
+  ChatTransport,
+  ProviderMetadata,
+  UIMessage,
+  UIMessageChunk,
+} from 'ai';
 import { v4 } from 'uuid';
 
-/**
- * VercelUIStream from Rust backend (aisdk crate)
- * Matches the Rust VercelUIStream enum
- */
-type VercelUIStream =
-  | { type: 'text-start'; id: string }
-  | { type: 'text-delta'; id: string; delta: string }
-  | { type: 'text-end'; id: string }
-  | { type: 'reasoning-start'; id: string }
-  | { type: 'reasoning-delta'; id: string; delta: string }
-  | { type: 'reasoning-end'; id: string }
+// Rust aisdk crate serializes with kebab-case type tags + snake_case fields.
+// AI SDK v6 expects camelCase fields and tool-input-* instead of tool-call-*.
+type RustProviderMetadata = Record<string, Record<string, unknown>>;
+
+type RustVercelUIStream =
+  | {
+      type: 'text-start';
+      id: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'text-delta';
+      id: string;
+      delta: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'text-end';
+      id: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'reasoning-start';
+      id: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'reasoning-delta';
+      id: string;
+      delta: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'reasoning-end';
+      id: string;
+      provider_metadata?: RustProviderMetadata;
+    }
   | {
       type: 'tool-call-start';
       id: string;
       tool_call_id: string;
       tool_name: string;
+      provider_metadata?: RustProviderMetadata;
     }
-  | { type: 'tool-call-delta'; id: string; tool_call_id: string; delta: string }
-  | { type: 'tool-call-end'; id: string; tool_call_id: string; result: unknown }
+  | {
+      type: 'tool-call-delta';
+      id: string;
+      tool_call_id: string;
+      delta: string;
+      provider_metadata?: RustProviderMetadata;
+    }
+  | {
+      type: 'tool-call-end';
+      id: string;
+      tool_call_id: string;
+      result: unknown;
+      provider_metadata?: RustProviderMetadata;
+    }
   | { type: 'error'; error_text: string }
   | { type: 'not-supported'; error_text: string };
+
+/**
+ * Converts Rust aisdk VercelUIStream events to Vercel AI SDK v6 UIMessageChunk.
+ *
+ * Schema mismatch between Rust and TypeScript:
+ * | Rust aisdk (JSON)       | AI SDK v6 (expected)   |
+ * |-------------------------|------------------------|
+ * | tool-call-start         | tool-input-start       |
+ * | tool-call-delta         | tool-input-delta       |
+ * | tool-call-end           | tool-input-available   |
+ * | tool_call_id            | toolCallId             |
+ * | tool_name               | toolName               |
+ * | delta (for tool)        | inputTextDelta         |
+ * | error_text              | errorText              |
+ * | provider_metadata       | providerMetadata       |
+ *
+ * Without this conversion, the AI SDK Chat class cannot track tool call state
+ * and message.parts array won't be built correctly.
+ */
+function toUIMessageChunk(event: RustVercelUIStream): UIMessageChunk | null {
+  const pm = (
+    'provider_metadata' in event ? event.provider_metadata : undefined
+  ) as ProviderMetadata | undefined;
+
+  switch (event.type) {
+    case 'text-start':
+      return { type: 'text-start', id: event.id, providerMetadata: pm };
+    case 'text-delta':
+      return {
+        type: 'text-delta',
+        id: event.id,
+        delta: event.delta,
+        providerMetadata: pm,
+      };
+    case 'text-end':
+      return { type: 'text-end', id: event.id, providerMetadata: pm };
+    case 'reasoning-start':
+      return { type: 'reasoning-start', id: event.id, providerMetadata: pm };
+    case 'reasoning-delta':
+      return {
+        type: 'reasoning-delta',
+        id: event.id,
+        delta: event.delta,
+        providerMetadata: pm,
+      };
+    case 'reasoning-end':
+      return { type: 'reasoning-end', id: event.id, providerMetadata: pm };
+    case 'tool-call-start':
+      return {
+        type: 'tool-input-start',
+        toolCallId: event.tool_call_id,
+        toolName: event.tool_name,
+      };
+    case 'tool-call-delta':
+      return {
+        type: 'tool-input-delta',
+        toolCallId: event.tool_call_id,
+        inputTextDelta: event.delta,
+      };
+    case 'tool-call-end': {
+      const input =
+        typeof event.result === 'string'
+          ? safeParseJson(event.result)
+          : event.result;
+      return {
+        type: 'tool-input-available',
+        toolCallId: event.tool_call_id,
+        toolName: '',
+        input,
+      };
+    }
+    case 'error':
+      return { type: 'error', errorText: event.error_text };
+    case 'not-supported':
+      return null;
+  }
+}
+
+function safeParseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
 
 /**
  * Custom ChatTransport that uses Tauri IPC instead of HTTP fetch
@@ -67,7 +196,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
       parts: m.parts,
     }));
 
-    const onEvent = new Channel<VercelUIStream>();
+    const onEvent = new Channel<RustVercelUIStream>();
 
     const abortRustStream = () =>
       invoke('abort_stream', {
@@ -95,19 +224,14 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
             return;
           }
 
-          if (event.type === 'not-supported') {
-            console.warn('Feature not supported:', event.error_text);
-            return;
+          const chunk = toUIMessageChunk(event);
+          if (chunk) {
+            if (chunk.type === 'error') {
+              controller.error(new Error(chunk.errorText));
+              return;
+            }
+            controller.enqueue(chunk);
           }
-
-          if (event.type === 'error') {
-            controller.error(new Error(event.error_text));
-            controller.enqueue({ type: 'error', errorText: event.error_text });
-            controller.error(new Error(event.error_text));
-            return;
-          }
-
-          controller.enqueue(event as UIMessageChunk);
         };
 
         invoke('stream_text', {

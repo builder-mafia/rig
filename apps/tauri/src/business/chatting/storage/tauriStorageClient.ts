@@ -39,6 +39,14 @@ export async function getAgent(id: string): Promise<StorageAgent> {
   return invoke('get_agent', { id });
 }
 
+export async function updateChannel(info: StorageChannel): Promise<void> {
+  await invoke('update_channel', { info });
+}
+
+export async function deleteChannel(id: string): Promise<void> {
+  await invoke('delete_channel', { id });
+}
+
 export async function getAllAgents(): Promise<StorageAgent[]> {
   return invoke('get_all_agents');
 }
