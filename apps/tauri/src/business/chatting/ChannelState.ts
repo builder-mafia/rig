@@ -6,13 +6,12 @@ import {
 } from './storage/tauriStorageClient';
 import type { StorageChannel } from './storage/types';
 
-const DEFAULT_CHANNEL_ID = 'default';
-
 export class ChannelState {
   private static instance: ChannelState;
 
   private channels$ = new BehaviorSubject<StorageChannel[]>([]);
   private selectedChannelId$ = new BehaviorSubject<string | null>(null);
+  private pendingMessage$ = new BehaviorSubject<string | null>(null);
   private initialized = false;
 
   private constructor() {}
@@ -29,26 +28,7 @@ export class ChannelState {
     this.initialized = true;
 
     const channels = await getChannels();
-
-    if (channels.length === 0) {
-      const now = Date.now();
-      const newChannel: StorageChannel = {
-        id: DEFAULT_CHANNEL_ID,
-        agentId: 'default',
-        title: null,
-        description: null,
-        pin: null,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await createChannel(newChannel);
-      this.channels$.next([newChannel]);
-      this.selectedChannelId$.next(DEFAULT_CHANNEL_ID);
-      return;
-    }
-
     this.channels$.next(channels);
-    this.selectedChannelId$.next(channels[0].id);
   }
 
   public getChannels(): StorageChannel[] {
@@ -128,5 +108,28 @@ export class ChannelState {
   public async refresh() {
     const channels = await getChannels();
     this.channels$.next(channels);
+  }
+
+  public clearSelection() {
+    this.selectedChannelId$.next(null);
+  }
+
+  public getPendingMessage(): string | null {
+    return this.pendingMessage$.getValue();
+  }
+
+  public getPendingMessage$(): Observable<string | null> {
+    return this.pendingMessage$.asObservable();
+  }
+
+  public setPendingMessage(message: string | null) {
+    this.pendingMessage$.next(message);
+  }
+
+  public async createChannelWithMessage(
+    message: string,
+  ): Promise<StorageChannel> {
+    this.pendingMessage$.next(message);
+    return this.createNewChannel();
   }
 }

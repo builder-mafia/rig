@@ -12,6 +12,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { TauriChatTransport } from '@/chat/tauri-chat-transport';
+import { ChannelState } from './ChannelState';
 import { ChatFacade, ChatFacadeManager } from './facade';
 import {
   storageMessageToUiMessage,
@@ -91,6 +92,24 @@ export function useChat(channel: StorageChannel | null) {
       cancelled = true;
     };
   }, [channelId, channel?.agentId]);
+
+  // Handle pending message auto-send after ChatFacade is ready
+  useEffect(() => {
+    if (!chatFacade) return;
+
+    const pendingMessage = ChannelState.getInstance().getPendingMessage();
+    if (pendingMessage) {
+      ChannelState.getInstance().setPendingMessage(null);
+
+      const msg = generateUIMessage(
+        'user',
+        pendingMessage,
+      ) as UIMessage<UIMessageMetadata> & {
+        role: 'user';
+      };
+      chatFacade.sendMessage(msg);
+    }
+  }, [chatFacade]);
 
   useEffect(() => {
     if (!chatFacade) return;

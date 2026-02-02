@@ -2,7 +2,8 @@ export type CommandViewId =
   | 'home'
   | 'providers'
   | 'provider-config'
-  | 'model-select';
+  | 'model-select'
+  | 'channels';
 
 export type CommandViewState = {
   viewId: CommandViewId | null;

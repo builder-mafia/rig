@@ -1,7 +1,7 @@
 'use client';
 
 import { getAssistantMessageText, getUserMessageText } from '@allin/ai';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ChatInputView } from '@/business/chat/ChatInputView';
 import { EnergyBar } from './EnergyBar';
 import type { StorageChannel } from './storage/types';
@@ -12,6 +12,7 @@ export function ChattingView() {
   const {
     initialized,
     selectedChannel,
+    createChannelWithMessage,
     error: channelError,
   } = useChannelState();
 
@@ -26,10 +27,50 @@ export function ChattingView() {
   }
 
   if (!selectedChannel) {
-    return <div className='p-4 text-muted-foreground'>No channel found</div>;
+    return <NewChatView onSubmit={createChannelWithMessage} />;
   }
 
   return <ChannelChatView channel={selectedChannel} />;
+}
+
+function NewChatView({
+  onSubmit,
+}: {
+  onSubmit: (message: string) => Promise<StorageChannel>;
+}) {
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleSubmit = async (text: string) => {
+    if (isCreating) return;
+    setIsCreating(true);
+    try {
+      await onSubmit(text);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className='h-dvh w-full flex flex-col bg-background'>
+      <div className='flex-1 flex items-center justify-center'>
+        <div className='text-center text-muted-foreground'>
+          <p className='text-lg font-medium'>New Chat</p>
+          <p className='text-sm'>Send a message to start a conversation</p>
+        </div>
+      </div>
+
+      <div className='border-t bg-background/80 backdrop-blur px-4 py-3'>
+        <div className='mx-auto max-w-3xl'>
+          <ChatInputView
+            disabled={isCreating}
+            isStreaming={false}
+            onStop={() => {}}
+            onSubmitText={handleSubmit}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ChannelChatView({ channel }: { channel: StorageChannel }) {

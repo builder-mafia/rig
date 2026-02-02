@@ -9,7 +9,14 @@ import {
   CommandList,
   CommandShortcut,
 } from '@allin/ui';
-import { Bot, CreditCard, Plug, Settings, User } from 'lucide-react';
+import {
+  Bot,
+  CreditCard,
+  MessageSquare,
+  Plug,
+  Settings,
+  User,
+} from 'lucide-react';
 import * as React from 'react';
 import {
   useCommandDialog,
@@ -40,6 +47,16 @@ export function HomeCommandView() {
       <CommandInput placeholder='Type a command or search...' />
       <CommandEmpty>No results found.</CommandEmpty>
       <CommandList>
+        <CommandGroup
+          heading={
+            <span className='text-blue-500 font-semibold'>Channels</span>
+          }
+        >
+          <CommandItem onSelect={() => navigate('channels')}>
+            <MessageSquare />
+            <span>Switch Channel</span>
+          </CommandItem>
+        </CommandGroup>
         <CommandGroup
           heading={
             <span className='text-blue-500 font-semibold'>Providers</span>

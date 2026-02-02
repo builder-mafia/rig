@@ -22,7 +22,7 @@ export function useChannelState() {
     return () => sub.unsubscribe();
   }, []);
 
-  const getChannels = useCallback(() => channelState.getChannels(), []);
+  const getChannelsSnapshot = useCallback(() => channelState.getChannels(), []);
 
   const subscribeToSelectedId = useCallback((onChange: () => void) => {
     const sub = channelState.getSelectedChannelId$().subscribe(onChange);
@@ -36,8 +36,8 @@ export function useChannelState() {
 
   const channels = useSyncExternalStore(
     subscribeToChannels,
-    getChannels,
-    getChannels,
+    getChannelsSnapshot,
+    getChannelsSnapshot,
   );
 
   const selectedChannelId = useSyncExternalStore(
@@ -49,9 +49,40 @@ export function useChannelState() {
   const selectedChannel: StorageChannel | null =
     channels.find(c => c.id === selectedChannelId) ?? null;
 
+  const createNewChannel = useCallback(async () => {
+    return channelState.createNewChannel();
+  }, []);
+
+  const createChannelWithMessage = useCallback(async (message: string) => {
+    return channelState.createChannelWithMessage(message);
+  }, []);
+
+  const selectChannel = useCallback(async (channelId: string) => {
+    await channelState.selectChannel(channelId);
+  }, []);
+
+  const startNewChat = useCallback(() => {
+    channelState.clearSelection();
+  }, []);
+
+  const getPendingMessage = useCallback(() => {
+    return channelState.getPendingMessage();
+  }, []);
+
+  const clearPendingMessage = useCallback(() => {
+    channelState.setPendingMessage(null);
+  }, []);
+
   return {
     initialized,
     error,
+    channels,
     selectedChannel,
+    createNewChannel,
+    createChannelWithMessage,
+    selectChannel,
+    startNewChat,
+    getPendingMessage,
+    clearPendingMessage,
   };
 }
