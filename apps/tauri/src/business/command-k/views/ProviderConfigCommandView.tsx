@@ -92,7 +92,7 @@ export function ProviderConfigCommandView({
   if (!providerId || !info) return null;
 
   return (
-    <CommandDialog onOpenChange={handleOpenChange} showCloseButton={false}>
+    <CommandDialog open onOpenChange={handleOpenChange} showCloseButton={false}>
       <CommandList>
         <div className='p-4 flex flex-col gap-4'>
           <div className='flex items-center gap-2'>

@@ -54,6 +54,7 @@ export function ChannelsCommandView() {
 
   return (
     <CommandDialog
+      open
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}

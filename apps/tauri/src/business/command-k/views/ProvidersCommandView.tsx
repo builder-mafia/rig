@@ -71,6 +71,7 @@ export function ProvidersCommandView() {
 
   return (
     <CommandDialog
+      open
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}

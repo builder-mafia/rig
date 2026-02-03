@@ -40,6 +40,7 @@ export function ModelSelectView() {
 
   return (
     <CommandDialog
+      open
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}
