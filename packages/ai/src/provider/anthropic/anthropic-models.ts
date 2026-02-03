@@ -9,3 +9,4 @@ export const AnthropicModelIdSchema = z.enum([
 ]);
 
 export type AnthropicModelId = z.infer<typeof AnthropicModelIdSchema>;
+export const ANTHROPIC_MODELS = AnthropicModelIdSchema.options;

@@ -14,19 +14,15 @@ import {
   CommandItem,
   CommandList,
 } from '@allin/ui';
-import * as React from 'react';
+import { useState } from 'react';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
-import {
-  useCommandDialog,
-  useCommandDialogView,
-} from '../useCommandDialogView';
+import { useCommandDialog } from '../useCommandDialogView';
 
 const PROVIDERS = LLMProviderNameSchema.options;
 
 export function ModelSelectView() {
-  const { isOpen } = useCommandDialogView('model-select');
   const { close } = useCommandDialog();
-  const [value, setValue] = React.useState('');
+  const [value, setValue] = useState('');
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -39,15 +35,11 @@ export function ModelSelectView() {
     providerId: LLMProviderName,
     modelId: AllModelIds,
   ) => {
-    console.log('Selected model:', modelId, 'Provider:', providerId);
     close();
   };
 
-  if (!isOpen) return null;
-
   return (
     <CommandDialog
-      open={isOpen}
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}

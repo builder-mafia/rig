@@ -9,38 +9,17 @@ import {
   CommandList,
 } from '@allin/ui';
 import { MessageSquare, Plus } from 'lucide-react';
-import * as React from 'react';
+import { useMemo, useState } from 'react';
 import { ChannelState } from '@/business/chatting/ChannelState';
-import {
-  useCommandDialog,
-  useCommandDialogView,
-} from '../useCommandDialogView';
-
-function useChannelList(isOpen: boolean) {
-  const [channels, setChannels] = React.useState(
-    ChannelState.getInstance().getSortedChannels(),
-  );
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    const subscription = ChannelState.getInstance()
-      .getChannels$()
-      .subscribe(() => {
-        setChannels(ChannelState.getInstance().getSortedChannels());
-      });
-
-    return () => subscription.unsubscribe();
-  }, [isOpen]);
-
-  return channels;
-}
+import { useCommandDialog } from '../useCommandDialogView';
 
 export function ChannelsCommandView() {
-  const { isOpen } = useCommandDialogView('channels');
   const { close } = useCommandDialog();
-  const [value, setValue] = React.useState('');
-  const { pinned, unpinned } = useChannelList(isOpen);
+  const [value, setValue] = useState('');
+  const { pinned, unpinned } = useMemo(
+    () => ChannelState.getInstance().getSortedChannels(),
+    [],
+  );
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -73,11 +52,8 @@ export function ChannelsCommandView() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  if (!isOpen) return null;
-
   return (
     <CommandDialog
-      open={isOpen}
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}
