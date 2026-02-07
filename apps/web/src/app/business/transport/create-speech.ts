@@ -1,7 +1,7 @@
 'use client';
 
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
 
 export type SpeakOptions = {
@@ -21,7 +21,7 @@ export type SpeakResult = {
 };
 
 export async function createSpeech(
-  providerName: LLMProviderName,
+  providerName: ProviderId,
   apiKey: string,
   options: SpeakOptions,
 ): Promise<SpeakResult> {

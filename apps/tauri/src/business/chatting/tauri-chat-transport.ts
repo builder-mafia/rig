@@ -1,4 +1,4 @@
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import { Channel, invoke } from '@tauri-apps/api/core';
 import type {
   ChatTransport,
@@ -165,14 +165,14 @@ function safeParseJson(value: string): unknown {
  * converts them to UIMessageChunk format for useChat consumption.
  */
 export class TauriChatTransport implements ChatTransport<UIMessage> {
-  private providerName: LLMProviderName;
+  private providerName: ProviderId;
   private modelId: string;
 
   constructor({
     providerName,
     modelId,
   }: {
-    providerName: LLMProviderName;
+    providerName: ProviderId;
     modelId: string;
   }) {
     this.providerName = providerName;

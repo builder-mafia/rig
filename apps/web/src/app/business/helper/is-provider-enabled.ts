@@ -1,4 +1,4 @@
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import type { ConfigSchema } from '@allin/db-schema';
 import { match } from 'ts-pattern';
 import type { z } from 'zod/v3';
@@ -9,7 +9,7 @@ import type { z } from 'zod/v3';
  * isProviderEnabled('google', config) => false // when google api key is not set
  */
 export const isProviderEnabled = (
-  providerName: LLMProviderName,
+  providerName: ProviderId,
   config: z.infer<typeof ConfigSchema>,
 ) => {
   return match(providerName)

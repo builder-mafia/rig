@@ -1,12 +1,6 @@
+import { PROVIDER_IDS, type ProviderId } from '@allin/ai';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ProviderId } from '@/business/command-palette/panes/ProviderConfigCommandView';
 import { apiKeyGateway } from './apiKeyGateway';
-
-const PROVIDERS: readonly ProviderId[] = [
-  'openai',
-  'google',
-  'anthropic',
-] as const;
 
 const apiKeyKeys = {
   all: ['apiKey'] as const,
@@ -18,7 +12,9 @@ export const useHasApiKeys = () =>
     queryKey: apiKeyKeys.all,
     queryFn: async () => {
       const entries = await Promise.all(
-        PROVIDERS.map(async id => [id, await apiKeyGateway.has(id)] as const),
+        PROVIDER_IDS.map(
+          async id => [id, await apiKeyGateway.has(id)] as const,
+        ),
       );
       return Object.fromEntries(entries) as Record<ProviderId, boolean>;
     },

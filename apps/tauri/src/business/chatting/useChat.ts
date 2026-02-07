@@ -1,6 +1,6 @@
 'use client';
 
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import { generateUIMessage } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { ChatStatus, UIMessage } from 'ai';
@@ -61,7 +61,7 @@ export function useChat(channel: StorageChannel | null) {
         const uiMessages = storageMessages.map(storageMessageToUiMessage);
 
         const transport = new TauriChatTransport({
-          providerName: agent.providerName as LLMProviderName,
+          providerName: agent.providerName as ProviderId,
           modelId: agent.model,
         });
 
@@ -69,7 +69,7 @@ export function useChat(channel: StorageChannel | null) {
           id: channelId,
           messages: uiMessages,
           transport,
-          providerName: agent.providerName as LLMProviderName,
+          providerName: agent.providerName as ProviderId,
           modelId: agent.model,
         });
 

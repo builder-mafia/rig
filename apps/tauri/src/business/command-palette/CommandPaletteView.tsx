@@ -1,14 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import type { ProviderId } from '@allin/ai';
 import { match } from 'ts-pattern';
 import { ChannelsCommandView } from './panes/ChannelsCommandView';
 import { HomeCommandView } from './panes/HomeCommandView';
 import { ModelSelectView } from './panes/ModelSelectView';
-import {
-  ProviderConfigCommandView,
-  type ProviderId,
-} from './panes/ProviderConfigCommandView';
+import { ProviderConfigCommandView } from './panes/ProviderConfigCommandView';
 import { ProvidersCommandView } from './panes/ProvidersCommandView';
 import { useCommandPalette } from './useCommandPalette';
 

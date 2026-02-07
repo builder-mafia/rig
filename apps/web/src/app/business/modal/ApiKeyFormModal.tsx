@@ -1,7 +1,7 @@
 import {
-  type LLMProviderName,
-  LLMProviderNameSchema,
   MODEL_IDS_PER_PROVIDER,
+  type ProviderId,
+  ProviderIdSchema,
 } from '@allin/ai';
 import {
   Button,
@@ -35,7 +35,7 @@ import { validateApiKey } from '../helper/validate-api-key';
 
 const FormValuesSchema = z.object({
   apiKey: z.string(),
-  providerName: LLMProviderNameSchema,
+  providerName: ProviderIdSchema,
 });
 
 type FormValuesType = z.infer<typeof FormValuesSchema>;
@@ -125,14 +125,14 @@ export const ApiKeyFormModal = ({
                     <Select
                       value={field.value}
                       onValueChange={value =>
-                        field.onChange(value as LLMProviderName)
+                        field.onChange(value as ProviderId)
                       }
                     >
                       <SelectTrigger id='providerName'>
                         <SelectValue placeholder='Select a provider' />
                       </SelectTrigger>
                       <SelectContent>
-                        {LLMProviderNameSchema.options.map(providerName => (
+                        {ProviderIdSchema.options.map(providerName => (
                           <SelectItem key={providerName} value={providerName}>
                             {getLogoByProvider(providerName, 'size-4')}
                             {` ${providerName}`}

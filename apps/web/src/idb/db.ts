@@ -1,4 +1,4 @@
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import {
   type ChannelSchema,
   ConfigSchema,
@@ -103,7 +103,7 @@ const getConfig = async () => {
   return parsed;
 };
 
-const updateApiKey = async (providerName: LLMProviderName, apiKey: string) => {
+const updateApiKey = async (providerName: ProviderId, apiKey: string) => {
   const db = await getDB();
   const tx = db.transaction(DB_STORE.CONFIG, 'readwrite');
   const store = tx.objectStore(DB_STORE.CONFIG);

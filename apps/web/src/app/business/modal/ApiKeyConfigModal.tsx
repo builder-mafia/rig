@@ -1,4 +1,4 @@
-import { type LLMProviderName, LLMProviderNameSchema } from '@allin/ai';
+import { type ProviderId, ProviderIdSchema } from '@allin/ai';
 import {
   Button,
   Card,
@@ -27,17 +27,14 @@ import { validateApiKey } from '../helper/validate-api-key';
 
 const FormValuesSchema = z.object(
   Object.fromEntries(
-    LLMProviderNameSchema.options.map(provider => [
-      provider,
-      z.string().optional(),
-    ]),
-  ) as Record<LLMProviderName, z.ZodOptional<z.ZodString>>,
+    ProviderIdSchema.options.map(provider => [provider, z.string().optional()]),
+  ) as Record<ProviderId, z.ZodOptional<z.ZodString>>,
 );
 
 type FormValuesType = z.infer<typeof FormValuesSchema>;
 
 type StatusMap = Record<
-  LLMProviderName,
+  ProviderId,
   {
     isLoading: boolean;
     isValid: boolean;
@@ -46,7 +43,7 @@ type StatusMap = Record<
 
 const createInitialStatusMap = (): StatusMap =>
   Object.fromEntries(
-    LLMProviderNameSchema.options.map(provider => [
+    ProviderIdSchema.options.map(provider => [
       provider,
       { isLoading: false, isValid: false },
     ]),
@@ -79,7 +76,7 @@ export const ApiKeyConfigModal = ({
       const setInitialValue = async () => {
         const { apiKeys } = await DB.getConfig();
 
-        LLMProviderNameSchema.options.forEach(providerName => {
+        ProviderIdSchema.options.forEach(providerName => {
           const apiKey = apiKeys[providerName];
           if (!apiKey) {
             setValue(providerName, '');
@@ -94,7 +91,7 @@ export const ApiKeyConfigModal = ({
   }, [open, reset, setValue]);
 
   const handleValidateAndSave =
-    (providerName: LLMProviderName) => async (values: FormValuesType) => {
+    (providerName: ProviderId) => async (values: FormValuesType) => {
       let isSuccessful = false;
 
       setStatusMap(prev => ({
@@ -166,7 +163,7 @@ export const ApiKeyConfigModal = ({
           <CardContent className='mt-2'>
             <div className='grid gap-6'>
               <div className='flex flex-col gap-2'>
-                {LLMProviderNameSchema.options.map(providerName => {
+                {ProviderIdSchema.options.map(providerName => {
                   const { isLoading, isValid } = statusMap[providerName];
                   const error = formState.errors[providerName];
 
@@ -175,7 +172,7 @@ export const ApiKeyConfigModal = ({
                       <div className='flex flex-row gap-2'>
                         <Label htmlFor={`${providerName}-api-key`}>
                           {getLogoByProvider(
-                            providerName as LLMProviderName,
+                            providerName as ProviderId,
                             'size-4',
                           )}
                           {` ${providerName}`}
@@ -204,9 +201,7 @@ export const ApiKeyConfigModal = ({
                             variant='ghost'
                             size='icon'
                             onClick={handleSubmit(
-                              handleValidateAndSave(
-                                providerName as LLMProviderName,
-                              ),
+                              handleValidateAndSave(providerName as ProviderId),
                             )}
                             disabled={isLoading}
                           >

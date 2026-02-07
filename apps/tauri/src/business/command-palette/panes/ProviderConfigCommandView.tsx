@@ -1,14 +1,13 @@
 'use client';
 
+import type { ProviderId } from '@allin/ai';
+import { validateApiKey } from '@allin/ai';
 import { Button, CommandDialog, CommandList, Input, toast } from '@allin/ui';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
-import { validateApiKey } from '@/business/validate-api-key/validate-api-key';
 import { useSaveApiKey } from '@/lib/gateway/useApiKeyQuery';
-
-export type ProviderId = 'openai' | 'google' | 'anthropic';
 
 type ProviderConfigViewProps = {
   providerId: ProviderId;

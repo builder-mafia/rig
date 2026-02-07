@@ -1,16 +1,16 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LLMProviderName } from '@allin/ai';
-import type { LanguageModel } from 'ai';
 import { generateText } from 'ai';
+import { match } from 'ts-pattern';
+import type { ProviderId } from './all-models';
 
 type ValidateApiKeyParams = {
   apiKey: string;
-  providerName: LLMProviderName;
+  providerName: ProviderId;
 };
 
-const VALIDATION_MODELS: Record<LLMProviderName, string> = {
+const VALIDATION_MODELS: Record<ProviderId, string> = {
   openai: 'gpt-4o-mini',
   google: 'gemini-2.0-flash',
   anthropic: 'claude-3-5-haiku-latest',
@@ -23,23 +23,16 @@ export const validateApiKey = async ({
   try {
     const modelId = VALIDATION_MODELS[providerName];
 
-    let model: LanguageModel;
-    switch (providerName) {
-      case 'openai':
-        model = createOpenAI({ apiKey })(modelId);
-        break;
-      case 'google':
-        model = createGoogleGenerativeAI({ apiKey })(modelId);
-        break;
-      case 'anthropic':
-        model = createAnthropic({ apiKey })(modelId);
-        break;
-    }
+    const model = match(providerName)
+      .with('openai', () => createOpenAI({ apiKey })(modelId))
+      .with('google', () => createGoogleGenerativeAI({ apiKey })(modelId))
+      .with('anthropic', () => createAnthropic({ apiKey })(modelId))
+      .exhaustive();
 
     await generateText({
       model,
       prompt: 'hi',
-      maxOutputTokens: 1000,
+      maxOutputTokens: 1,
     });
 
     return true;

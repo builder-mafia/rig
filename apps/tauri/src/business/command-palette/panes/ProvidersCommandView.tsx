@@ -1,5 +1,6 @@
 'use client';
 
+import type { ProviderId } from '@allin/ai';
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +13,6 @@ import { useState } from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 import { useHasApiKeys } from '@/lib/gateway/useApiKeyQuery';
-import type { ProviderId } from './ProviderConfigCommandView';
 
 const PROVIDERS = [
   { id: 'openai', name: 'OpenAI', description: 'GPT-4o, GPT-4, GPT-3.5' },

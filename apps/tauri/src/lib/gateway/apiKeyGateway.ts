@@ -1,5 +1,5 @@
+import type { ProviderId } from '@allin/ai';
 import { invoke } from '@tauri-apps/api/core';
-import type { ProviderId } from '@/business/command-palette/panes/ProviderConfigCommandView';
 
 export const apiKeyGateway = {
   has: (providerName: ProviderId) =>

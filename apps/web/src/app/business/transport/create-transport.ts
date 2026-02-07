@@ -1,4 +1,4 @@
-import type { LLMProviderName, ModelResponseOptions } from '@allin/ai';
+import type { ModelResponseOptions, ProviderId } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { ChatTransport, UIMessage } from 'ai';
 import { match } from 'ts-pattern';
@@ -7,7 +7,7 @@ import { createGoogleTransport } from './google-transport';
 import { createOpenAiTransport } from './openai-transport';
 
 export function createTransport(
-  providerName: LLMProviderName,
+  providerName: ProviderId,
   modelId: string,
   apiKey: string,
   options?: ModelResponseOptions,

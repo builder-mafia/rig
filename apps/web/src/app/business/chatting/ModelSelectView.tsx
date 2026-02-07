@@ -1,7 +1,7 @@
 import {
   type AllModelIds,
-  type LLMProviderName,
   MODEL_IDS_PER_PROVIDER,
+  type ProviderId,
 } from '@allin/ai';
 import {
   Select,
@@ -15,9 +15,9 @@ import {
 
 type ModelSelectViewProps = {
   selectedModelId: AllModelIds;
-  selectedProvider: LLMProviderName;
+  selectedProvider: ProviderId;
   onChange: (modelIdWithProvider: string) => void;
-  enabledProviders: LLMProviderName[];
+  enabledProviders: ProviderId[];
 };
 
 export const ModelSelectView = ({
@@ -42,7 +42,7 @@ export const ModelSelectView = ({
         {Object.entries(MODEL_IDS_PER_PROVIDER)
           // show only valid models that are configured
           .filter(([providerName, _]) =>
-            enabledProviders.includes(providerName as LLMProviderName),
+            enabledProviders.includes(providerName as ProviderId),
           )
           .map(([providerName, modelIds]) => (
             <SelectGroup key={providerName}>

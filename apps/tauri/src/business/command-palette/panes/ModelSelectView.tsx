@@ -2,9 +2,9 @@
 
 import {
   type AllModelIds,
-  type LLMProviderName,
-  LLMProviderNameSchema,
   MODEL_IDS_PER_PROVIDER,
+  type ProviderId,
+  ProviderIdSchema,
 } from '@allin/ai';
 import {
   CommandDialog,
@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 
-const PROVIDERS = LLMProviderNameSchema.options;
+const PROVIDERS = ProviderIdSchema.options;
 
 export function ModelSelectView() {
   const { close } = useCommandPalette();
@@ -31,7 +31,7 @@ export function ModelSelectView() {
     }
   };
 
-  const changeModel = (providerId: LLMProviderName, modelId: AllModelIds) => {
+  const changeModel = (providerId: ProviderId, modelId: AllModelIds) => {
     close();
   };
 

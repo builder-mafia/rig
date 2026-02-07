@@ -1,9 +1,9 @@
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import { Anthropic, Google, OpenAI } from '@lobehub/icons';
 import { match } from 'ts-pattern';
 
 export const getLogoByProvider = (
-  providerName: LLMProviderName,
+  providerName: ProviderId,
   className: string,
 ) => {
   return match(providerName)

@@ -125,9 +125,7 @@ function ChannelChatView({ channel }: { channel: StorageChannel }) {
             <div className='text-xs text-muted-foreground'>
               {isStreaming ? 'Streaming...' : 'Ready'}
             </div>
-            <div className='w-36'>
-              <EnergyBar isActive={isStreaming} />
-            </div>
+            <div className='w-36'>{isStreaming && <EnergyBar />}</div>
           </div>
           <ChatInputView
             disabled={!isReady || isStreaming}

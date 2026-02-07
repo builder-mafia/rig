@@ -1,6 +1,6 @@
 'use client';
 
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import { AssertionError } from '@allin/utils';
 import { assert } from 'es-toolkit';
 import { useCallback, useRef } from 'react';
@@ -10,7 +10,7 @@ import { useSwrAtomValue } from '@/hooks/use-swr-atom-value';
 import { dbAtoms } from '@/idb/db-store';
 
 type UseTtsPlayerSpeakOptions = Omit<SpeakOptions, 'text'> & {
-  providerName?: LLMProviderName;
+  providerName?: ProviderId;
 };
 
 export function useTtsPlayer() {

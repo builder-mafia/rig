@@ -1,16 +1,16 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import type { LanguageModel } from 'ai';
 import { generateText } from 'ai';
 
 type ValidateApiKeyParams = {
   apiKey: string;
-  providerName: LLMProviderName;
+  providerName: ProviderId;
 };
 
-const VALIDATION_MODELS: Record<LLMProviderName, string> = {
+const VALIDATION_MODELS: Record<ProviderId, string> = {
   openai: 'gpt-4o-mini',
   google: 'gemini-2.0-flash',
   anthropic: 'claude-3-5-haiku-latest',

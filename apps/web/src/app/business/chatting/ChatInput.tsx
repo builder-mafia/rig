@@ -2,8 +2,8 @@ import {
   type AllModelIds,
   AllModelIdsSchema,
   generateUIMessage,
-  type LLMProviderName,
-  LLMProviderNameSchema,
+  type ProviderId,
+  ProviderIdSchema,
   type ReasoningEffort,
 } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
@@ -67,7 +67,7 @@ export const ChatInput = () => {
   const ignoreNextChangeRef = useRef(false);
   const [input, setInput] = useState('');
   const [providerAndModel, setProviderAndModel] = useState<{
-    providerName: LLMProviderName;
+    providerName: ProviderId;
     modelId: AllModelIds;
   }>({
     providerName: selectedChannel.providerName,
@@ -165,7 +165,7 @@ export const ChatInput = () => {
   };
 
   const enabledProviders = useMemo(() => {
-    const providerNames = Object.keys(config.apiKeys) as LLMProviderName[];
+    const providerNames = Object.keys(config.apiKeys) as ProviderId[];
 
     return providerNames.filter(providerName =>
       Boolean(config.apiKeys[providerName]),
@@ -175,7 +175,7 @@ export const ChatInput = () => {
   const onChange = (modelWithProvider: string) => {
     const [providerName, modelId] = modelWithProvider.split('|');
 
-    const safeProviderName = LLMProviderNameSchema.parse(providerName);
+    const safeProviderName = ProviderIdSchema.parse(providerName);
     const safeModelId = AllModelIdsSchema.parse(modelId);
 
     if (!enabledProviders.includes(safeProviderName)) {
@@ -202,7 +202,7 @@ export const ChatInput = () => {
 
   const onChangeSelectedModel = (
     modelId: AllModelIds,
-    providerName: LLMProviderName,
+    providerName: ProviderId,
   ) => {
     updateChannel(selectedChannel.id, { model: modelId, providerName });
   };

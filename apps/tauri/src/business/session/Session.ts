@@ -1,5 +1,5 @@
 import { Chat } from '@ai-sdk/react';
-import type { LLMProviderName } from '@allin/ai';
+import type { ProviderId } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import { type Setter, setValueOrFn } from '@allin/utils';
 import type {
@@ -17,7 +17,7 @@ type SessionParam = {
   id: string;
   messages: ChatUiMessage[];
   transport: ChatTransport<ChatUiMessage>;
-  providerName: LLMProviderName;
+  providerName: ProviderId;
   modelId: string;
   throttleTime?: number;
 };
@@ -38,7 +38,7 @@ export class Session {
   private onError$ = new Subject<Error>();
   private onBeforeSend$ = new Subject<ChatUiMessage & { role: 'user' }>();
 
-  private providerName: LLMProviderName;
+  private providerName: ProviderId;
   private modelId: string;
   private _isDisposed = false;
   private throttleTime: number;
@@ -249,7 +249,7 @@ export class Session {
 
   public updateTransport(
     transport: ChatTransport<ChatUiMessage>,
-    providerName: LLMProviderName,
+    providerName: ProviderId,
     modelId: string,
   ) {
     this.providerName = providerName;

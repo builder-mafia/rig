@@ -1,7 +1,7 @@
 import {
   AllModelIdsSchema,
-  type LLMProviderName,
-  LLMProviderNameSchema,
+  type ProviderId,
+  ProviderIdSchema,
 } from '@allin/ai';
 import type { ChannelSchema, ConfigSchema, DB_MESSAGE } from '@allin/db-schema';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
@@ -60,13 +60,13 @@ export function createDbAtoms(db: AllinDbAdapter) {
     // in database, api key is stored as string.
     // so we need to check if string is valid provider name and assert type.
     const safeApiKeys = Object.fromEntries(
-      Object.entries(apiKeys).map<[LLMProviderName, string | undefined]>(
+      Object.entries(apiKeys).map<[ProviderId, string | undefined]>(
         ([key, value]) => {
-          const safeKey = LLMProviderNameSchema.parse(key);
+          const safeKey = ProviderIdSchema.parse(key);
           return [safeKey, value];
         },
       ),
-    ) as Record<LLMProviderName, string | undefined>;
+    ) as Record<ProviderId, string | undefined>;
 
     return {
       ...config,
@@ -113,9 +113,7 @@ export function createDbAtoms(db: AllinDbAdapter) {
 
     // In db, providerName and model are stored as string type.
     // so we need to check if string is valid provider name and model id and assert type.
-    const parsedProviderName = LLMProviderNameSchema.parse(
-      channel.providerName,
-    );
+    const parsedProviderName = ProviderIdSchema.parse(channel.providerName);
     const parsedModelId = AllModelIdsSchema.parse(channel.model);
 
     return {
