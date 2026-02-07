@@ -2,8 +2,8 @@
 
 import { getAssistantMessageText, getUserMessageText } from '@allin/ai';
 import { useMemo, useState } from 'react';
-import { ChatInputView } from '@/business/chat/ChatInputView';
 import { EnergyBar } from './EnergyBar';
+import { ChatInputView } from './input/ChatInputView';
 import type { StorageChannel } from './storage/types';
 import { useChannelState } from './useChannelState';
 import { useChat } from './useChat';

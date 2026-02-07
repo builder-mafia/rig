@@ -11,7 +11,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { TauriChatTransport } from '@/chat/tauri-chat-transport';
+import { TauriChatTransport } from '@/business/chatting/tauri-chat-transport';
 import { ChannelState } from './ChannelState';
 import { ChatFacade, ChatFacadeManager } from './facade';
 import {

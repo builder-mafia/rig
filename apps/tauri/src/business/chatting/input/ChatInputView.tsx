@@ -3,9 +3,9 @@
 import { Button, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Subject } from 'rxjs';
-import { defaultSlashCommands } from '../slash-command/defaultCommands';
-import { slashCommandManager } from '../slash-command/SlashCommandManager';
-import { SlashCommandPopover } from '../slash-command/SlashCommandPopover';
+import { defaultSlashCommands } from '../../slash-command/defaultCommands';
+import { slashCommandManager } from '../../slash-command/SlashCommandManager';
+import { SlashCommandPopover } from '../../slash-command/SlashCommandPopover';
 import { ChatInputState } from './ChatInputState';
 
 type ChatInputViewProps = {
@@ -57,10 +57,7 @@ export const ChatInputView = ({
         : '';
 
       if (command && command.mode === 'template') {
-        const resolved = slashCommandManager.resolveTemplate(
-          command,
-          userText,
-        );
+        const resolved = slashCommandManager.resolveTemplate(command, userText);
         await onSubmitText(resolved);
         setInput('');
         return;
