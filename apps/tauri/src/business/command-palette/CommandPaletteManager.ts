@@ -1,4 +1,4 @@
-import { BehaviorSubject, filter, fromEvent, type Observable } from 'rxjs';
+import { BehaviorSubject, type Observable } from 'rxjs';
 import type { CommandPaneId, CommandPaneState } from './types';
 
 export class CommandPaletteManager {
@@ -6,11 +6,8 @@ export class CommandPaletteManager {
   private _currentPane$ = new BehaviorSubject<CommandPaneState>({
     paneId: null,
   });
-  private isKeyboardShortcutSetup = false;
 
-  private constructor() {
-    this.setupKeyboardShortcut();
-  }
+  private constructor() {}
 
   public static getInstance(): CommandPaletteManager {
     if (!CommandPaletteManager.instance) {
@@ -33,22 +30,6 @@ export class CommandPaletteManager {
 
   public close(): void {
     this._currentPane$.next({ paneId: null });
-  }
-
-  private setupKeyboardShortcut(): void {
-    if (typeof document === 'undefined' || this.isKeyboardShortcutSetup) return;
-
-    this.isKeyboardShortcutSetup = true;
-
-    fromEvent<KeyboardEvent>(document, 'keydown')
-      .pipe(
-        filter(e => e.key === 'j' && (e.metaKey || e.ctrlKey)),
-        filter(() => this._currentPane$.getValue().paneId === null),
-      )
-      .subscribe(e => {
-        e.preventDefault();
-        this.open('home');
-      });
   }
 }
 
