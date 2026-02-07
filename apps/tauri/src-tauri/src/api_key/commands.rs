@@ -23,20 +23,10 @@ pub async fn save_api_key(
 }
 
 #[tauri::command]
-pub async fn get_api_key(app: AppHandle, provider_name: String) -> Result<Option<String>, String> {
-    let key_name = get_key_name(&provider_name)?;
-    app.keyring()
-        .get_password(KEYRING_SERVICE, key_name)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 pub async fn delete_api_key(app: AppHandle, provider_name: String) -> Result<(), String> {
     let key_name = get_key_name(&provider_name)?;
     // delete_credential may fail if no password exists, but we don't care
-    let _ = app
-        .keyring()
-        .delete_password(KEYRING_SERVICE, key_name);
+    let _ = app.keyring().delete_password(KEYRING_SERVICE, key_name);
     Ok(())
 }
 

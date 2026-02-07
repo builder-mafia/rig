@@ -24,7 +24,6 @@ pub fn run() {
             chat::commands::stream_text,
             chat::commands::abort_stream,
             api_key::commands::save_api_key,
-            api_key::commands::get_api_key,
             api_key::commands::delete_api_key,
             api_key::commands::has_api_key,
             storage::commands::get_channels,
