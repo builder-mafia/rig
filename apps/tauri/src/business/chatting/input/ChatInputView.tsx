@@ -22,7 +22,7 @@ export const ChatInputView = ({
   isStreaming = false,
 }: ChatInputViewProps) => {
   const [input, _setInput] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [isSlashCommandOpen, setIsSlashCommandOpen] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const modifierKeyEvent$ = useMemo(
     () => new Subject<'ArrowUp' | 'ArrowDown' | 'Enter'>(),
@@ -80,9 +80,9 @@ export const ChatInputView = ({
     const firstPhrase = currentInput.split(/\s+/)[0];
 
     if (firstPhrase.startsWith('/') && currentSelection <= firstPhrase.length) {
-      setIsOpen(true);
+      setIsSlashCommandOpen(true);
     } else {
-      setIsOpen(false);
+      setIsSlashCommandOpen(false);
     }
 
     setInput(currentInput);
@@ -90,19 +90,19 @@ export const ChatInputView = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') {
-      setIsOpen(false);
+      setIsSlashCommandOpen(false);
     } else if (
       e.key === 'ArrowUp' ||
       e.key === 'ArrowDown' ||
       e.key === 'Enter'
     ) {
-      if (isOpen) {
+      if (isSlashCommandOpen) {
         modifierKeyEvent$.next(e.key as 'ArrowUp' | 'ArrowDown' | 'Enter');
         e.preventDefault();
       }
     }
 
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !isOpen) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSlashCommandOpen) {
       e.preventDefault();
       handleSubmit().catch(err => {
         console.error('Submit failed:', err);
@@ -120,6 +120,9 @@ export const ChatInputView = ({
           onKeyDown={handleKeyDown}
           onChange={handleChange}
           className='mx-auto max-w-2xl lg:max-w-4xl min-h-12 py-2.5 max-h-[500px] backdrop-blur-lg'
+          spellCheck={false}
+          autoCorrect='off'
+          autoCapitalize='off'
           placeholder='Ask AI Anything...'
         />
         <div className='w-full flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between mt-2 mb-4'>
@@ -147,24 +150,24 @@ export const ChatInputView = ({
             >
               Submit
               <KbdGroup>
-                <Kbd>⌘⏎</Kbd>
+                <Kbd>⏎</Kbd>
               </KbdGroup>
             </Button>
           </div>
         </div>
       </section>
-      {isOpen && (
+      {isSlashCommandOpen && (
         <SlashCommandPopover
           query={input.replace(/^\/|\/$/g, '')}
           modifierKeyEvent$={modifierKeyEvent$}
           onSelect={command => {
-            setIsOpen(false);
+            setIsSlashCommandOpen(false);
 
             if (command.mode === 'action') {
               const context = {
                 currentInput: input,
                 setInput,
-                close: () => setIsOpen(false),
+                close: () => setIsSlashCommandOpen(false),
               };
               setInput('');
               Promise.resolve(command.execute(context)).catch(err => {
