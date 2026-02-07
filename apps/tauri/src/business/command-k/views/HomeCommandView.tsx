@@ -18,13 +18,9 @@ import {
   User,
 } from 'lucide-react';
 import * as React from 'react';
-import {
-  useCommandDialog,
-  useCommandDialogView,
-} from '../useCommandDialogView';
+import { useCommandDialog } from '../useCommandDialogView';
 
 export function HomeCommandView() {
-  const { isOpen } = useCommandDialogView('home');
   const { navigate, close } = useCommandDialog();
   const [value, setValue] = React.useState('');
 
@@ -35,11 +31,9 @@ export function HomeCommandView() {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <CommandDialog
-      open={isOpen}
+      open
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}

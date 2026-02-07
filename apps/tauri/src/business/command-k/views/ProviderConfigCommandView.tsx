@@ -33,14 +33,13 @@ const PROVIDER_INFO: Record<ProviderId, { name: string; placeholder: string }> =
     },
   };
 
-export function ProviderConfigCommandView() {
-  const { isOpen, props } =
-    useCommandDialogView<ProviderConfigViewProps>('provider-config');
+export function ProviderConfigCommandView({
+  providerId,
+}: ProviderConfigViewProps) {
   const { close } = useCommandDialog();
   const [apiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const providerId = props?.providerId;
   const info = providerId ? PROVIDER_INFO[providerId] : null;
 
   const handleOpenChange = (open: boolean) => {
@@ -90,14 +89,10 @@ export function ProviderConfigCommandView() {
     }
   };
 
-  if (!isOpen || !providerId || !info) return null;
+  if (!providerId || !info) return null;
 
   return (
-    <CommandDialog
-      open={isOpen}
-      onOpenChange={handleOpenChange}
-      showCloseButton={false}
-    >
+    <CommandDialog open onOpenChange={handleOpenChange} showCloseButton={false}>
       <CommandList>
         <div className='p-4 flex flex-col gap-4'>
           <div className='flex items-center gap-2'>

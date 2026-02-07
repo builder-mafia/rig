@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { commandDialogManager } from './CommandDialogManager';
-import type { CommandViewId } from './types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { CommandPaneId } from '../command-palette/types';
+import { CommandPaletteManager } from './CommandPaletteManager';
 
 type CommandDialogViewState<
   T extends Record<string, unknown> = Record<string, unknown>,
@@ -11,37 +11,52 @@ type CommandDialogViewState<
 
 export function useCommandDialogView<
   T extends Record<string, unknown> = Record<string, unknown>,
->(viewId: CommandViewId): CommandDialogViewState<T> {
+>(viewId: CommandPaneId): CommandDialogViewState<T> {
   const [state, setState] = useState<CommandDialogViewState<T>>({
     isOpen: false,
     props: undefined,
   });
 
+  const commandPaletteManager = useMemo(
+    () => CommandPaletteManager.getInstance(),
+    [],
+  );
+
   useEffect(() => {
-    const subscription = commandDialogManager
+    const subscription = commandPaletteManager
       .getViewState$()
       .subscribe(viewState => {
         setState({
-          isOpen: viewState.viewId === viewId,
+          isOpen: viewState.paneId === viewId,
           props:
-            viewState.viewId === viewId ? (viewState.props as T) : undefined,
+            viewState.paneId === viewId
+              ? (viewState.paneProps as T)
+              : undefined,
         });
       });
 
     return () => subscription.unsubscribe();
-  }, [viewId]);
+  }, [viewId, commandPaletteManager]);
 
   return state;
 }
 
 export function useCommandDialog() {
-  const navigate = useCallback(
-    (viewId: CommandViewId, props?: Record<string, unknown>) => {
-      commandDialogManager.open(viewId, props);
-    },
+  const commandPaletteManager = useMemo(
+    () => CommandPaletteManager.getInstance(),
     [],
   );
-  const close = useCallback(() => commandDialogManager.close(), []);
+
+  const navigate = useCallback(
+    (viewId: CommandPaneId, props?: Record<string, unknown>) => {
+      commandPaletteManager.open(viewId, props);
+    },
+    [commandPaletteManager],
+  );
+  const close = useCallback(
+    () => commandPaletteManager.close(),
+    [commandPaletteManager],
+  );
 
   return { navigate, close };
 }

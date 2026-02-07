@@ -9,12 +9,9 @@ import {
   CommandList,
 } from '@allin/ui';
 import { invoke } from '@tauri-apps/api/core';
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
-import {
-  useCommandDialog,
-  useCommandDialogView,
-} from '../useCommandDialogView';
+import { useCommandDialog } from '../useCommandDialogView';
 import type { ProviderId } from './ProviderConfigCommandView';
 
 const PROVIDERS = [
@@ -25,52 +22,41 @@ const PROVIDERS = [
 
 type ConnectionStatus = Record<ProviderId, boolean>;
 
-function useProviderConnectionStatus(isOpen: boolean) {
-  const [status, setStatus] = React.useState<ConnectionStatus>({
+function useProviderConnectionStatus() {
+  const [status, setStatus] = useState<ConnectionStatus>({
     openai: false,
     google: false,
     anthropic: false,
   });
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    let cancelled = false;
-
+  useEffect(() => {
     async function checkAll() {
       const results = await Promise.all(
-        PROVIDERS.map(async p => {
+        PROVIDERS.map(async prov => {
           try {
             const has = await invoke<boolean>('has_api_key', {
-              providerName: p.id,
+              providerName: prov.id,
             });
-            return [p.id, has] as const;
+            return [prov.id, has] as const;
           } catch {
-            return [p.id, false] as const;
+            return [prov.id, false] as const;
           }
         }),
       );
-
-      if (cancelled) return;
 
       setStatus(Object.fromEntries(results) as ConnectionStatus);
     }
 
     checkAll();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen]);
+  }, []);
 
   return status;
 }
 
 export function ProvidersCommandView() {
-  const { isOpen } = useCommandDialogView('providers');
   const { navigate, close } = useCommandDialog();
-  const [value, setValue] = React.useState('');
-  const connectionStatus = useProviderConnectionStatus(isOpen);
+  const [value, setValue] = useState('');
+  const connectionStatus = useProviderConnectionStatus();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -83,11 +69,9 @@ export function ProvidersCommandView() {
     navigate('provider-config', { providerId });
   };
 
-  if (!isOpen) return null;
-
   return (
     <CommandDialog
-      open={isOpen}
+      open
       onOpenChange={handleOpenChange}
       value={value}
       onValueChange={setValue}

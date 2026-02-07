@@ -206,6 +206,56 @@ const modifierKeyEvent$ = useMemo(
 - State classes: `*State.ts` (e.g., `ChatInputState.ts`)
 - Manager singletons: `*Manager.ts` (e.g., `SlashCommandManager.ts`)
 
+### Union Branching: Use ts-pattern with exhaustive()
+- Always use `ts-pattern` with `.exhaustive()` for union type branching
+- Compiler will catch missing cases when new variants are added
+
+```typescript
+// Good
+match(paneId)
+  .with('home', () => <HomePane />)
+  .with('settings', () => <SettingsPane />)
+  .with(null, () => null)
+  .exhaustive();
+
+// Bad
+{paneId === 'home' && <HomePane />}
+{paneId === 'settings' && <SettingsPane />}
+```
+
+### Naming: Context-Specific over Generic
+- Avoid generic names like `View`, `Data`, `Info`, `State`
+- Use domain-specific terminology that fits the module context
+
+```typescript
+// Bad: too generic
+CommandViewId, viewId, props
+
+// Good: context-specific
+CommandPaneId, paneId, paneProps
+```
+
+### Centralized Routing over Distributed State
+- For multi-pane/multi-view UIs, route from a single root component
+- Avoid each child component checking its own open state independently
+
+```typescript
+// Good: Root decides which pane to render
+const CommandPalette = () => {
+  const [openedPane] = useOpenedPane();
+  return match(openedPane.paneId)
+    .with('home', () => <HomePane />)
+    .with('channels', () => <ChannelsPane />)
+    .exhaustive();
+};
+
+// Bad: Each pane checks its own state
+<>
+  <HomePane />      {/* internally: if (currentPane === 'home') */}
+  <ChannelsPane />  {/* internally: if (currentPane === 'channels') */}
+</>
+```
+
 ## Error Handling
 
 - Never suppress errors silently
