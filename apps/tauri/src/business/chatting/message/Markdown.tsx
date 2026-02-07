@@ -5,7 +5,7 @@ import ReactMarkdown, { type Components } from 'react-markdown';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
-import { CodeBlock } from '@/app/business/chatting/code-block/CodeBlock';
+import { CodeBlock } from './shiki/CodeBlock';
 
 const toTokens = (text: string): Array<string> =>
   marked.lexer(text).map(token => token.raw);
@@ -45,6 +45,7 @@ export const MarkdownBlock = React.memo(
         code: ({ node, className, children, ...props }) => {
           const inline = node && isInlineCode(node);
           const code = String(children).trim();
+
           const language =
             className?.match(/language-(\w+)/)?.[1] ?? 'plaintext';
 

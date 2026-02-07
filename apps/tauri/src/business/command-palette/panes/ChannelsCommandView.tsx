@@ -78,6 +78,7 @@ export function ChannelsCommandView() {
             {pinned.map(channel => (
               <CommandItem
                 key={channel.id}
+                value={channel.id}
                 onSelect={() => handleSelectChannel(channel.id)}
               >
                 <MessageSquare className='size-4' />
@@ -103,6 +104,7 @@ export function ChannelsCommandView() {
             {unpinned.map(channel => (
               <CommandItem
                 key={channel.id}
+                value={channel.id}
                 onSelect={() => handleSelectChannel(channel.id)}
               >
                 <MessageSquare className='size-4' />

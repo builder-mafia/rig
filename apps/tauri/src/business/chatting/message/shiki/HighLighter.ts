@@ -2,6 +2,9 @@ import { filter, Subject, take } from 'rxjs';
 import { getHighlighter } from './getHighlighter';
 import type { ShikiWorkerRequest, ShikiWorkerResponse } from './shiki-worker';
 
+// pre-builded worker file path
+const WORKER_PATH = '/workers/shiki-worker.js';
+
 export class HighLighter {
   private useWorker: boolean;
   private worker: Worker | null = null;
@@ -12,14 +15,13 @@ export class HighLighter {
     this.useWorker = useWorker;
 
     if (this.useWorker) {
-      this.worker = new Worker(new URL('./shiki-worker.ts', import.meta.url), {
+      this.worker = new Worker(WORKER_PATH, {
         name: 'shiki-worker',
         type: 'module',
       });
 
       this.worker.onmessage = (event: MessageEvent<ShikiWorkerResponse>) => {
-        const response = event.data;
-        this.workerResponse$.next(response);
+        this.workerResponse$.next(event.data);
       };
     }
   }
@@ -37,7 +39,6 @@ export class HighLighter {
       const worker = this.getWorker();
 
       this.requestIdCounter += 1;
-
       const requestId = this.requestIdCounter;
       const payload: ShikiWorkerRequest = {
         id: requestId,

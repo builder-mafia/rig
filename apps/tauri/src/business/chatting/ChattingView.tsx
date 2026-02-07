@@ -1,9 +1,11 @@
 'use client';
 
-import { getAssistantMessageText, getUserMessageText } from '@allin/ai';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { match } from 'ts-pattern';
 import { EnergyBar } from './EnergyBar';
 import { ChatInputView } from './input/ChatInputView';
+import { AssistantMessage } from './message/AssistantMessage';
+import { UserMessage } from './message/UserMessage';
 import type { StorageChannel } from './storage/types';
 import { useChannelState } from './useChannelState';
 import { useChat } from './useChat';
@@ -83,29 +85,8 @@ function ChannelChatView({ channel }: { channel: StorageChannel }) {
     [uiMessages],
   );
 
-  const renderedMessages = useMemo(
-    () =>
-      visibleMessages.map(msg => {
-        const isUser = msg.role === 'user';
-        const text = isUser
-          ? getUserMessageText(msg)
-          : getAssistantMessageText(msg);
-
-        return (
-          <div
-            key={msg.id}
-            className={
-              isUser
-                ? 'ml-auto max-w-[85%] rounded-2xl bg-primary text-primary-foreground px-4 py-3 whitespace-pre-wrap'
-                : 'mr-auto max-w-[85%] rounded-2xl bg-muted px-4 py-3 whitespace-pre-wrap'
-            }
-          >
-            {text || <span className='opacity-60'>(empty)</span>}
-          </div>
-        );
-      }),
-    [visibleMessages],
-  );
+  // TODO: implement regenerate in useChat
+  const regenerate = useCallback((_messageId: string) => {}, []);
 
   if (error) {
     return <div className='p-4 text-red-600'>Error: {error.message}</div>;
@@ -114,8 +95,21 @@ function ChannelChatView({ channel }: { channel: StorageChannel }) {
   return (
     <div className='h-dvh w-full flex flex-col bg-background'>
       <div className='flex-1 overflow-y-auto px-4 py-6'>
-        <div className='mx-auto max-w-3xl flex flex-col gap-4'>
-          {renderedMessages}
+        <div className='mx-auto max-w-3xl'>
+          {visibleMessages.map((msg, index) =>
+            match(msg.role)
+              .with('user', () => <UserMessage key={msg.id} message={msg} />)
+              .with('assistant', () => (
+                <AssistantMessage
+                  key={msg.id}
+                  message={msg}
+                  isLast={index === visibleMessages.length - 1}
+                  status={status}
+                  regenerate={regenerate}
+                />
+              ))
+              .otherwise(() => null),
+          )}
         </div>
       </div>
 

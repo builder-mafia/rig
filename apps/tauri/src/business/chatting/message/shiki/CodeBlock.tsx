@@ -1,3 +1,4 @@
+import { cn, toast } from '@allin/ui';
 import DOMPurify from 'dompurify';
 import { Clipboard, ClipboardCheck } from 'lucide-react';
 import {
@@ -9,8 +10,6 @@ import {
   useTransition,
 } from 'react';
 import { Subject, throttleTime } from 'rxjs';
-import { toast } from 'sonner';
-import { cn } from '@/utils/cn';
 import styles from './codeblock.module.css';
 import { HighLighter } from './HighLighter';
 
@@ -21,7 +20,13 @@ type CodeBlockProps = {
   as?: React.ElementType;
 };
 
-const highlighter = new HighLighter({ useWorker: true });
+let highlighter: HighLighter | null = null;
+const getHighlighterInstance = () => {
+  if (!highlighter) {
+    highlighter = new HighLighter({ useWorker: typeof Worker !== 'undefined' });
+  }
+  return highlighter;
+};
 
 // Layout Shifting Prevention:
 //
@@ -54,7 +59,8 @@ export const CodeBlock = ({
       .subscribe(({ code, language }) => {
         // second optimization: use useTransition to prevent ui interaction blocking.
         startTransition(async () => {
-          const html = await highlighter.highlight(code, language);
+          const html = await getHighlighterInstance().highlight(code, language);
+
           if (!html) {
             return;
           }

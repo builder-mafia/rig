@@ -1,13 +1,11 @@
 import type { useChat } from '@ai-sdk/react';
 import { getAssistantMessageText } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
-import { Spinner } from '@allin/ui';
 import { AssertionError } from '@allin/utils';
 import type { UIMessage } from 'ai';
 import { assert } from 'es-toolkit';
 import { useCallback } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { cn } from '@/utils/cn';
 import { AssistantMessageErrorUI } from './AssistantMessageErrorUI';
 import { Markdown } from './Markdown';
 
@@ -64,36 +62,6 @@ export const AssistantMessage = ({
           showRetryButton={isLast}
         />
       )}
-      <AnimatePresence>
-        {isLast && isGenerating && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              filter: 'blur(2px)',
-            }}
-            animate={{
-              opacity: 1,
-              filter: 'blur(0px)',
-            }}
-            exit={{
-              opacity: 0,
-              filter: 'blur(2px)',
-            }}
-            transition={{
-              duration: 0.17,
-              ease: 'easeInOut',
-            }}
-            className={cn(
-              'absolute flex items-center justify-center text-sm text-muted-foreground gap-1.5 w-full -top-6',
-            )}
-          >
-            <Spinner size='xs' variant='default' className='opacity-50' />
-            <p className='text-xs !m-0 text-muted-foreground opacity-75'>
-              generating...
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </article>
   );
 };
