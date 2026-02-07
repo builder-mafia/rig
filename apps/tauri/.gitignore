@@ -20,6 +20,9 @@
 # production
 /build
 
+# generated worker bundles
+/public/workers/
+
 # misc
 .DS_Store
 *.pem
