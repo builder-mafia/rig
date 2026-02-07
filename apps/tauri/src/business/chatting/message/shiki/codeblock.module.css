@@ -16,7 +16,7 @@
   /* biome-ignore lint/correctness/noUnknownProperty: new property */
   corner-shape: squircle;
 
-  background-color: var(--shiki-background) !important;
+  /* background-color: var(--shiki-background) !important; */
 }
 
 .languageLabel {
@@ -82,7 +82,7 @@
   /* biome-ignore lint/correctness/noUnknownProperty: new property */
   corner-shape: squircle;
 
-  background-color: var(--shiki-background) !important;
+  /* background-color: var(--shiki-background) !important; */
 
   animation: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
