@@ -8,14 +8,14 @@ export const getHighlighter = async (
   try {
     return await getSingletonHighlighter({
       langs: [language],
-      themes: ['github-dark'],
+      themes: ['github-light', 'github-dark'],
       engine: createOnigurumaEngine(import('shiki/wasm')),
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes('Language')) {
       return await getSingletonHighlighter({
         langs: ['plaintext'],
-        themes: ['github-dark'],
+        themes: ['github-light', 'github-dark'],
         engine: createOnigurumaEngine(import('shiki/wasm')),
       });
     }

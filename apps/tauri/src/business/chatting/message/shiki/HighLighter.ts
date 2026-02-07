@@ -67,7 +67,7 @@ export class HighLighter {
       return getHighlighter(language).then(highlighter => {
         return highlighter.codeToHtml(code, {
           lang: language,
-          theme: 'github-dark',
+          themes: { light: 'github-light', dark: 'github-dark' },
         });
       });
     }

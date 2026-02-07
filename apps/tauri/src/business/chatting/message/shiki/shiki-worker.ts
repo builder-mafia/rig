@@ -23,7 +23,7 @@ self.onmessage = (event: MessageEvent<ShikiWorkerRequest>) => {
     .then(highlighter => {
       const html = highlighter.codeToHtml(code, {
         lang: language,
-        theme: 'github-dark',
+        themes: { light: 'github-light', dark: 'github-dark' },
       });
 
       const response: ShikiWorkerResponse = { id, html };
