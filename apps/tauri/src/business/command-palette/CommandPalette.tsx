@@ -18,21 +18,21 @@ export const CommandPalette = () => {
     paneId: null,
     paneProps: {},
   });
+
   const commandPaletteManager = useMemo(
     () => CommandPaletteManager.getInstance(),
     [],
   );
 
   useEffect(() => {
-    const subscription = commandPaletteManager
-      .getViewState$()
-      .subscribe(paneState => {
-        console.log('paneState', paneState);
+    const subscription = commandPaletteManager.currentPane$.subscribe(
+      paneState => {
         setOpenedPane({
           paneId: paneState.paneId,
           paneProps: paneState.paneProps,
         });
-      });
+      },
+    );
 
     return () => subscription.unsubscribe();
   }, [commandPaletteManager]);

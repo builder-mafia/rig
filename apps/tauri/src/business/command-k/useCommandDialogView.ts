@@ -24,7 +24,7 @@ export function useCommandDialogView<
 
   useEffect(() => {
     const subscription = commandPaletteManager
-      .getViewState$()
+      .currentPane$()
       .subscribe(viewState => {
         setState({
           isOpen: viewState.paneId === viewId,
