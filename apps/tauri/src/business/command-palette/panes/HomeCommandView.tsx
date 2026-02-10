@@ -26,12 +26,8 @@ export function HomeCommandView() {
   const { navigate, close } = useCommandPalette();
 
   const handleNewChat = () => {
+    ChannelManager.getInstance().clearSelection();
     close();
-    ChannelManager.getInstance()
-      .createNewChannel()
-      .catch(err => {
-        console.error('Failed to create new channel:', err);
-      });
   };
   const [value, setValue] = React.useState('');
 
