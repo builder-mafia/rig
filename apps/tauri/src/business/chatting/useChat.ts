@@ -13,19 +13,14 @@ import {
 } from 'react';
 import { AgentManager } from '@/business/agent/AgentManager';
 import { TauriChatTransport } from '@/business/chatting/tauri-chat-transport';
-import { ChannelState } from './ChannelState';
+import { agentGateway } from '@/lib/gateway/agent/agentGateway';
+import { messageGateway } from '@/lib/gateway/message/messageGateway';
+import { ChannelManager } from './ChannelManager';
 import { ChatFacade, ChatFacadeManager } from './facade';
 import {
   storageMessageToUiMessage,
   uiMessageToStorageMessage,
 } from './storage/messageMapper';
-import {
-  appendMessage,
-  getAgent,
-  getAllAgents,
-  getMessages,
-  upsertMessage,
-} from './storage/tauriStorageClient';
 import type { StorageChannel } from './storage/types';
 
 const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
@@ -50,15 +45,15 @@ export function useChat(channel: StorageChannel | null) {
         }
 
         const agentId = channel?.agentId ?? 'default';
-        const agent = await getAgent(agentId).catch(async () => {
-          const agents = await getAllAgents();
+        const agent = await agentGateway.get(agentId).catch(async () => {
+          const agents = await agentGateway.getAll();
           if (agents.length === 0) {
             throw new Error('No agents found');
           }
           return agents[0];
         });
 
-        const storageMessages = await getMessages(channelId);
+        const storageMessages = await messageGateway.getAll(channelId);
         const uiMessages = storageMessages.map(storageMessageToUiMessage);
 
         const transport = new TauriChatTransport({
@@ -98,9 +93,9 @@ export function useChat(channel: StorageChannel | null) {
   useEffect(() => {
     if (!chatFacade) return;
 
-    const pendingMessage = ChannelState.getInstance().getPendingMessage();
+    const pendingMessage = ChannelManager.getInstance().pendingMessage;
     if (pendingMessage) {
-      ChannelState.getInstance().setPendingMessage(null);
+      ChannelManager.getInstance().setPendingMessage(null);
 
       const msg = generateUIMessage(
         'user',
@@ -149,13 +144,11 @@ export function useChat(channel: StorageChannel | null) {
           ...metadata,
         },
       };
-
-      appendMessage(
-        chatFacade.getId(),
-        uiMessageToStorageMessage(toSave),
-      ).catch(err => {
-        console.error('appendMessage failed:', err);
-      });
+      messageGateway
+        .append(chatFacade.getId(), uiMessageToStorageMessage(toSave))
+        .catch(err => {
+          console.error('appendMessage failed:', err);
+        });
     });
 
     const subscription2 = chatFacade.finish$.subscribe(
@@ -173,12 +166,14 @@ export function useChat(channel: StorageChannel | null) {
           },
         };
 
-        upsertMessage(
-          chatFacade.getId(),
-          uiMessageToStorageMessage(enrichedMessage),
-        ).catch(err => {
-          console.error('upsertMessage failed:', err);
-        });
+        messageGateway
+          .upsert(
+            chatFacade.getId(),
+            uiMessageToStorageMessage(enrichedMessage),
+          )
+          .catch(err => {
+            console.error('upsertMessage failed:', err);
+          });
       },
     );
 

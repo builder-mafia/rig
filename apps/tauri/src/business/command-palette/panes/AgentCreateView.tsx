@@ -23,11 +23,7 @@ import { useState } from 'react';
 import { AgentManager } from '@/business/agent/AgentManager';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
-import {
-  createAgent,
-  getAgent,
-  updateAgent,
-} from '../../chatting/storage/tauriStorageClient';
+import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { StorageAgent } from '../../chatting/storage/types';
 
 type AgentCreateViewProps = Record<string, unknown>;
@@ -46,7 +42,7 @@ export const AgentCreateView = (props: AgentCreateViewProps) => {
   const [originalAgent, setOriginalAgent] = useState<StorageAgent | null>(null);
 
   if (isEditMode && !loaded && agentId) {
-    getAgent(agentId)
+    agentGateway.get(agentId)
       .then(agent => {
         setName(agent.name);
         setProviderName(agent.providerName as ProviderId);
@@ -92,7 +88,7 @@ export const AgentCreateView = (props: AgentCreateViewProps) => {
         prompt: prompt.trim() || null,
         updatedAt: now,
       };
-      await updateAgent(updated);
+      await agentGateway.update(updated);
     } else {
       const agent: StorageAgent = {
         id: crypto.randomUUID(),
@@ -103,7 +99,7 @@ export const AgentCreateView = (props: AgentCreateViewProps) => {
         createdAt: now,
         updatedAt: now,
       };
-      await createAgent(agent);
+      await agentGateway.create(agent);
     }
 
     await AgentManager.getInstance().reload();

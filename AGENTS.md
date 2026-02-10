@@ -100,12 +100,43 @@ Use `BehaviorSubject` for state, `Subject` for events:
 
 ```typescript
 class Manager {
-  private state$ = new BehaviorSubject<State>(initialState);
-  private event$ = new Subject<Event>();
+  private _state$ = new BehaviorSubject<State>(initialState);
+  private _event$ = new Subject<Event>();
 
-  getState$(): Observable<State> {
-    return this.state$.asObservable();
+  public get state$(): Observable<State> {
+    return this._state$.asObservable();
   }
+}
+```
+
+### Getter Convention for Singleton/Manager Classes
+- Use TypeScript `get` accessors instead of `getX()` methods for simple value reads
+- Private `BehaviorSubject` fields use `_` prefix (e.g., `_channels$`)
+- Public getter drops the prefix (e.g., `get channels()`, `get channels$()`)
+- Only apply to read-only accessors; setters keep `setX()` method style
+
+```typescript
+// Good
+class ChannelManager {
+  private _channels$ = new BehaviorSubject<Channel[]>([]);
+
+  public get channels(): Channel[] {
+    return this._channels$.getValue();
+  }
+
+  public get channels$(): Observable<Channel[]> {
+    return this._channels$.asObservable();
+  }
+
+  public setPendingMessage(msg: string | null) {
+    this._pendingMessage$.next(msg);
+  }
+}
+
+// Bad
+class ChannelManager {
+  public getChannels(): Channel[] { ... }
+  public getChannels$(): Observable<Channel[]> { ... }
 }
 ```
 

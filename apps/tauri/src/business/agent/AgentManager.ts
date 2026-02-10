@@ -5,10 +5,7 @@ import {
   map,
   type Observable,
 } from 'rxjs';
-import {
-  deleteAgent,
-  getAllAgents,
-} from '../chatting/storage/tauriStorageClient';
+import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { AgentPreset } from './types';
 
 export class AgentManager {
@@ -55,7 +52,7 @@ export class AgentManager {
   }
 
   private async loadAgents() {
-    const agents = await getAllAgents();
+    const agents = await agentGateway.getAll();
     agents.sort((a, b) => a.createdAt - b.createdAt);
     this._agents$.next(agents);
     this.updateActiveAgentId(agents[0].id);
@@ -63,7 +60,7 @@ export class AgentManager {
   }
 
   public async delete(agentId: string) {
-    await deleteAgent(agentId);
+    await agentGateway.delete(agentId);
     const agents = await this.loadAgents();
 
     if (!agents.map(a => a.id).includes(this.activeAgentId)) {

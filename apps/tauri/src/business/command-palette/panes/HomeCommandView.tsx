@@ -19,7 +19,7 @@ import {
   User,
 } from 'lucide-react';
 import * as React from 'react';
-import { ChannelState } from '@/business/chatting/ChannelState';
+import { ChannelManager } from '@/business/chatting/ChannelManager';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 
 export function HomeCommandView() {
@@ -27,7 +27,7 @@ export function HomeCommandView() {
 
   const handleNewChat = () => {
     close();
-    ChannelState.getInstance()
+    ChannelManager.getInstance()
       .createNewChannel()
       .catch(err => {
         console.error('Failed to create new channel:', err);

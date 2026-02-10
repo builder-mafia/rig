@@ -1,36 +1,39 @@
 'use client';
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
-import { ChannelState } from './ChannelState';
+import { ChannelManager } from './ChannelManager';
 import type { StorageChannel } from './storage/types';
 
-const channelState = ChannelState.getInstance();
+const channelManager = ChannelManager.getInstance();
 
 export function useChannelState() {
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    channelState
+    channelManager
       .initialize()
       .then(() => setInitialized(true))
       .catch(e => setError(e instanceof Error ? e : new Error(String(e))));
   }, []);
 
   const subscribeToChannels = useCallback((onChange: () => void) => {
-    const sub = channelState.getChannels$().subscribe(onChange);
+    const sub = channelManager.channels$.subscribe(onChange);
     return () => sub.unsubscribe();
   }, []);
 
-  const getChannelsSnapshot = useCallback(() => channelState.getChannels(), []);
+  const getChannelsSnapshot = useCallback(
+    () => channelManager.channels,
+    [],
+  );
 
   const subscribeToSelectedId = useCallback((onChange: () => void) => {
-    const sub = channelState.getSelectedChannelId$().subscribe(onChange);
+    const sub = channelManager.selectedChannelId$.subscribe(onChange);
     return () => sub.unsubscribe();
   }, []);
 
   const getSelectedChannelId = useCallback(
-    () => channelState.getSelectedChannelId(),
+    () => channelManager.selectedChannelId,
     [],
   );
 
@@ -50,27 +53,27 @@ export function useChannelState() {
     channels.find(c => c.id === selectedChannelId) ?? null;
 
   const createNewChannel = useCallback(async () => {
-    return channelState.createNewChannel();
+    return channelManager.createNewChannel();
   }, []);
 
   const createChannelWithMessage = useCallback(async (message: string) => {
-    return channelState.createChannelWithMessage(message);
+    return channelManager.createChannelWithMessage(message);
   }, []);
 
   const selectChannel = useCallback(async (channelId: string) => {
-    await channelState.selectChannel(channelId);
+    await channelManager.selectChannel(channelId);
   }, []);
 
   const startNewChat = useCallback(() => {
-    channelState.clearSelection();
+    channelManager.clearSelection();
   }, []);
 
   const getPendingMessage = useCallback(() => {
-    return channelState.getPendingMessage();
+    return channelManager.pendingMessage;
   }, []);
 
   const clearPendingMessage = useCallback(() => {
-    channelState.setPendingMessage(null);
+    channelManager.setPendingMessage(null);
   }, []);
 
   return {

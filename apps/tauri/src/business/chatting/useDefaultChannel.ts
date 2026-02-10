@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createChannel, getChannels } from './storage/tauriStorageClient';
+import { channelGateway } from '@/lib/gateway/channel/channelGateway';
 import type { StorageChannel } from './storage/types';
 
 const DEFAULT_CHANNEL_ID = 'default';
@@ -15,7 +15,7 @@ export function useDefaultChannel() {
 
     (async () => {
       try {
-        const channels = await getChannels();
+        const channels = await channelGateway.getAll();
         if (cancelled) return;
 
         if (channels.length > 0) {
@@ -34,7 +34,7 @@ export function useDefaultChannel() {
           updatedAt: now,
         };
 
-        await createChannel(newChannel);
+        await channelGateway.create(newChannel);
         if (cancelled) return;
         setChannel(newChannel);
       } catch (e) {
