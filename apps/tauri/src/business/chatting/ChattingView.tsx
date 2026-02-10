@@ -8,7 +8,7 @@ import { ChatInputView } from './input/ChatInputView';
 import { AssistantMessage } from './message/AssistantMessage';
 import { UserMessage } from './message/UserMessage';
 import type { StorageChannel } from './storage/types';
-import { useChannelState } from './useChannelState';
+import { useChannel } from './useChannel';
 import { useChat } from './useChat';
 
 export function ChattingView() {
@@ -17,7 +17,7 @@ export function ChattingView() {
     selectedChannel,
     createChannelWithMessage,
     error: channelError,
-  } = useChannelState();
+  } = useChannel();
 
   if (!initialized) {
     return <div className='p-4 text-muted-foreground'>Loading...</div>;

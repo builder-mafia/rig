@@ -89,7 +89,10 @@ export function useChat(channel: StorageChannel | null) {
     };
   }, [channelId, channel?.agentId]);
 
-  // Handle pending message auto-send after ChatFacade is ready
+  // Consume the pending message once ChatFacade is initialized.
+  // When a channel is created with a message (e.g., from the home screen),
+  // the message is temporarily stored in ChannelManager because ChatFacade
+  // doesn't exist yet at that point. This effect picks it up and sends it.
   useEffect(() => {
     if (!chatFacade) return;
 

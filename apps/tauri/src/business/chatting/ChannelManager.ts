@@ -8,6 +8,9 @@ export class ChannelManager {
 
   private _channels$ = new BehaviorSubject<StorageChannel[]>([]);
   private _selectedChannelId$ = new BehaviorSubject<string | null>(null);
+  // Temporarily holds a message when a channel is created with an initial message.
+  // ChatFacade is initialized asynchronously after channel creation, so the message
+  // is stored here and consumed by useChat once ChatFacade becomes ready.
   private _pendingMessage$ = new BehaviorSubject<string | null>(null);
   private initialized = false;
 

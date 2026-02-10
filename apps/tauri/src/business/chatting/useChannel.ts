@@ -6,7 +6,7 @@ import type { StorageChannel } from './storage/types';
 
 const channelManager = ChannelManager.getInstance();
 
-export function useChannelState() {
+export function useChannel() {
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -22,10 +22,7 @@ export function useChannelState() {
     return () => sub.unsubscribe();
   }, []);
 
-  const getChannelsSnapshot = useCallback(
-    () => channelManager.channels,
-    [],
-  );
+  const getChannelsSnapshot = useCallback(() => channelManager.channels, []);
 
   const subscribeToSelectedId = useCallback((onChange: () => void) => {
     const sub = channelManager.selectedChannelId$.subscribe(onChange);
