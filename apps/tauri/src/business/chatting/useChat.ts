@@ -18,10 +18,6 @@ import type { StorageChannel } from '@/lib/gateway/channel/types';
 import { messageGateway } from '@/lib/gateway/message/messageGateway';
 import { ChannelManager } from './ChannelManager';
 import { ChatFacade, ChatFacadeManager } from './facade';
-import {
-  storageMessageToUiMessage,
-  uiMessageToStorageMessage,
-} from './storage/messageMapper';
 
 const EMPTY_MESSAGES: UIMessage<UIMessageMetadata>[] = [];
 

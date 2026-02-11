@@ -6,8 +6,8 @@ import { match } from 'ts-pattern';
 import type { StorageChannel } from '@/lib/gateway/channel/types';
 import { EnergyBar } from './EnergyBar';
 import { ChatInputView } from './input/ChatInputView';
-import { AssistantMessage } from './message/AssistantMessage';
-import { UserMessage } from './message/UserMessage';
+import { AssistantMessage } from './message-ui/AssistantMessage';
+import { UserMessage } from './message-ui/UserMessage';
 import { useChannel } from './useChannel';
 import { useChat } from './useChat';
 
