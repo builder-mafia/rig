@@ -1,3 +1,3 @@
-import type { StorageAgent } from '../chatting/storage/types';
+import type { StorageAgent } from '@/lib/gateway/agent/types';
 
 export type AgentPreset = StorageAgent;

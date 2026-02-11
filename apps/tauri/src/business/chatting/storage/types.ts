@@ -20,16 +20,6 @@ export type StorageMessage = {
   compactedAt?: number;
 };
 
-export type StorageAgent = {
-  id: string;
-  name: string;
-  providerName: string;
-  model: string;
-  prompt: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
 export type StorageAppSettings = {
   lastUsedProvider: string | null;
   lastUsedModel: string | null;

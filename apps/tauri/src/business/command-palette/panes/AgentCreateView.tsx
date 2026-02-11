@@ -24,7 +24,7 @@ import { AgentManager } from '@/business/agent/AgentManager';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
-import type { StorageAgent } from '../../chatting/storage/types';
+import type { StorageAgent } from '@/lib/gateway/agent/types';
 
 type AgentCreateViewProps = Record<string, unknown>;
 
@@ -42,7 +42,8 @@ export const AgentCreateView = (props: AgentCreateViewProps) => {
   const [originalAgent, setOriginalAgent] = useState<StorageAgent | null>(null);
 
   if (isEditMode && !loaded && agentId) {
-    agentGateway.get(agentId)
+    agentGateway
+      .get(agentId)
       .then(agent => {
         setName(agent.name);
         setProviderName(agent.providerName as ProviderId);

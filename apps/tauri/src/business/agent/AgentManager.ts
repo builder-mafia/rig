@@ -1,10 +1,4 @@
-import {
-  BehaviorSubject,
-  combineLatest,
-  distinctUntilChanged,
-  map,
-  type Observable,
-} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { AgentPreset } from './types';
 
