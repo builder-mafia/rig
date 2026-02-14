@@ -16,10 +16,10 @@ import { useCommandPalette } from './useCommandPalette';
 
 export const CommandPalette = () => {
   const { currentPane, navigate } = useCommandPalette();
-  const modJ$ = useHotKey('mod+j');
+  const modP$ = useHotKey('mod+p');
 
   useEffect(() => {
-    const sub = modJ$
+    const sub = modP$
       .pipe(filter(() => currentPane.paneId === null))
       .subscribe(e => {
         // prevent key press in input, textarea, etc..
@@ -27,7 +27,7 @@ export const CommandPalette = () => {
         navigate('home');
       });
     return () => sub.unsubscribe();
-  }, [modJ$, currentPane.paneId, navigate]);
+  }, [modP$, currentPane.paneId, navigate]);
 
   return (
     <>
