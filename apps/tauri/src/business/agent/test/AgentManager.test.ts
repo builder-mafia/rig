@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import { createMockAgent } from '@/lib/gateway/agent/test/createMockAgent';
-import { AgentManager } from './AgentManager';
+import { AgentManager } from '../AgentManager';
 
 vi.mock('@/lib/gateway/agent/agentGateway');
 const mockedGateway = vi.mocked(agentGateway);
