@@ -1,9 +1,10 @@
-import { BehaviorSubject, type Observable } from 'rxjs';
+import { StateSubject } from '@allin/utils';
+import type { Observable } from 'rxjs';
 import type { SlashCommand, TemplateSlashCommand } from './types';
 
 export class SlashCommandManager {
   private static instance: SlashCommandManager;
-  private commands$ = new BehaviorSubject<SlashCommand[]>([]);
+  private commands$ = new StateSubject<SlashCommand[]>([]);
 
   private constructor() {}
 

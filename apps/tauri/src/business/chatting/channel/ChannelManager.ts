@@ -1,4 +1,5 @@
-import { BehaviorSubject, type Observable } from 'rxjs';
+import { StateSubject } from '@allin/utils';
+import type { Observable } from 'rxjs';
 import { v4 } from 'uuid';
 import { channelGateway } from '@/lib/gateway/channel/channelGateway';
 import type { StorageChannel } from '@/lib/gateway/channel/types';
@@ -6,8 +7,8 @@ import type { StorageChannel } from '@/lib/gateway/channel/types';
 export class ChannelManager {
   private static instance: ChannelManager;
 
-  private _channels$ = new BehaviorSubject<StorageChannel[]>([]);
-  private _selectedChannelId$ = new BehaviorSubject<string | null>(null);
+  private _channels$ = new StateSubject<StorageChannel[]>([]);
+  private _selectedChannelId$ = new StateSubject<string | null>(null);
 
   private constructor() {}
 

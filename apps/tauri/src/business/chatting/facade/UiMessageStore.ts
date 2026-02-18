@@ -1,6 +1,7 @@
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
+import { StateSubject } from '@allin/utils';
 import type { UIMessage } from 'ai';
-import { BehaviorSubject, type Observable } from 'rxjs';
+import type { Observable } from 'rxjs';
 import { type Setter, setValueOrFn } from './setter';
 
 /**
@@ -10,7 +11,7 @@ export class UIMessageStore<
   UI_MESSAGE extends
     UIMessage<UIMessageMetadata> = UIMessage<UIMessageMetadata>,
 > {
-  private messages$ = new BehaviorSubject<UI_MESSAGE[]>([]);
+  private messages$ = new StateSubject<UI_MESSAGE[]>([]);
 
   public getUiMessages(): UI_MESSAGE[] {
     return this.messages$.getValue();

@@ -218,9 +218,9 @@ extensions/university/
 ```typescript
 // 기존 프로젝트 패턴 준수
 class UniversityStore {
-  private curriculum$ = new BehaviorSubject<Curriculum | null>(null);
-  private currentView$ = new BehaviorSubject<ViewType>('onboarding');
-  private selectedNode$ = new BehaviorSubject<string | null>(null);
+  private curriculum$ = new StateSubject<Curriculum | null>(null);
+  private currentView$ = new StateSubject<ViewType>('onboarding');
+  private selectedNode$ = new StateSubject<string | null>(null);
   
   // Observable getters
   getCurriculum$(): Observable<Curriculum | null> {

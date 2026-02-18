@@ -1,4 +1,5 @@
-import { BehaviorSubject, type Observable } from 'rxjs';
+import { StateSubject } from '@allin/utils';
+import type { Observable } from 'rxjs';
 
 /**
  * Manages the state of the chat input. (Singleton)
@@ -13,7 +14,7 @@ export class ChatInputState {
     return ChatInputState.instance;
   }
 
-  private value$ = new BehaviorSubject<string>('');
+  private value$ = new StateSubject<string>('');
 
   public getValue$(): Observable<string> {
     return this.value$.asObservable();

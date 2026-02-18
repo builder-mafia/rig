@@ -100,7 +100,7 @@ Use `BehaviorSubject` for state, `Subject` for events:
 
 ```typescript
 class Manager {
-  private _state$ = new BehaviorSubject<State>(initialState);
+  private _state$ = new StateSubject<State>(initialState);
   private _event$ = new Subject<Event>();
 
   public get state$(): Observable<State> {
@@ -118,7 +118,7 @@ class Manager {
 ```typescript
 // Good
 class ChannelManager {
-  private _channels$ = new BehaviorSubject<Channel[]>([]);
+  private _channels$ = new StateSubject<Channel[]>([]);
 
   public get channels(): Channel[] {
     return this._channels$.getValue();

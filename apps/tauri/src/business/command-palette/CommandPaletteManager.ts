@@ -1,9 +1,10 @@
-import { BehaviorSubject, type Observable } from 'rxjs';
+import { StateSubject } from '@allin/utils';
+import type { Observable } from 'rxjs';
 import type { CommandPaneId, CommandPaneState } from './types';
 
 export class CommandPaletteManager {
   private static instance: CommandPaletteManager;
-  private _currentPane$ = new BehaviorSubject<CommandPaneState>({
+  private _currentPane$ = new StateSubject<CommandPaneState>({
     paneId: null,
   });
 

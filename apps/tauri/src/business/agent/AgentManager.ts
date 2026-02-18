@@ -1,11 +1,11 @@
-import { BehaviorSubject } from 'rxjs';
+import { StateSubject } from '@allin/utils';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { Agent } from './types';
 
 export class AgentManager {
   private static instance: AgentManager;
-  private _agents$ = new BehaviorSubject<Agent[]>([]);
-  private _selectedAgentId$ = new BehaviorSubject<string | null>('');
+  private _agents$ = new StateSubject<Agent[]>([]);
+  private _selectedAgentId$ = new StateSubject<string | null>('');
 
   private constructor() {}
 

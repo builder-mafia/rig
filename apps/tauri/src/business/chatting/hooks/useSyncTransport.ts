@@ -1,6 +1,6 @@
 import type { ProviderId } from '@allin/ai';
 import { useEffect } from 'react';
-import { EMPTY, map, of, skip, switchMap, take } from 'rxjs';
+import { EMPTY, map, of, switchMap, take } from 'rxjs';
 import { AgentManager } from '@/business/agent/AgentManager';
 import type { ChatFacade } from '../facade/ChatFacade';
 import { TauriChatTransport } from '../tauri-chat-transport';
@@ -11,9 +11,7 @@ export const useSyncTransport = (chatFacade: ChatFacade | null) => {
 
     const agentManager = AgentManager.getInstance();
     const subscription = agentManager.selectedAgentId$
-      // skip initial BehaviorSubject emission — facade is already created with the correct transport
       .pipe(
-        skip(1),
         switchMap(agentId => {
           if (!agentId) return EMPTY;
 

@@ -1,6 +1,7 @@
 import { Chat } from '@ai-sdk/react';
 import type { ProviderId } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
+import { StateSubject } from '@allin/utils';
 import type {
   ChatOnDataCallback,
   ChatOnFinishCallback,
@@ -8,7 +9,7 @@ import type {
   ChatTransport,
   UIMessage,
 } from 'ai';
-import { BehaviorSubject, type Observable, Subject } from 'rxjs';
+import { type Observable, Subject } from 'rxjs';
 import type { TauriChatTransport } from '../tauri-chat-transport';
 import type { Setter } from './setter';
 import { UIMessageStore } from './UiMessageStore';
@@ -26,7 +27,7 @@ export class ChatFacade {
   private id: string;
   private chat: Chat<ChatUiMessage>;
   private uiMessageStore: UIMessageStore<ChatUiMessage>;
-  private status$ = new BehaviorSubject<ChatStatus>('ready');
+  private status$ = new StateSubject<ChatStatus>('ready');
   private onData$ = new Subject<
     Parameters<ChatOnDataCallback<ChatUiMessage>>[0]
   >();
