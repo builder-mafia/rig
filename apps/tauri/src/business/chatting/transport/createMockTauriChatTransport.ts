@@ -1,21 +1,24 @@
 import { createMockTransport, type ProviderId } from '@allin/ai';
 import type { UIMessageMetadata } from '@allin/message-metadata-schema';
 import type { ChatTransport, UIMessage } from 'ai';
-import { TauriChatTransport } from '../../tauri-chat-transport';
+import { TauriChatTransport } from './TauriChatTransport';
 
 export const createMockTauriChatTransport = ({
   providerName,
   modelId,
   textDeltaChunks,
+  chunkDelay,
 }: {
   providerName: ProviderId;
   modelId: string;
   textDeltaChunks: string[];
+  chunkDelay?: number;
 }) => {
   const transport = createMockTransport({
     textDeltaChunks,
     modelId,
     providerName,
+    chunkDelay,
   });
   return new MockTauriChatTransport(providerName, modelId, transport);
 };

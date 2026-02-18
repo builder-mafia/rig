@@ -1,35 +1,39 @@
 import type {
   LanguageModelV3,
-  LanguageModelV3CallOptions,
   LanguageModelV3StreamPart,
 } from '@ai-sdk/provider';
 import { convertArrayToReadableStream, MockLanguageModelV3 } from 'ai/test';
+import { delay } from 'es-toolkit';
 
 type CreateMockModelOptions = {
-  /**
-   * @example 'gpt-4.1', 'gpt-5.1', 'gemini'...
-   * @default 'mock-model-id'
-   */
   modelId?: string;
-  /**
-   * @exmaple 'openai', 'google', 'anthropic'...
-   * @default 'mock-provider'
-   */
   provider?: string;
-  /**
-   * @description text delta chunks to be streamed
-   * @example ['Hello, world!', 'How are you?', 'I am fine, thank you!']
-   */
   textDeltaChunks: string[];
   finishReason?: 'stop' | 'error';
+  chunkDelay?: number;
 };
 
-// https://github.com/vercel/ai/blob/31842e1b86ebba37bda5c596c78e7552cb02f013/examples/ai-core/src/stream-text/mock.ts#L17
+const createDelayedStream = <T>(
+  items: T[],
+  delayMs: number,
+): ReadableStream<T> => {
+  return new ReadableStream({
+    async start(controller) {
+      for (const item of items) {
+        await delay(delayMs);
+        controller.enqueue(item);
+      }
+      controller.close();
+    },
+  });
+};
+
 export const createMockLanguageModel = ({
   modelId = 'mock-model-id',
   provider = 'mock-provider',
   textDeltaChunks,
   finishReason = 'stop',
+  chunkDelay,
 }: CreateMockModelOptions): LanguageModelV3 => {
   const messageId = '0';
 
@@ -39,33 +43,37 @@ export const createMockLanguageModel = ({
     delta: text,
   }));
 
+  const allParts: LanguageModelV3StreamPart[] = [
+    { type: 'text-start', id: messageId },
+    ...textDelta,
+    { type: 'text-end', id: messageId },
+    {
+      type: 'finish',
+      finishReason: { raw: undefined, unified: finishReason },
+      usage: {
+        inputTokens: {
+          total: 3,
+          noCache: 3,
+          cacheRead: undefined,
+          cacheWrite: undefined,
+        },
+        outputTokens: {
+          total: 10,
+          text: 10,
+          reasoning: undefined,
+        },
+      },
+    },
+  ];
+
   return new MockLanguageModelV3({
     modelId,
     provider,
-    doStream: async options => ({
-      stream: convertArrayToReadableStream([
-        { type: 'text-start', id: messageId },
-        ...textDelta,
-        { type: 'text-end', id: messageId },
-        {
-          type: 'finish',
-          finishReason: { raw: undefined, unified: finishReason },
-          logprobs: undefined,
-          usage: {
-            inputTokens: {
-              total: 3,
-              noCache: 3,
-              cacheRead: undefined,
-              cacheWrite: undefined,
-            },
-            outputTokens: {
-              total: 10,
-              text: 10,
-              reasoning: undefined,
-            },
-          },
-        },
-      ]),
+    doStream: async () => ({
+      stream:
+        chunkDelay != null
+          ? createDelayedStream(allParts, chunkDelay)
+          : convertArrayToReadableStream(allParts),
     }),
   });
 };

@@ -1,4 +1,4 @@
-import { type RenderOptions, render } from '@testing-library/react';
+import { type RenderOptions, render, renderHook } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import {
   createServices,
@@ -6,16 +6,25 @@ import {
   type Services,
 } from '@/business/ServiceContext';
 
+const createWrapper = (overrides: Partial<Services> = {}) => {
+  const services = { ...createServices(), ...overrides };
+
+  return ({ children }: { children: React.ReactNode }) => (
+    <ServiceProvider value={services}>{children}</ServiceProvider>
+  );
+};
+
 export const renderWithServices = (
   ui: ReactElement,
   overrides: Partial<Services> = {},
   options?: Omit<RenderOptions, 'wrapper'>,
 ) => {
-  const services = { ...createServices(), ...overrides };
+  return render(ui, { wrapper: createWrapper(overrides), ...options });
+};
 
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <ServiceProvider value={services}>{children}</ServiceProvider>
-  );
-
-  return render(ui, { wrapper: Wrapper, ...options });
+export const renderHookWithServices = <T,>(
+  hook: () => T,
+  overrides: Partial<Services> = {},
+) => {
+  return renderHook(hook, { wrapper: createWrapper(overrides) });
 };

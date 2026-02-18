@@ -11,16 +11,19 @@ export type CreateMockTransportOptions = {
   textDeltaChunks: string[];
   modelId: string;
   providerName?: string;
+  chunkDelay?: number;
 };
 
 export const createMockTransport = ({
   textDeltaChunks,
   modelId,
   providerName = 'mock-provider',
+  chunkDelay,
 }: CreateMockTransportOptions): ChatTransport<UIMessage<UIMessageMetadata>> => {
   const model = createMockLanguageModel({
     modelId,
     textDeltaChunks,
+    chunkDelay,
   });
 
   return {

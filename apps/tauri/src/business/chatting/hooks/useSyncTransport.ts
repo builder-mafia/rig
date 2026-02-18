@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { EMPTY, map, of, switchMap, take } from 'rxjs';
 import { useService } from '@/business/ServiceContext';
 import type { ChatFacade } from '../facade/ChatFacade';
-import { TauriChatTransport } from '../tauri-chat-transport';
+import { TauriChatTransport } from '../transport/TauriChatTransport';
 
 export const useSyncTransport = (chatFacade: ChatFacade | null) => {
   const { agentManager } = useService();

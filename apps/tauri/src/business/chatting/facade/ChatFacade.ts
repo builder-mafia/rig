@@ -10,7 +10,7 @@ import type {
   UIMessage,
 } from 'ai';
 import { type Observable, Subject } from 'rxjs';
-import type { TauriChatTransport } from '../tauri-chat-transport';
+import type { TauriChatTransport } from '../transport/TauriChatTransport';
 import type { Setter } from './setter';
 import { UIMessageStore } from './UiMessageStore';
 

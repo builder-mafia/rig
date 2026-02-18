@@ -3,37 +3,11 @@ import {
   getAssistantMessageText,
   getSystemMessageText,
   getUserMessageText,
-  type ProviderId,
 } from '@allin/ai';
 import { delay } from 'es-toolkit';
-import { describe, expect, it, vi } from 'vitest';
-import type { ChatUiMessage } from '@/lib/gateway/message/messageMapper';
-import { createMockTauriChatTransport } from '../test/mocks/createMockTauriChatTransport';
-import { ChatFacade } from './ChatFacade';
-
-const setupChatFacade = ({
-  textDeltaChunks,
-  providerName,
-  modelId,
-  initialMessages,
-}: {
-  providerName?: ProviderId;
-  modelId?: string;
-  textDeltaChunks?: string[];
-  initialMessages: ChatUiMessage[];
-}) => {
-  const transport = createMockTauriChatTransport({
-    providerName: providerName ?? 'anthropic',
-    modelId: modelId ?? 'opus-4.6',
-    textDeltaChunks: textDeltaChunks ?? ['Hello', ' I am assistant.'],
-  });
-
-  return new ChatFacade({
-    id: 'chatFacadeTest',
-    transport,
-    messages: initialMessages,
-  });
-};
+import { describe, expect, it } from 'vitest';
+import { createMockTauriChatTransport } from '../transport/createMockTauriChatTransport';
+import { createMockChatFacade } from './createMockChatFacade';
 
 describe('ChatFacade', () => {
   describe('constructor', () => {
@@ -41,7 +15,7 @@ describe('ChatFacade', () => {
       const initialMessages = [
         generateUIMessage('user', 'Hello, how are you?'),
       ];
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages,
       });
 
@@ -49,14 +23,14 @@ describe('ChatFacade', () => {
     });
 
     it('should set initial status to ready', () => {
-      const chatFacde = setupChatFacade({
+      const chatFacde = createMockChatFacade({
         initialMessages: [],
       });
 
       expect(chatFacde.getStatus()).toBe('ready');
     });
     it('should set providerId and modelId from transport', () => {
-      const chatFacde = setupChatFacade({
+      const chatFacde = createMockChatFacade({
         providerName: 'anthropic',
         modelId: 'opus-4.7',
         initialMessages: [],
@@ -69,7 +43,7 @@ describe('ChatFacade', () => {
 
   describe('sendMessage', () => {
     it('should emit onBeforeSend$ before calling sendMessage', () => {
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages: [],
       });
 
@@ -81,7 +55,7 @@ describe('ChatFacade', () => {
     });
 
     it('should reject when called after dispose', () => {
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages: [],
       });
 
@@ -97,7 +71,7 @@ describe('ChatFacade', () => {
 
   describe('Chat → UIMessageStore sync', () => {
     it('should add user message to uiMessageStore when chat pushes it', async () => {
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages: [],
         textDeltaChunks: ['Hello', ' I am fine. And you?'],
       });
@@ -119,7 +93,7 @@ describe('ChatFacade', () => {
 
   describe('Chat → status$ sync', () => {
     it('should reflect chat status changes through status$', async () => {
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages: [],
         textDeltaChunks: ['Hello', ' I am fine. And you?'],
       });
@@ -132,7 +106,7 @@ describe('ChatFacade', () => {
 
   describe('addSystemMessage', () => {
     it('should append to chat.messages without affecting uiMessageStore', () => {
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages: [],
       });
 
@@ -158,7 +132,7 @@ describe('ChatFacade', () => {
         generateUIMessage('user', 'Hello, how are you?'),
         generateUIMessage('assistant', 'I am fine. And you?'),
       ];
-      const chatFacade = setupChatFacade({
+      const chatFacade = createMockChatFacade({
         initialMessages,
       });
 
