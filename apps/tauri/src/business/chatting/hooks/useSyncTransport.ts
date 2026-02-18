@@ -1,15 +1,15 @@
 import type { ProviderId } from '@allin/ai';
 import { useEffect } from 'react';
 import { EMPTY, map, of, switchMap, take } from 'rxjs';
-import { AgentManager } from '@/business/agent/AgentManager';
+import { useService } from '@/business/ServiceContext';
 import type { ChatFacade } from '../facade/ChatFacade';
 import { TauriChatTransport } from '../tauri-chat-transport';
 
 export const useSyncTransport = (chatFacade: ChatFacade | null) => {
+  const { agentManager } = useService();
+
   useEffect(() => {
     if (!chatFacade) return;
-
-    const agentManager = AgentManager.getInstance();
     const subscription = agentManager.selectedAgentId$
       .pipe(
         switchMap(agentId => {
@@ -42,5 +42,5 @@ export const useSyncTransport = (chatFacade: ChatFacade | null) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [chatFacade]);
+  }, [chatFacade, agentManager]);
 };

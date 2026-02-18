@@ -20,15 +20,16 @@ import {
   toast,
 } from '@allin/ui';
 import { useState } from 'react';
-import { AgentManager } from '@/business/agent/AgentManager';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
+import { useService } from '@/business/ServiceContext';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { StorageAgent } from '@/lib/gateway/agent/types';
 
 type AgentCreateViewProps = Record<string, unknown>;
 
 export const AgentCreateView = (props: AgentCreateViewProps) => {
+  const { agentManager } = useService();
   const { close } = useCommandPalette();
   const agentId = props.agentId as string | undefined;
   const isEditMode = Boolean(agentId);
@@ -103,7 +104,7 @@ export const AgentCreateView = (props: AgentCreateViewProps) => {
       await agentGateway.create(agent);
     }
 
-    await AgentManager.getInstance().reload();
+    await agentManager.loadAgents();
     toast.success(isEditMode ? 'Agent updated' : 'Agent created', {
       position: 'top-center',
       duration: 2000,

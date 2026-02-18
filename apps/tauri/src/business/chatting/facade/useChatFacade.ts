@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { useService } from '@/business/ServiceContext';
 import type { StorageChannel } from '@/lib/gateway/channel/types';
-import { ChatFacadeManager } from './ChatFacadeManager';
 
 export const useChatFacadeCreation = (channel: StorageChannel) => {
+  const { chatFacadeManager } = useService();
   const { data: chatFacade, error } = useQuery({
     queryKey: ['chatFacade', channel.id],
-    queryFn: () => ChatFacadeManager.getInstance().getOrCreate(channel),
+    queryFn: () => chatFacadeManager.getOrCreate(channel),
     staleTime: 60 * 1000 * 60 * 10, // 10 hour
   });
 

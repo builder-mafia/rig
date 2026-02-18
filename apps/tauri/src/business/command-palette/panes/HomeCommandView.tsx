@@ -19,14 +19,15 @@ import {
   User,
 } from 'lucide-react';
 import * as React from 'react';
-import { ChannelManager } from '@/business/chatting/channel/ChannelManager';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
+import { useService } from '@/business/ServiceContext';
 
 export function HomeCommandView() {
+  const { channelManager } = useService();
   const { navigate, close } = useCommandPalette();
 
   const handleNewChat = () => {
-    ChannelManager.getInstance().clearSelection();
+    channelManager.clearSelection();
     close();
   };
   const [value, setValue] = React.useState('');

@@ -1,12 +1,9 @@
-import { useCallback, useMemo, useSyncExternalStore } from 'react';
-import { CommandPaletteManager } from './CommandPaletteManager';
+import { useCallback, useSyncExternalStore } from 'react';
+import { useService } from '@/business/ServiceContext';
 import type { CommandPaneId } from './types';
 
 export const useCommandPalette = () => {
-  const commandPaletteManager = useMemo(
-    () => CommandPaletteManager.getInstance(),
-    [],
-  );
+  const { commandPaletteManager } = useService();
 
   const navigate = useCallback(
     (paneId: CommandPaneId, props?: Record<string, unknown>) => {

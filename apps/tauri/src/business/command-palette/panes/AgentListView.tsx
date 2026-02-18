@@ -12,23 +12,27 @@ import {
 } from '@allin/ui';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useState, useSyncExternalStore } from 'react';
-import { AgentManager } from '@/business/agent/AgentManager';
 import type { Agent } from '@/business/agent/types';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
+import { useService } from '@/business/ServiceContext';
 
 export const AgentListView = () => {
+  const { agentManager } = useService();
   const { navigate, close } = useCommandPalette();
   const [value, setValue] = useState('');
 
-  const subscribeToAgents = useCallback((onChange: () => void) => {
-    const sub = AgentManager.getInstance().agents$.subscribe(onChange);
-    return () => sub.unsubscribe();
-  }, []);
+  const subscribeToAgents = useCallback(
+    (onChange: () => void) => {
+      const sub = agentManager.agents$.subscribe(onChange);
+      return () => sub.unsubscribe();
+    },
+    [agentManager],
+  );
   const agents = useSyncExternalStore<Agent[]>(
     subscribeToAgents,
-    () => AgentManager.getInstance().agents,
-    () => AgentManager.getInstance().agents,
+    () => agentManager.agents,
+    () => agentManager.agents,
   );
 
   const handleOpenChange = (open: boolean) => {
@@ -40,7 +44,7 @@ export const AgentListView = () => {
 
   const handleDelete = async (agent: Agent) => {
     try {
-      await AgentManager.getInstance().delete(agent.id);
+      await agentManager.delete(agent.id);
       toast.success(`Deleted "${agent.name}"`, {
         position: 'top-center',
         duration: 2000,

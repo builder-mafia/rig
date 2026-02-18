@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
-import { AgentManager } from '../../agent/AgentManager';
+import { useService } from '@/business/ServiceContext';
 
 export const useAgentInit = () => {
+  const { agentManager } = useService();
+
   useEffect(() => {
     const init = async () => {
-      const agentManager = AgentManager.getInstance();
       const agents = await agentManager.loadAgents();
       agentManager.setSelectedAgent(agents[0].id);
     };
 
     init();
-  }, []);
+  }, [agentManager]);
 };

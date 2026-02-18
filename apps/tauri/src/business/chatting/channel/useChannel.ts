@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
-import { ChannelManager } from './ChannelManager';
-
-const channelManager = ChannelManager.getInstance();
+import { useService } from '@/business/ServiceContext';
 
 export function useChannel() {
+  const { channelManager } = useService();
   const subscribeToChannels = useCallback((onChange: () => void) => {
     const sub = channelManager.channels$.subscribe(onChange);
     return () => sub.unsubscribe();

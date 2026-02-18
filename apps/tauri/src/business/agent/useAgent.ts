@@ -1,16 +1,19 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
-import { AgentManager } from './AgentManager';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useService } from '@/business/ServiceContext';
 
 export const useAgent = () => {
-  const agentManagerRef = useRef(AgentManager.getInstance());
+  const { agentManager } = useService();
 
-  const subscribeToAgents = useCallback((onChange: () => void) => {
-    const subscription = agentManagerRef.current.agents$.subscribe(onChange);
-    return () => subscription.unsubscribe();
-  }, []);
+  const subscribeToAgents = useCallback(
+    (onChange: () => void) => {
+      const subscription = agentManager.agents$.subscribe(onChange);
+      return () => subscription.unsubscribe();
+    },
+    [agentManager],
+  );
   const getAgentsSnapshot = useCallback(
-    () => agentManagerRef.current.agents,
-    [],
+    () => agentManager.agents,
+    [agentManager],
   );
   const agents = useSyncExternalStore(
     subscribeToAgents,
@@ -18,15 +21,17 @@ export const useAgent = () => {
     getAgentsSnapshot,
   );
 
-  const subscribeToSelectedAgentId = useCallback((onChange: () => void) => {
-    const subscription =
-      agentManagerRef.current.selectedAgentId$.subscribe(onChange);
-    return () => subscription.unsubscribe();
-  }, []);
+  const subscribeToSelectedAgentId = useCallback(
+    (onChange: () => void) => {
+      const subscription = agentManager.selectedAgentId$.subscribe(onChange);
+      return () => subscription.unsubscribe();
+    },
+    [agentManager],
+  );
 
   const getSelectedAgentIdSnapshot = useCallback(
-    () => agentManagerRef.current.selectedAgentId,
-    [],
+    () => agentManager.selectedAgentId,
+    [agentManager],
   );
 
   const selectedAgentId = useSyncExternalStore(
@@ -39,13 +44,16 @@ export const useAgent = () => {
     return agents.find(a => a.id === selectedAgentId) ?? null;
   }, [agents, selectedAgentId]);
 
-  const setSelectedAgentId = useCallback((agentId: string) => {
-    agentManagerRef.current.setSelectedAgent(agentId);
-  }, []);
+  const setSelectedAgentId = useCallback(
+    (agentId: string) => {
+      agentManager.setSelectedAgent(agentId);
+    },
+    [agentManager],
+  );
 
   const cycleSelectedAgent = useCallback(() => {
-    agentManagerRef.current.cycleSelectedAgent();
-  }, []);
+    agentManager.cycleSelectedAgent();
+  }, [agentManager]);
 
   return {
     agents,

@@ -11,13 +11,11 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { filter, Subject } from 'rxjs';
-import { AgentManager } from '@/business/agent/AgentManager';
 import type { Agent } from '@/business/agent/types';
 import { useHotKey } from '@/business/hotkey/useHotKey';
+import { useService } from '@/business/ServiceContext';
 import { defaultSlashCommands } from '../../slash-command/defaultCommands';
-import { slashCommandManager } from '../../slash-command/SlashCommandManager';
 import { SlashCommandPopover } from '../../slash-command/SlashCommandPopover';
-import { ChatInputState } from './ChatInputState';
 
 type ChatInputViewProps = {
   onSubmitText: (text: string) => Promise<void>;
@@ -32,6 +30,7 @@ export const ChatInputView = ({
   disabled = false,
   isStreaming = false,
 }: ChatInputViewProps) => {
+  const { agentManager, slashCommandManager, chatInputState } = useService();
   const [input, _setInput] = useState('');
   const [isSlashCommandOpen, setIsSlashCommandOpen] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -40,20 +39,22 @@ export const ChatInputView = ({
     [],
   );
 
-  const subscribeToActiveAgent = useCallback((onChange: () => void) => {
-    const sub = AgentManager.getInstance().selectedAgentId$.subscribe(onChange);
-    return () => sub.unsubscribe();
-  }, []);
+  const subscribeToActiveAgent = useCallback(
+    (onChange: () => void) => {
+      const sub = agentManager.selectedAgentId$.subscribe(onChange);
+      return () => sub.unsubscribe();
+    },
+    [agentManager],
+  );
   const activeAgent = useSyncExternalStore<Agent | null>(
     subscribeToActiveAgent,
-    () => AgentManager.getInstance().selectedAgent,
-    () => AgentManager.getInstance().selectedAgent,
+    () => agentManager.selectedAgent,
+    () => agentManager.selectedAgent,
   );
 
   const setInput = (value: string) => {
     _setInput(value);
-    // sync model's state
-    ChatInputState.getInstance().setValue(value);
+    chatInputState.setValue(value);
   };
 
   const handleSubmit = async () => {
@@ -131,7 +132,7 @@ export const ChatInputView = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Tab' && !isSlashCommandOpen) {
       e.preventDefault();
-      AgentManager.getInstance().cycleSelectedAgent();
+      agentManager.cycleSelectedAgent();
       return;
     }
 
@@ -178,7 +179,7 @@ export const ChatInputView = ({
               size='sm'
               className='text-xs text-muted-foreground gap-1'
               onClick={() => {
-                AgentManager.getInstance().cycleSelectedAgent();
+                agentManager.cycleSelectedAgent();
               }}
             >
               {activeAgent ? (

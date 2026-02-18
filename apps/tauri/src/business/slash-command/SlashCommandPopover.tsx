@@ -12,7 +12,7 @@ import {
 import { Fzf } from 'fzf';
 import { useEffect, useMemo, useState } from 'react';
 import type { Subject } from 'rxjs';
-import { SlashCommandManager } from './SlashCommandManager';
+import { useService } from '@/business/ServiceContext';
 import type { SlashCommand } from './types';
 
 type SlashCommandPopoverProps = {
@@ -28,8 +28,9 @@ export function SlashCommandPopover({
   anchorRef,
   modifierKeyEvent$,
 }: SlashCommandPopoverProps) {
+  const { slashCommandManager } = useService();
   const [commands] = useState<SlashCommand[]>(
-    SlashCommandManager.getInstance().getCommands(),
+    slashCommandManager.getCommands(),
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
 
