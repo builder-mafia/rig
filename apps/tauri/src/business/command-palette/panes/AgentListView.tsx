@@ -77,12 +77,12 @@ export const AgentListView = () => {
             <Plus className='size-4' />
             <span>Create Agent</span>
           </CommandItem>
-
           {agents.map(agent => (
             <CommandItem
               key={agent.id}
               value={agent.name}
               className='flex items-center justify-between'
+              onSelect={() => navigate('agent-edit', { agentId: agent.id })}
             >
               <div className='flex items-center gap-2'>
                 {getProviderIcon(agent.providerName as ProviderId, 'size-4')}
@@ -91,14 +91,13 @@ export const AgentListView = () => {
                   {agent.model}
                 </span>
               </div>
-
               <div className='flex items-center gap-1'>
                 <button
                   type='button'
                   className='p-1 rounded hover:bg-accent'
                   onClick={e => {
                     e.stopPropagation();
-                    navigate('agent-create', { agentId: agent.id });
+                    navigate('agent-edit', { agentId: agent.id });
                   }}
                 >
                   <Pencil className='size-3' />

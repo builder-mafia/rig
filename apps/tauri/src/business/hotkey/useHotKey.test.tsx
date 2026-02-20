@@ -1,7 +1,7 @@
 import { cleanup, renderHook } from '@testing-library/react';
 import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { HotkeyEvent } from './types';
+import type { HotkeyEvent } from './HotkeyManager';
 import { useHotKey } from './useHotKey';
 
 vi.mock('./HotkeyManager', () => {

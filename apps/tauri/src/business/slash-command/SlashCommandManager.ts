@@ -1,5 +1,10 @@
 import { StateSubject } from '@allin/utils';
-import { commandNameSchema, type SlashCommand } from './ISlashCommand';
+import {
+  type ActionCommand,
+  commandNameSchema,
+  type SlashCommand,
+  type TemplateCommand,
+} from './ISlashCommand';
 
 export class SlashCommandManager {
   private static instance: SlashCommandManager;
@@ -16,6 +21,14 @@ export class SlashCommandManager {
 
   public getCommands(): SlashCommand[] {
     return this.commands$.getValue();
+  }
+
+  public getTemplateCommands(): TemplateCommand[] {
+    return this.commands$.getValue().filter(cmd => cmd.mode === 'template');
+  }
+
+  public getActionCommands(): ActionCommand[] {
+    return this.commands$.getValue().filter(cmd => cmd.mode === 'action');
   }
 
   public findCommandByName(name: string): SlashCommand | undefined {

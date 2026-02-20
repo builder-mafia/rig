@@ -1,6 +1,10 @@
 import { StateSubject } from '@allin/utils';
+import { v4 } from 'uuid';
 import { agentGateway } from '@/lib/gateway/agent/agentGateway';
+import type { StorageAgent } from '@/lib/gateway/agent/types';
 import type { Agent } from './types';
+
+type AgentInput = Omit<StorageAgent, 'id' | 'createdAt' | 'updatedAt'>;
 
 export class AgentManager {
   private static instance: AgentManager;
@@ -48,6 +52,34 @@ export class AgentManager {
       throw new Error(`Agent with id ${agentId} not found`);
     }
     this._selectedAgentId$.next(agentId);
+  }
+
+  public async create(params: AgentInput) {
+    const now = Date.now();
+    const id = v4();
+    await agentGateway.create({
+      ...params,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await this.loadAgents();
+    this.setSelectedAgent(id);
+    return id;
+  }
+
+  public async update(agentId: string, params: AgentInput) {
+    const agent = this.agents.find(a => a.id === agentId);
+    if (!agent) {
+      throw new Error(`Agent with id ${agentId} not found`);
+    }
+    await agentGateway.update({
+      ...agent,
+      ...params,
+      updatedAt: Date.now(),
+    });
+    await this.loadAgents();
+    this.setSelectedAgent(agentId);
   }
 
   public async delete(agentId: string) {

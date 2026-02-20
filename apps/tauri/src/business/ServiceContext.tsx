@@ -1,6 +1,12 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
 import { AgentManager } from './agent/AgentManager';
 import { ChannelManager } from './chatting/channel/ChannelManager';
 import { ChatFacadeManager } from './chatting/facade/ChatFacadeManager';
@@ -40,6 +46,14 @@ type ServiceProviderProps = {
 
 export const ServiceProvider = ({ children, value }: ServiceProviderProps) => {
   const defaultServices = useMemo(() => createServices(), []);
+
+  // for DEBUG
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as unknown as { _services: Services })._services =
+        defaultServices;
+    }
+  }, [defaultServices]);
 
   return (
     <ServiceContext.Provider value={value ?? defaultServices}>

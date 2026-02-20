@@ -42,14 +42,12 @@ export abstract class TemplateCommand implements BaseCommand {
   public abstract template: string;
   public abstract hints?: string[];
 
-  public toPrompt(args: string, hintSelection?: string): string {
-    let resolved = this.template;
+  public toPrompt(input: string, hintSelection?: string): string {
+    const args = input.replace(`/${this.commandName}`, '').trim();
 
-    if (hintSelection) {
-      resolved = resolved.replace('$HINT', hintSelection);
-    }
-
-    return resolved.replace('$INPUT', args);
+    return this.template
+      .replace('$ARGS', args)
+      .replace('$HINT', hintSelection ?? '');
   }
 }
 

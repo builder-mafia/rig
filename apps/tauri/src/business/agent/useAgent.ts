@@ -55,11 +55,17 @@ export const useAgent = () => {
     agentManager.cycleSelectedAgent();
   }, [agentManager]);
 
+  const findAgent = useCallback(
+    (agentId: string) => agents.find(a => a.id === agentId) ?? null,
+    [agents],
+  );
+
   return {
     agents,
     selectedAgent,
     selectedAgentId,
     setSelectedAgentId,
     cycleSelectedAgent,
+    findAgent,
   };
 };

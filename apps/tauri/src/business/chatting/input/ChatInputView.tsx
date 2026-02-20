@@ -12,10 +12,13 @@ import {
 } from 'react';
 import { filter, Subject } from 'rxjs';
 import type { Agent } from '@/business/agent/types';
+import { useAgent } from '@/business/agent/useAgent';
 import { useHotKey } from '@/business/hotkey/useHotKey';
 import { useService } from '@/business/ServiceContext';
 import { defaultSlashCommands } from '../../slash-command/defaultCommands';
 import { SlashCommandPopover } from '../../slash-command/view/SlashCommandPopover';
+import { getTargetTemplateCommand } from './getTargetTemplateCommand';
+import { SelectedAgentView } from './SelectedAgentView';
 
 type ChatInputViewProps = {
   onSubmitText: (text: string) => Promise<void>;
@@ -39,57 +42,27 @@ export const ChatInputView = ({
     [],
   );
 
-  const subscribeToActiveAgent = useCallback(
-    (onChange: () => void) => {
-      const sub = agentManager.selectedAgentId$.subscribe(onChange);
-      return () => sub.unsubscribe();
-    },
-    [agentManager],
-  );
-  const activeAgent = useSyncExternalStore<Agent | null>(
-    subscribeToActiveAgent,
-    () => agentManager.selectedAgent,
-    () => agentManager.selectedAgent,
-  );
-
   const handleSubmit = async () => {
-    if (trimmedInput.startsWith('/')) {
-      const withoutSlash = trimmedInput.slice(1);
+    let toSendPrompt: string = input.trim();
 
-      // Longest-match prefix approach for multi-word commands
-      const allCommands = slashCommandManager.getCommands();
-      const matchingCommands = allCommands
-        .filter(cmd =>
-          withoutSlash.toLowerCase().startsWith(cmd.commandName.toLowerCase()),
-        )
-        .sort((a, b) => b.commandName.length - a.commandName.length);
+    const templateCommand = getTargetTemplateCommand(
+      input,
+      slashCommandManager.getTemplateCommands(),
+    );
 
-      const command = matchingCommands[0];
-      const userText = command
-        ? withoutSlash.slice(command.commandName.length).trimStart()
-        : '';
-
-      if (command && command.mode === 'template') {
-        await onSubmitText(command.toPrompt(userText));
-        setInput('');
-        return;
-      }
+    if (templateCommand) {
+      toSendPrompt = templateCommand.toPrompt(input);
     }
 
-    if (!input.trim()) return;
-    await onSubmitText(input.trim());
     setInput('');
+    await onSubmitText(toSendPrompt);
   };
 
   const slashKey$ = useHotKey('/');
   const escapeKey$ = useHotKey('escape');
 
   useEffect(() => {
-    slashCommandManager.registerCommands(defaultSlashCommands);
-  }, []);
-
-  useEffect(() => {
-    const sub = slashKey$.pipe(filter(e => !e.isInputContext)).subscribe(e => {
+    const sub = slashKey$.pipe(filter(e => !e.isInputElement)).subscribe(e => {
       e.originalEvent.preventDefault();
       textAreaRef.current?.focus();
     });
@@ -172,14 +145,7 @@ export const ChatInputView = ({
                 agentManager.cycleSelectedAgent();
               }}
             >
-              {activeAgent ? (
-                <>
-                  {activeAgent.name}
-                  <span className='opacity-50'>{activeAgent.model}</span>
-                </>
-              ) : (
-                'Default'
-              )}
+              <SelectedAgentView />
               <KbdGroup>
                 <Kbd>Tab</Kbd>
               </KbdGroup>
@@ -227,9 +193,9 @@ export const ChatInputView = ({
                 close: () => setIsSlashCommandOpen(false),
               };
               setInput('');
-              Promise.resolve(command.execute(context)).catch(err => {
-                console.error('Action execute error:', err);
-              });
+              // Promise.resolve(command.execute(context)).catch(err => {
+              //   console.error('Action execute error:', err);
+              // });
             } else if (command.mode === 'template') {
               setInput('/' + command.commandName + ' ');
               textAreaRef.current?.focus();

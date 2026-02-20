@@ -27,6 +27,8 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
     cancel_flag: Arc<AtomicBool>,
 ) -> Result<(), String> {
+    println!("model: {}", model.name().clone());
+
     let response = LanguageModelRequest::builder()
         .model(model)
         .system("You are a helpful assistant.")
@@ -64,11 +66,7 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
     Ok(())
 }
 
-fn get_api_key(
-    app: AppHandle,
-    provider_name: &String,
-    key_name: &str,
-) -> Result<String, String> {
+fn get_api_key(app: AppHandle, provider_name: &String, key_name: &str) -> Result<String, String> {
     let result = app
         .keyring()
         .get_password(KEYRING_SERVICE, key_name)
@@ -147,7 +145,9 @@ pub async fn stream_text(
     let cancel_flag = Arc::new(AtomicBool::new(false));
     let cancel_flag_for_forward = cancel_flag.clone();
     {
-        let mut map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+        let mut map = cancel_map()
+            .lock()
+            .map_err(|_| "Cancel map poisoned".to_string())?;
         map.insert(request_id.clone(), cancel_flag.clone());
     }
 
@@ -195,7 +195,9 @@ pub async fn stream_text(
 
     // Cleanup cancellation registry
     {
-        let mut map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+        let mut map = cancel_map()
+            .lock()
+            .map_err(|_| "Cancel map poisoned".to_string())?;
         map.remove(&request_id);
     }
 
@@ -204,7 +206,9 @@ pub async fn stream_text(
 
 #[tauri::command]
 pub async fn abort_stream(request_id: String) -> Result<(), String> {
-    let map = cancel_map().lock().map_err(|_| "Cancel map poisoned".to_string())?;
+    let map = cancel_map()
+        .lock()
+        .map_err(|_| "Cancel map poisoned".to_string())?;
     if let Some(flag) = map.get(&request_id) {
         flag.store(true, Ordering::Relaxed);
     }

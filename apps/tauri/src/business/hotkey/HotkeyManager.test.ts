@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HotkeyEvent } from './types';
+import type { HotkeyEvent } from './HotkeyManager';
 
 let HotkeyManager: typeof import('./HotkeyManager').HotkeyManager;
 
@@ -67,7 +67,7 @@ describe('HotkeyManager', () => {
 
       document.dispatchEvent(createKeyboardEvent('j', MOD, input));
 
-      expect(received[0].isInputContext).toBe(true);
+      expect(received[0].isInputElement).toBe(true);
       sub.unsubscribe();
     });
 
@@ -79,7 +79,7 @@ describe('HotkeyManager', () => {
 
       document.dispatchEvent(createKeyboardEvent('j', MOD, textarea));
 
-      expect(received[0].isInputContext).toBe(true);
+      expect(received[0].isInputElement).toBe(true);
       sub.unsubscribe();
     });
 
@@ -92,7 +92,7 @@ describe('HotkeyManager', () => {
 
       document.dispatchEvent(createKeyboardEvent('j', MOD, div));
 
-      expect(received[0].isInputContext).toBe(true);
+      expect(received[0].isInputElement).toBe(true);
       sub.unsubscribe();
     });
 
@@ -104,7 +104,7 @@ describe('HotkeyManager', () => {
 
       document.dispatchEvent(createKeyboardEvent('j', MOD, div));
 
-      expect(received[0].isInputContext).toBe(false);
+      expect(received[0].isInputElement).toBe(false);
       sub.unsubscribe();
     });
   });

@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { match } from 'ts-pattern';
 import { useHotKey } from '@/business/hotkey/useHotKey';
 import { AgentCreateView } from './panes/AgentCreateView';
+import { AgentEditView, AgentEditViewPropsSchema } from './panes/AgentEditView';
 import { AgentListView } from './panes/AgentListView';
 import { ChannelsCommandView } from './panes/ChannelsCommandView';
 import { HomeCommandView } from './panes/HomeCommandView';
@@ -48,9 +49,11 @@ export const CommandPalette = () => {
           <ModelSelectView {...currentPane.paneProps} />
         ))
         .with('agent-list', () => <AgentListView {...currentPane.paneProps} />)
-        .with('agent-create', () => (
-          <AgentCreateView {...currentPane.paneProps} />
-        ))
+        .with('agent-create', () => <AgentCreateView />)
+        .with('agent-edit', () => {
+          const props = AgentEditViewPropsSchema.parse(currentPane.paneProps);
+          return <AgentEditView {...props} />;
+        })
         .with(null, () => null)
         .exhaustive()}
     </>

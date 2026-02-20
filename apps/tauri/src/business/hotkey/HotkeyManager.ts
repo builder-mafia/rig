@@ -1,10 +1,15 @@
 import { EMPTY, filter, fromEvent, map, type Observable, share } from 'rxjs';
-import type { HotkeyEvent, IHotkeyManager } from './types';
+
+export type HotkeyEvent = {
+  readonly originalEvent: KeyboardEvent;
+  readonly target: HTMLElement;
+  readonly isInputElement: boolean;
+};
 
 const isMac =
   typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
 
-const normalizeCombo = (e: KeyboardEvent): string => {
+const parseToCombo = (e: KeyboardEvent): string => {
   const parts: string[] = [];
   const hasModKey = isMac ? e.metaKey : e.ctrlKey;
   if (hasModKey) parts.push('mod');
@@ -15,18 +20,18 @@ const normalizeCombo = (e: KeyboardEvent): string => {
 };
 
 const toHotkeyEvent = (e: KeyboardEvent): HotkeyEvent => {
-  const target = (e.target as HTMLElement) ?? document.body;
+  const target = e.target as HTMLElement;
   return {
     originalEvent: e,
     target,
-    isInputContext:
+    isInputElement:
       target instanceof HTMLInputElement ||
       target instanceof HTMLTextAreaElement ||
       target.contentEditable === 'true',
   };
 };
 
-export class HotkeyManager implements IHotkeyManager {
+export class HotkeyManager {
   private static instance: HotkeyManager;
   private readonly keydown$: Observable<KeyboardEvent>;
 
@@ -46,7 +51,7 @@ export class HotkeyManager implements IHotkeyManager {
 
   public on(combo: string): Observable<HotkeyEvent> {
     return this.keydown$.pipe(
-      filter(e => normalizeCombo(e) === combo),
+      filter(e => parseToCombo(e) === combo),
       map(toHotkeyEvent),
     );
   }

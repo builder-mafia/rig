@@ -19,7 +19,7 @@ export const ChannelsCommandView = () => {
   const [value, setValue] = useState('');
   const allChannels = useMemo(() => {
     return channelManager.channels;
-  }, []);
+  }, [channelManager]);
   const channels_pinned = useMemo(
     () => allChannels.filter(c => c.pin),
     [allChannels],
