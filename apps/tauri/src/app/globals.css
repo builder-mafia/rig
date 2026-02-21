@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@allin/ui/theme.css";
+@plugin "@tailwindcss/typography";
 @source "../../node_modules/@allin/ui/dist/**/*.js";
 
 @layer base {
@@ -8,6 +9,19 @@
   }
   body {
     @apply bg-background text-foreground font-mono;
+  }
+
+  .prose :where(h1) {
+    font-size: 1.85em !important;
+  }
+
+  .prose
+    :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(:first-child) {
+    margin-top: 0.75em !important;
+  }
+  .prose
+    :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(:last-child) {
+    margin-bottom: 0.75em !important;
   }
 
   /* Shiki dual theme: swap to --shiki-dark variables in dark mode */

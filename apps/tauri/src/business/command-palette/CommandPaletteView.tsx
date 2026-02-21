@@ -8,7 +8,7 @@ import { useHotKey } from '@/business/hotkey/useHotKey';
 import { AgentCreateView } from './panes/AgentCreateView';
 import { AgentEditView, AgentEditViewPropsSchema } from './panes/AgentEditView';
 import { AgentListView } from './panes/AgentListView';
-import { ChannelsCommandView } from './panes/ChannelsCommandView';
+import { ChannelListView } from './panes/ChannelListView';
 import { HomeCommandView } from './panes/HomeCommandView';
 import { ModelSelectView } from './panes/ModelSelectView';
 import { ProviderConfigCommandView } from './panes/ProviderConfigCommandView';
@@ -34,9 +34,7 @@ export const CommandPalette = () => {
     <>
       {match(currentPane.paneId)
         .with('home', () => <HomeCommandView {...currentPane.paneProps} />)
-        .with('channels', () => (
-          <ChannelsCommandView {...currentPane.paneProps} />
-        ))
+        .with('channels', () => <ChannelListView {...currentPane.paneProps} />)
         .with('providers', () => (
           <ProvidersCommandView {...currentPane.paneProps} />
         ))

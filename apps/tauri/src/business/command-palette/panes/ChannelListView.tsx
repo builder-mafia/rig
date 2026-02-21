@@ -13,7 +13,7 @@ import { useMemo, useState } from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { useService } from '@/business/ServiceContext';
 
-export const ChannelsCommandView = () => {
+export const ChannelListView = () => {
   const { channelManager } = useService();
   const { close } = useCommandPalette();
   const [value, setValue] = useState('');
@@ -70,13 +70,6 @@ export const ChannelsCommandView = () => {
       <CommandInput placeholder='Search channels...' />
       <CommandEmpty>No channels found.</CommandEmpty>
       <CommandList>
-        <CommandGroup>
-          <CommandItem onSelect={handleNewChat}>
-            <Plus className='size-4' />
-            <span>New Chat</span>
-          </CommandItem>
-        </CommandGroup>
-
         {channels_pinned.length > 0 && (
           <CommandGroup
             heading={

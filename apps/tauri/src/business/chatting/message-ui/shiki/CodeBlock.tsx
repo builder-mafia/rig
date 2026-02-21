@@ -140,7 +140,7 @@ const CopyButton = ({ onCopy }: { onCopy: () => void }) => {
     <button
       type='button'
       data-copied={isCopied}
-      className={styles.copyButton}
+      className={cn(styles.copyButton, isCopied && 'border-green-400')}
       onClick={handleCopy}
     >
       {isCopied ? (
