@@ -5,21 +5,29 @@ import { useService } from '@/business/ServiceContext';
 
 export function useChannel() {
   const { channelManager } = useService();
-  const subscribeToChannels = useCallback((onChange: () => void) => {
-    const sub = channelManager.channels$.subscribe(onChange);
-    return () => sub.unsubscribe();
-  }, []);
+  const subscribeToChannels = useCallback(
+    (onChange: () => void) => {
+      const sub = channelManager.channels$.subscribe(onChange);
+      return () => sub.unsubscribe();
+    },
+    [channelManager],
+  );
+  const getChannelsSnapshot = useCallback(
+    () => channelManager.channels,
+    [channelManager],
+  );
 
-  const getChannelsSnapshot = useCallback(() => channelManager.channels, []);
-
-  const subscribeToSelectedId = useCallback((onChange: () => void) => {
-    const sub = channelManager.selectedChannelId$.subscribe(onChange);
-    return () => sub.unsubscribe();
-  }, []);
+  const subscribeToSelectedId = useCallback(
+    (onChange: () => void) => {
+      const sub = channelManager.selectedChannelId$.subscribe(onChange);
+      return () => sub.unsubscribe();
+    },
+    [channelManager],
+  );
 
   const getSelectedChannelId = useCallback(
     () => channelManager.selectedChannelId,
-    [],
+    [channelManager],
   );
 
   const channels = useSyncExternalStore(
@@ -41,15 +49,26 @@ export function useChannel() {
   const createNewChannel = useCallback(async () => {
     const channel = await channelManager.createNewChannel();
     return channel;
-  }, []);
+  }, [channelManager]);
 
-  const selectChannel = useCallback(async (channelId: string) => {
-    await channelManager.selectChannel(channelId);
-  }, []);
+  const selectChannel = useCallback(
+    async (channelId: string) => {
+      await channelManager.selectChannel(channelId);
+    },
+    [channelManager],
+  );
 
   const fetchChannels = useCallback(async () => {
     await channelManager.fetchChannels();
-  }, []);
+  }, [channelManager]);
+
+  const updateChannelTitle = useCallback(
+    async (channelId: string, title: string) => {
+      await channelManager.updateChannelTitle(channelId, title);
+      await channelManager.fetchChannels();
+    },
+    [channelManager],
+  );
 
   return {
     channels,
@@ -57,5 +76,6 @@ export function useChannel() {
     createNewChannel,
     selectChannel,
     fetchChannels,
+    updateChannelTitle,
   };
 }

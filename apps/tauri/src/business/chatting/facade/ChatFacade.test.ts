@@ -7,6 +7,7 @@ import {
 import { delay } from 'es-toolkit';
 import { describe, expect, it } from 'vitest';
 import { createMockTauriChatTransport } from '../transport/createMockTauriChatTransport';
+import { DEFAULT_THROTTLE_TIME } from './ChatFacade';
 import { createMockChatFacade } from './createMockChatFacade';
 
 describe('ChatFacade', () => {
@@ -110,10 +111,6 @@ describe('ChatFacade', () => {
         initialMessages: [],
       });
 
-      chatFacade.getUiMessages$().subscribe(messages => {
-        console.log(messages);
-      });
-
       chatFacade.addSystemMessage(
         generateUIMessage('system', 'You are a helpful assistant.'),
       );
@@ -134,6 +131,8 @@ describe('ChatFacade', () => {
       ];
       const chatFacade = createMockChatFacade({
         initialMessages,
+        providerName: 'anthropic',
+        modelId: 'opus-4.6',
       });
 
       expect(chatFacade.getUiMessages()).toEqual(initialMessages);
@@ -160,6 +159,27 @@ describe('ChatFacade', () => {
       expect(getAssistantMessageText(chatFacade.getUiMessages()[3])).toBe(
         "Hello. I'm GPT.",
       );
+    });
+  });
+
+  describe('error handling', () => {
+    it('should set isError to true and errorMessage to the error message when an error occurs', async () => {
+      const chatFacade = createMockChatFacade({
+        initialMessages: [],
+        textDeltaChunks: [new Error('API KEY REQUIRED')],
+      });
+
+      await chatFacade
+        .sendMessage(generateUIMessage('user', 'Hello'))
+        .catch(() => {});
+
+      await delay(DEFAULT_THROTTLE_TIME * 2);
+
+      expect(chatFacade.getUiMessages()[0].role).toBe('user');
+      expect(getUserMessageText(chatFacade.getUiMessages()[0])).toBe('Hello');
+
+      expect(chatFacade.getUiMessages()[1].role).toBe('assistant');
+      expect(chatFacade.getUiMessages()[1].metadata?.isError).toBe(true);
     });
   });
 });

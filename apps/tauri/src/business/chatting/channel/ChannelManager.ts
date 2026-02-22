@@ -70,4 +70,14 @@ export class ChannelManager {
   public async deleteChannel(channelId: string) {
     await channelGateway.delete(channelId);
   }
+
+  public async updateChannelTitle(channelId: string, title: string) {
+    const channel = this.channels.find(c => c.id === channelId);
+    if (!channel) return;
+
+    await channelGateway.update({
+      ...channel,
+      title,
+    });
+  }
 }

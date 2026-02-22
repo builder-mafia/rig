@@ -8,22 +8,33 @@ import { delay } from 'es-toolkit';
 type CreateMockModelOptions = {
   modelId?: string;
   provider?: string;
-  textDeltaChunks: string[];
+  textDeltaChunks: (string | Error)[];
   finishReason?: 'stop' | 'error';
   chunkDelay?: number;
 };
 
-const createDelayedStream = <T>(
+const createMockStream = <T>(
   items: T[],
-  delayMs: number,
+  options?: { error?: Error; delayMs?: number },
 ): ReadableStream<T> => {
+  const { error, delayMs } = options ?? {};
+
+  if (!error && delayMs == null) {
+    return convertArrayToReadableStream(items);
+  }
+
   return new ReadableStream({
     async start(controller) {
       for (const item of items) {
-        await delay(delayMs);
+        if (delayMs != null) await delay(delayMs);
         controller.enqueue(item);
       }
-      controller.close();
+      if (error) {
+        if (delayMs != null) await delay(delayMs);
+        controller.error(error);
+      } else {
+        controller.close();
+      }
     },
   });
 };
@@ -37,17 +48,36 @@ export const createMockLanguageModel = ({
 }: CreateMockModelOptions): LanguageModelV3 => {
   const messageId = '0';
 
-  const textDelta: LanguageModelV3StreamPart[] = textDeltaChunks.map(text => ({
+  const errorIndex = textDeltaChunks.findIndex(
+    chunk => chunk instanceof Error,
+  );
+  const hasError = errorIndex !== -1;
+  const stringChunks = (
+    hasError ? textDeltaChunks.slice(0, errorIndex) : textDeltaChunks
+  ) as string[];
+  const error = hasError
+    ? (textDeltaChunks[errorIndex] as Error)
+    : undefined;
+
+  const textDelta: LanguageModelV3StreamPart[] = stringChunks.map(text => ({
     type: 'text-delta',
     id: messageId,
     delta: text,
   }));
 
-  const allParts: LanguageModelV3StreamPart[] = [
-    { type: 'text-start', id: messageId },
-    ...textDelta,
-    { type: 'text-end', id: messageId },
-    {
+  const allParts: LanguageModelV3StreamPart[] = [];
+
+  if (stringChunks.length > 0) {
+    allParts.push({ type: 'text-start', id: messageId });
+    allParts.push(...textDelta);
+  }
+
+  if (!hasError) {
+    if (stringChunks.length === 0) {
+      allParts.push({ type: 'text-start', id: messageId });
+    }
+    allParts.push({ type: 'text-end', id: messageId });
+    allParts.push({
       type: 'finish',
       finishReason: { raw: undefined, unified: finishReason },
       usage: {
@@ -63,17 +93,14 @@ export const createMockLanguageModel = ({
           reasoning: undefined,
         },
       },
-    },
-  ];
+    });
+  }
 
   return new MockLanguageModelV3({
     modelId,
     provider,
     doStream: async () => ({
-      stream:
-        chunkDelay != null
-          ? createDelayedStream(allParts, chunkDelay)
-          : convertArrayToReadableStream(allParts),
+      stream: createMockStream(allParts, { error, delayMs: chunkDelay }),
     }),
   });
 };

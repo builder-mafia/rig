@@ -11,7 +11,7 @@ export const createMockTauriChatTransport = ({
 }: {
   providerName: ProviderId;
   modelId: string;
-  textDeltaChunks: string[];
+  textDeltaChunks: (string | Error)[];
   chunkDelay?: number;
 }) => {
   const transport = createMockTransport({

@@ -6,7 +6,7 @@ import { ChatFacade } from './ChatFacade';
 type CreateMockChatFacadeParams = {
   providerName?: ProviderId;
   modelId?: string;
-  textDeltaChunks?: string[];
+  textDeltaChunks?: (string | Error)[];
   initialMessages: ChatUiMessage[];
   chunkDelay?: number;
 };

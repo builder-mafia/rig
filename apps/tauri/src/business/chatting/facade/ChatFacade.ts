@@ -24,6 +24,8 @@ type CreateChatFacadeParams = {
   throttleTime?: number;
 };
 
+export const DEFAULT_THROTTLE_TIME = 50;
+
 export class ChatFacade {
   private id: string;
   private chat: Chat<ChatUiMessage>;
@@ -46,7 +48,7 @@ export class ChatFacade {
     id,
     transport,
     messages,
-    throttleTime = 50,
+    throttleTime = DEFAULT_THROTTLE_TIME,
   }: CreateChatFacadeParams) {
     this.uiMessageStore = new UIMessageStore<ChatUiMessage>();
     this.id = id;
