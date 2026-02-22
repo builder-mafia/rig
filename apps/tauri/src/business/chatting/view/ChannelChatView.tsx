@@ -11,6 +11,7 @@ import { ChatInputView } from '../input/ChatInputView';
 import { AssistantMessage } from '../message-ui/AssistantMessage';
 import { UserMessage } from '../message-ui/UserMessage';
 import { useChat } from '../useChat';
+import { ChannelTitleView } from './ChannelTitleView';
 
 export const ChannelChatView = ({ channel }: { channel: StorageChannel }) => {
   const { chatFacade } = useChatFacadeCreation(channel);
@@ -30,11 +31,13 @@ export const ChannelChatView = ({ channel }: { channel: StorageChannel }) => {
   // TODO: implement regenerate in useChat
   const regenerate = useCallback((_messageId: string) => {}, []);
 
-  console.log(visibleMessages);
-
   return (
     <div className='h-dvh w-full flex flex-col bg-background'>
-      <input type='text' />
+      <div className='border-b px-4 py-2'>
+        <div className='mx-auto max-w-3xl'>
+          <ChannelTitleView channel={channel} />
+        </div>
+      </div>
       <div className='flex-1 overflow-y-auto px-4 py-6'>
         <div className='mx-auto max-w-3xl'>
           {visibleMessages.map((message, index) =>

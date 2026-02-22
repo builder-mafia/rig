@@ -160,23 +160,23 @@ export const ChatInputView = ({
                 Stop
               </Button>
             )}
-            <Button
-              variant={'outline'}
-              size='sm'
-              className='pr-2'
-              onClick={() => {
-                handleSubmit().catch(err => {
-                  console.error('Submit failed:', err);
-                });
-              }}
-              disabled={disabled || input.trim().length === 0}
-            >
-              Submit
-              <KbdGroup>
-                <Kbd>⏎</Kbd>
-              </KbdGroup>
-            </Button>
           </div>
+          <Button
+            variant='ghost'
+            size='xs'
+            className='pr-2 gap-1'
+            onClick={() => {
+              handleSubmit().catch(err => {
+                console.error('Submit failed:', err);
+              });
+            }}
+            disabled={disabled || input.trim().length === 0}
+          >
+            Submit
+            <KbdGroup>
+              <Kbd className='text-xs'>⏎</Kbd>
+            </KbdGroup>
+          </Button>
         </div>
       </section>
       {isSlashCommandOpen && (

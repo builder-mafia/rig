@@ -7,17 +7,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandShortcut,
 } from '@allin/ui';
-import {
-  Bot,
-  CreditCard,
-  MessageSquare,
-  Plug,
-  Plus,
-  Settings,
-  User,
-} from 'lucide-react';
+import { Bot, MessageSquare, Plug, Plus, User } from 'lucide-react';
 import * as React from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { useService } from '@/business/ServiceContext';
@@ -48,7 +39,7 @@ export function HomeCommandView() {
     >
       <CommandInput placeholder='Type a command or search...' />
       <CommandEmpty>No results found.</CommandEmpty>
-      <CommandList>
+      <CommandList className='max-h-[min(600px,80dvh)]'>
         <CommandGroup
           heading={<span className='text-blue-500 font-semibold'>Chat</span>}
         >
@@ -85,23 +76,6 @@ export function HomeCommandView() {
           <CommandItem onSelect={() => navigate('agent-list')}>
             <User />
             <span>Manage Agents</span>
-          </CommandItem>
-        </CommandGroup>
-        <CommandGroup heading='Settings'>
-          <CommandItem>
-            <User />
-            <span>Profile</span>
-            <CommandShortcut>⌘P</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <CreditCard />
-            <span>Billing</span>
-            <CommandShortcut>⌘B</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <Settings />
-            <span>Settings</span>
-            <CommandShortcut>⌘S</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

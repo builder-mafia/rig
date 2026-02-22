@@ -69,7 +69,7 @@ export const ChannelListView = () => {
     >
       <CommandInput placeholder='Search channels...' />
       <CommandEmpty>No channels found.</CommandEmpty>
-      <CommandList>
+      <CommandList className='max-h-[min(600px,80dvh)]'>
         {channels_pinned.length > 0 && (
           <CommandGroup
             heading={
