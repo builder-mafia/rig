@@ -9,7 +9,7 @@ import { InlineOptionSelect } from '@/components/InlineOptionSelect';
 import type { TemplateCommand } from '../../slash-command/ISlashCommand';
 import { SlashCommandPopover } from '../../slash-command/view/SlashCommandPopover';
 import { getTargetTemplateCommand } from './getTargetTemplateCommand';
-import { SelectedAgentView } from './SelectedAgentView';
+import { AgentSwitchButton } from './AgentSwitchButton';
 
 type PendingHintSelection = {
   command: TemplateCommand;
@@ -168,19 +168,7 @@ export const ChatInputView = ({
             />
             <div className='w-full flex flex-row gap-2 max-w-2xl lg:max-w-4xl mx-auto justify-between mt-2 mb-4'>
               <div className='flex flex-row gap-2 items-center'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='text-xs text-muted-foreground gap-1'
-                  onClick={() => {
-                    agentManager.cycleSelectedAgent();
-                  }}
-                >
-                  <SelectedAgentView />
-                  <KbdGroup>
-                    <Kbd>Tab</Kbd>
-                  </KbdGroup>
-                </Button>
+                <AgentSwitchButton />
                 {isStreaming && (
                   <Button
                     variant={'outline'}

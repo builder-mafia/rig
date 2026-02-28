@@ -4,7 +4,7 @@ import { agentGateway } from '@/lib/gateway/agent/agentGateway';
 import type { StorageAgent } from '@/lib/gateway/agent/types';
 import type { Agent } from './types';
 
-type AgentInput = Omit<StorageAgent, 'id' | 'createdAt' | 'updatedAt'>;
+export type AgentProps = Omit<StorageAgent, 'id' | 'createdAt' | 'updatedAt'>;
 
 export class AgentManager {
   private static instance: AgentManager;
@@ -54,7 +54,7 @@ export class AgentManager {
     this._selectedAgentId$.next(agentId);
   }
 
-  public async create(params: AgentInput) {
+  public async create(params: AgentProps) {
     const now = Date.now();
     const id = v4();
     await agentGateway.create({
@@ -68,7 +68,7 @@ export class AgentManager {
     return id;
   }
 
-  public async update(agentId: string, params: AgentInput) {
+  public async update(agentId: string, params: Partial<AgentProps>) {
     const agent = this.agents.find(a => a.id === agentId);
     if (!agent) {
       throw new Error(`Agent with id ${agentId} not found`);

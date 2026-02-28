@@ -93,6 +93,23 @@ async fn do_stream(
     }
 
     let provider: Provider = provider_name.parse()?;
+
+    println!("provider: {} in commands.rs", provider_name);
+
+    if let Provider::Codex = provider {
+        let auth = crate::auth::token_store::get_or_refresh(&app).await?;
+
+        let model = OpenAI::<DynamicModel>::builder()
+            .model_name(model_id)
+            .base_url(crate::auth::oauth::CODEX_API_BASE_URL)
+            .path(crate::auth::oauth::CODEX_API_PATH)
+            .api_key(auth.access_token)
+            .build()
+            .map_err(|e| e.to_string())?;
+        do_text_request(model, messages, tx, cancel_flag).await?;
+        return Ok(());
+    }
+
     let api_key = get_api_key(app, &provider_name, provider.key_name())?;
 
     match provider {
@@ -128,6 +145,7 @@ async fn do_stream(
                 .map_err(|e| e.to_string())?;
             do_text_request(model, messages, tx, cancel_flag).await?;
         }
+        Provider::Codex => unreachable!(),
     }
 
     Ok(())

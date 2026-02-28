@@ -10,5 +10,6 @@ export const getProviderIcon = (
     .with('openai', () => <OpenAI className={className} />)
     .with('google', () => <Google className={className} />)
     .with('anthropic', () => <Anthropic className={className} />)
+    .with('codex', () => <OpenAI className={className} />)
     .exhaustive();
 };

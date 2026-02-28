@@ -1,4 +1,5 @@
 mod api_key;
+mod auth;
 mod chat;
 mod provider;
 mod storage;
@@ -42,6 +43,9 @@ pub fn run() {
             storage::commands::delete_agent,
             storage::commands::get_app_settings,
             storage::commands::save_app_settings,
+            auth::commands::start_codex_oauth,
+            auth::commands::get_codex_auth_status,
+            auth::commands::revoke_codex_auth,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

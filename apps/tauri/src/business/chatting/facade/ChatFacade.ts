@@ -164,7 +164,9 @@ export class ChatFacade {
           isAborted: isAbort || undefined,
           isDisconnected: isDisconnect || undefined,
           isError: isError || undefined,
-          errorMessage: JSON.stringify(this.chat.error),
+          errorMessage: JSON.stringify(
+            this.chat.error?.message ?? this.chat.error,
+          ),
         };
 
         const messageWithMetadata: ChatUiMessage = {

@@ -39,7 +39,6 @@ export const AssistantMessage = ({
   const hasError = message.metadata?.isError === true || Boolean(errorMessage);
   const doRetry = useCallback(() => {
     regenerate(message.id);
-    console.log('regenerate', message.id);
   }, [regenerate, message.id]);
 
   return (

@@ -3,46 +3,6 @@
   import type { GoogleAiModelId } from '../google-models';
 
   export const googleModelSpec = {
-  "gemini-3-pro-preview": {
-    "id": "gemini-3-pro-preview",
-    "name": "Gemini 3 Pro Preview",
-    "family": "gemini-pro",
-    "attachment": true,
-    "reasoning": true,
-    "tool_call": true,
-    "structured_output": true,
-    "temperature": true,
-    "knowledge": "2025-01",
-    "release_date": "2025-11-18",
-    "last_updated": "2025-11-18",
-    "modalities": {
-      "input": [
-        "text",
-        "image",
-        "video",
-        "audio",
-        "pdf"
-      ],
-      "output": [
-        "text"
-      ]
-    },
-    "open_weights": false,
-    "cost": {
-      "input": 2,
-      "output": 12,
-      "cache_read": 0.2,
-      "context_over_200k": {
-        "input": 4,
-        "output": 18,
-        "cache_read": 0.4
-      }
-    },
-    "limit": {
-      "context": 1000000,
-      "output": 64000
-    }
-  },
   "gemini-2.5-flash": {
     "id": "gemini-2.5-flash",
     "name": "Gemini 2.5 Flash",
@@ -112,6 +72,46 @@
     "limit": {
       "context": 1048576,
       "output": 65536
+    }
+  },
+  "gemini-3-pro-preview": {
+    "id": "gemini-3-pro-preview",
+    "name": "Gemini 3 Pro Preview",
+    "family": "gemini-pro",
+    "attachment": true,
+    "reasoning": true,
+    "tool_call": true,
+    "structured_output": true,
+    "temperature": true,
+    "knowledge": "2025-01",
+    "release_date": "2025-11-18",
+    "last_updated": "2025-11-18",
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video",
+        "audio",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "open_weights": false,
+    "cost": {
+      "input": 2,
+      "output": 12,
+      "cache_read": 0.2,
+      "context_over_200k": {
+        "input": 4,
+        "output": 18,
+        "cache_read": 0.4
+      }
+    },
+    "limit": {
+      "context": 1000000,
+      "output": 64000
     }
   },
   "gemini-2.5-pro": {

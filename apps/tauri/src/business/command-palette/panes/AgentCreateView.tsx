@@ -24,6 +24,7 @@ import { useCommandPalette } from '@/business/command-palette/useCommandPalette'
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 import { useService } from '@/business/ServiceContext';
 import { useApiKey } from '@/lib/gateway/api-key/useApiKeyQuery';
+import { useCodexAuth } from '@/lib/gateway/codex-auth/useCodexAuth';
 
 export const AgentCreateView = () => {
   const { agentManager } = useService();
@@ -34,6 +35,7 @@ export const AgentCreateView = () => {
   const [prompt, setPrompt] = useState('');
   const [nameError, setNameError] = useState('');
   const { apiKeyStatus } = useApiKey();
+  const { isConnected: codexConnected } = useCodexAuth();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -103,8 +105,11 @@ export const AgentCreateView = () => {
                   <SelectItem
                     key={id}
                     value={id}
-                    // disabled if no api key or connection is set for the provider
-                    disabled={!apiKeyStatus?.[id]}
+                    disabled={
+                      id === 'codex'
+                        ? !codexConnected
+                        : !apiKeyStatus?.[id]
+                    }
                   >
                     <div className='flex items-center gap-2'>
                       {getProviderIcon(id, 'size-4')}

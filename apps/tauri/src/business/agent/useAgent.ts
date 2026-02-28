@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useService } from '@/business/ServiceContext';
+import type { AgentProps } from './AgentManager';
+import type { Agent } from './types';
 
 export const useAgent = () => {
   const { agentManager } = useService();
@@ -55,17 +57,24 @@ export const useAgent = () => {
     agentManager.cycleSelectedAgent();
   }, [agentManager]);
 
-  const findAgent = useCallback(
+  const getAgentById = useCallback(
     (agentId: string) => agents.find(a => a.id === agentId) ?? null,
     [agents],
+  );
+
+  const updateAgent = useCallback(
+    (agentId: string, params: Partial<AgentProps>) => {
+      agentManager.update(agentId, params);
+    },
+    [agentManager],
   );
 
   return {
     agents,
     selectedAgent,
-    selectedAgentId,
     setSelectedAgentId,
     cycleSelectedAgent,
-    findAgent,
+    getAgentById,
+    updateAgent,
   };
 };

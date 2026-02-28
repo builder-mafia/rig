@@ -1,7 +1,8 @@
 use std::str::FromStr;
 
 use crate::api_key::constants::{
-    ANTHROPIC_API_KEY_NAME, GOOGLE_API_KEY_NAME, OPENAI_API_KEY_NAME, VERCEL_API_KEY_NAME,
+    ANTHROPIC_API_KEY_NAME, CODEX_AUTH_KEY_NAME, GOOGLE_API_KEY_NAME, OPENAI_API_KEY_NAME,
+    VERCEL_API_KEY_NAME,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -10,6 +11,7 @@ pub enum Provider {
     Google,
     Anthropic,
     Vercel,
+    Codex,
 }
 
 impl Provider {
@@ -19,6 +21,7 @@ impl Provider {
             Provider::Google => GOOGLE_API_KEY_NAME,
             Provider::Anthropic => ANTHROPIC_API_KEY_NAME,
             Provider::Vercel => VERCEL_API_KEY_NAME,
+            Provider::Codex => CODEX_AUTH_KEY_NAME,
         }
     }
 }
@@ -32,6 +35,7 @@ impl FromStr for Provider {
             "google" => Ok(Provider::Google),
             "anthropic" => Ok(Provider::Anthropic),
             "vercel" => Ok(Provider::Vercel),
+            "codex" => Ok(Provider::Codex),
             _ => Err(format!("Invalid provider: {}", s)),
         }
     }

@@ -15,6 +15,7 @@ import {
   CommandList,
 } from '@allin/ui';
 import { useState } from 'react';
+import { useAgent } from '@/business/agent/useAgent';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { getProviderIcon } from '@/business/logo/ProviderIconMap';
 
@@ -23,6 +24,7 @@ const PROVIDERS = ProviderIdSchema.options;
 export function ModelSelectView() {
   const { close } = useCommandPalette();
   const [value, setValue] = useState('');
+  const { selectedAgent, updateAgent } = useAgent();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -32,6 +34,13 @@ export function ModelSelectView() {
   };
 
   const changeModel = (providerId: ProviderId, modelId: AllModelIds) => {
+    if (selectedAgent?.id) {
+      updateAgent(selectedAgent.id, {
+        model: modelId,
+        providerName: providerId,
+      });
+    }
+
     close();
   };
 

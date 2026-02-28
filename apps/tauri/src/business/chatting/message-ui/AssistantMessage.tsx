@@ -29,8 +29,6 @@ export const AssistantMessage = ({
     ),
   );
 
-  console.log(message.metadata);
-
   const textMessage = getAssistantMessageText(message);
   const isAborted = message.metadata?.isAborted === true;
   // const isGenerating = status === 'streaming' && !isAborted;
