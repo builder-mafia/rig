@@ -49,9 +49,9 @@ dependencies = [
 
 [[package]]
 name = "aisdk"
-version = "0.4.0"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe2e434e2017f4754909557dca53dac29ad7fa46368dbdf164e54902442607b6"
+checksum = "98fbf8fa4e2a61a3ca9babd246439240048ec1a8927af3e271ab93d0848441c0"
 dependencies = [
  "aisdk-macros",
  "async-trait",
