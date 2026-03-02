@@ -1,5 +1,4 @@
 import type { ProviderId } from '@allin/ai';
-import { generateUIMessage } from '@allin/ai';
 import { type Observable, Subject } from 'rxjs';
 import { AgentManager } from '@/business/agent/AgentManager';
 import type { StorageAgent } from '@/lib/gateway/agent/types';
@@ -7,6 +6,7 @@ import type { StorageChannel } from '@/lib/gateway/channel/types';
 import { messageGateway } from '@/lib/gateway/message/messageGateway';
 import { TauriChatTransport } from '../transport/TauriChatTransport';
 import { ChatFacade } from './ChatFacade';
+
 /**
  * @singleton
  */
@@ -87,10 +87,6 @@ export class ChatFacadeManager {
       messages,
       transport,
     });
-
-    if (agent.prompt?.trim()) {
-      facade.addSystemMessage(generateUIMessage('system', agent.prompt));
-    }
 
     this.setChatFacade(id, facade);
     return facade;
