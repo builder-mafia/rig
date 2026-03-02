@@ -3,6 +3,7 @@ import { getPageMap } from 'nextra/page-map';
 import { Footer, Layout, Navbar } from 'nextra-theme-docs';
 import type { ReactNode } from 'react';
 import { FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
+import { ThemeToggle } from './ThemeToggle';
 import './globals.css';
 import 'nextra-theme-docs/style.css';
 
@@ -16,36 +17,33 @@ export const metadata = {
 };
 
 const navbar = (
-  <Navbar
-    logo={<b>ALLIN</b>}
-    projectLink='https://github.com/your-username/allin'
-  />
+  <Navbar logo={<b>ALLIN</b>} projectLink='https://github.com/gaki2/ALLIN'>
+    <ThemeToggle />
+  </Navbar>
 );
 
 const footer = (
   <Footer>
-    <div className='flex w-full items-center gap-2 text-sm'>
-      <div className='flex flex-row items-center gap-3'>
-        <span>최신 소식을 팔로우 하세요.</span>
-        <a
-          href='https://linkedin.com/in/your-profile'
-          target='_blank'
-          rel='noopener noreferrer'
-          aria-label='LinkedIn'
-          className='text-current opacity-60 transition-opacity hover:opacity-100'
-        >
-          <FaLinkedinIn size={20} />
-        </a>
-        <a
-          href='https://x.com/your-handle'
-          target='_blank'
-          rel='noopener noreferrer'
-          aria-label='X (Twitter)'
-          className='text-current opacity-60 transition-opacity hover:opacity-100'
-        >
-          <FaXTwitter size={18} />
-        </a>
-      </div>
+    <div className='flex w-full flex-row justify-center items-center gap-3 text-sm'>
+      <span>최신 소식을 팔로우 하세요.</span>
+      <a
+        href='https://www.linkedin.com/in/byeonggak/'
+        target='_blank'
+        rel='noopener noreferrer'
+        aria-label='LinkedIn'
+        className='text-current opacity-60 transition-opacity hover:opacity-100'
+      >
+        <FaLinkedinIn size={20} />
+      </a>
+      <a
+        href='https://x.com/byeonggakyu'
+        target='_blank'
+        rel='noopener noreferrer'
+        aria-label='X (Twitter)'
+        className='text-current opacity-60 transition-opacity hover:opacity-100'
+      >
+        <FaXTwitter size={18} />
+      </a>
     </div>
   </Footer>
 );
@@ -68,6 +66,7 @@ export default async function RootLayout({
           pageMap={pageMap}
           docsRepositoryBase='https://github.com/your-username/allin/tree/main/apps/docs'
           footer={footer}
+          darkMode={false}
         >
           {children}
         </Layout>
