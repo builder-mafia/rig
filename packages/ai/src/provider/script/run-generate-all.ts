@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { AnthropicModelIdSchema } from '../anthropic/anthropic-models';
 import { GoogleAiModelIdSchema } from '../google/google-models';
 import { OpenAiModelIdSchema } from '../openai/openai-models';
+import { VercelModelIdSchema } from '../vercel/vercel-models';
 import {
   fetchModelsApi,
   generateModelSpec,
@@ -40,6 +41,15 @@ const configs: ProviderModelSpecConfig[] = [
     variableName: 'anthropicModelSpec',
     modelIdTypeName: 'AnthropicModelId',
     modelIdModule: 'anthropic-models',
+  },
+  {
+    providerKey: 'vercel',
+    modelIdSchema: VercelModelIdSchema,
+    providerDir: path.join(providerBaseDir, 'vercel'),
+    outputFilename: 'vercel-model-spec.ts',
+    variableName: 'vercelModelSpec',
+    modelIdTypeName: 'VercelModelId',
+    modelIdModule: 'vercel-models',
   },
 ];
 

@@ -44,12 +44,13 @@ export const ModelSpecSchema = z.object({
   tool_call: z.boolean(),
   structured_output: z.boolean().optional(),
   temperature: z.boolean(),
-  knowledge: z.string(),
+  knowledge: z.string().optional(),
   release_date: z.string(),
   last_updated: z.string(),
   modalities: ModelModalitiesSchema,
   open_weights: z.boolean(),
-  cost: ModelCostSchema,
+  interleaved: z.boolean().optional(),
+  cost: ModelCostSchema.optional(),
   limit: ModelLimitSchema,
 });
 

@@ -31,8 +31,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5.2": {
@@ -64,8 +64,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5.4": {
@@ -102,8 +102,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 1050000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5.4-pro": {
@@ -138,8 +138,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 1050000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5.2-pro": {
@@ -170,8 +170,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5-mini": {
@@ -203,8 +203,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "gpt-5-nano": {
@@ -236,8 +236,8 @@ export const openaiModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "input": 272000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   }
 } as const satisfies Record<OpenAiModelId, ModelSpec>;

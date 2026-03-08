@@ -10,7 +10,10 @@ type ValidateApiKeyParams = {
   providerName: ProviderId;
 };
 
-const VALIDATION_MODELS: Record<Exclude<ProviderId, 'codex'>, string> = {
+const VALIDATION_MODELS: Record<
+  Exclude<ProviderId, 'codex' | 'vercel'>,
+  string
+> = {
   openai: 'gpt-4o-mini',
   google: 'gemini-2.0-flash',
   anthropic: 'claude-3-5-haiku-latest',
@@ -20,8 +23,7 @@ export const validateApiKey = async ({
   apiKey,
   providerName,
 }: ValidateApiKeyParams): Promise<boolean> => {
-  // Codex uses OAuth authentication, not API keys
-  if (providerName === 'codex') return true;
+  if (providerName === 'codex' || providerName === 'vercel') return true;
 
   try {
     const modelId = VALIDATION_MODELS[providerName];

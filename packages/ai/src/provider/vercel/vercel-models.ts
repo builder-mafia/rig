@@ -1,0 +1,36 @@
+import { z } from 'zod/v3';
+
+export const VercelModelIdSchema = z.enum([
+  'alibaba/qwen3-coder-next',
+  'alibaba/qwen3-embedding-0.6b',
+  'alibaba/qwen3.5-flash',
+  'alibaba/qwen3.5-plus',
+  'anthropic/claude-opus-4.5',
+  'anthropic/claude-opus-4.6',
+  'anthropic/claude-sonnet-4.6',
+  'arcee-ai/trinity-mini',
+  'deepseek/deepseek-v3.2',
+  'deepseek/deepseek-v3.2-thinking',
+  'google/gemini-3-flash',
+  'google/gemini-3-pro-preview',
+  'google/gemini-3.1-flash-image-preview',
+  'google/gemini-3.1-pro-preview',
+  'minimax/minimax-m2',
+  'minimax/minimax-m2.5',
+  'mistral/devstral-2',
+  'mistral/ministral-14b',
+  'mistral/mistral-large-3',
+  'moonshotai/kimi-k2-thinking',
+  'moonshotai/kimi-k2-thinking-turbo',
+  'moonshotai/kimi-k2.5',
+  'openai/gpt-5.2-codex',
+  'openai/gpt-5.3-codex',
+  'prime-intellect/intellect-3',
+  'xai/grok-imagine-image',
+  'xai/grok-imagine-image-pro',
+  'xiaomi/mimo-v2-flash',
+  'zai/glm-4.7',
+  'zai/glm-5',
+]);
+
+export type VercelModelId = z.infer<typeof VercelModelIdSchema>;

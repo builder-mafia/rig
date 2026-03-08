@@ -51,11 +51,9 @@ export const generateModelSpec = async (
     model => config.modelIdSchema.safeParse(model.id).success,
   );
 
-  for (const model of targetModels) {
-    ModelSpecSchema.parse(model);
-  }
+  const parsedModels = targetModels.map(model => ModelSpecSchema.parse(model));
 
-  const fetchedIds = new Set(targetModels.map(m => m.id));
+  const fetchedIds = new Set(parsedModels.map(m => m.id));
   const missingIds = expectedModelIds.filter(id => !fetchedIds.has(id));
 
   if (missingIds.length > 0) {
@@ -66,7 +64,7 @@ export const generateModelSpec = async (
     );
   }
 
-  const modelSpec = targetModels.reduce(
+  const modelSpec = parsedModels.reduce(
     (acc, curr) => {
       acc[curr.id] = curr;
       return acc;
