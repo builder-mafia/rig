@@ -164,14 +164,25 @@ export const AgentEditView = ({ agentId }: AgentEditViewProps) => {
               id='agent-prompt'
               value={prompt ?? ''}
               onChange={e => setPrompt(e.target.value)}
-              // Command intercepts Enter with e.preventDefault() on keydown
+              // cmdk's root onKeyDown calls e.preventDefault() on Enter to dispatch
+              // its own cmdk-item-select event. This blocks Textarea's default Enter
+              // (newline insertion). stopPropagation prevents the event from reaching
+              // the Command root so the native behavior is preserved.
               onKeyDown={e => e.stopPropagation()}
               placeholder='You are a helpful assistant...'
               className='min-h-20 max-h-40'
             />
           </div>
           <div className='flex justify-end'>
-            <Button size='sm' onClick={handleUpdate}>
+            <Button
+              size='sm'
+              onClick={handleUpdate}
+              // cmdk's root onKeyDown calls e.preventDefault() on Enter to dispatch
+              // its own cmdk-item-select event. This blocks the browser's default
+              // behavior of triggering a click on a focused button via Enter.
+              // stopPropagation prevents the event from reaching the Command root.
+              onKeyDown={e => e.stopPropagation()}
+            >
               Update
             </Button>
           </div>
