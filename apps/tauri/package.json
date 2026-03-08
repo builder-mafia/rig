@@ -8,6 +8,7 @@
     "app-frontend:dev": "pnpm build:worker && next dev",
     "app-frontend:build": "pnpm build:worker && next build",
     "app-frontend:start": "next start",
+    "check-ts": "tsc --noEmit",
     "lint": "eslint",
     "tauri": "tauri",
     "test": "vitest run",

@@ -88,33 +88,41 @@ type RustVercelUIStream =
  * and message.parts array won't be built correctly.
  */
 function toUIMessageChunk(event: RustVercelUIStream): UIMessageChunk | null {
-  const pm = (
+  const metadata = (
     'provider_metadata' in event ? event.provider_metadata : undefined
   ) as ProviderMetadata | undefined;
 
   switch (event.type) {
     case 'text-start':
-      return { type: 'text-start', id: event.id, providerMetadata: pm };
+      return { type: 'text-start', id: event.id, providerMetadata: metadata };
     case 'text-delta':
       return {
         type: 'text-delta',
         id: event.id,
         delta: event.delta,
-        providerMetadata: pm,
+        providerMetadata: metadata,
       };
     case 'text-end':
-      return { type: 'text-end', id: event.id, providerMetadata: pm };
+      return { type: 'text-end', id: event.id, providerMetadata: metadata };
     case 'reasoning-start':
-      return { type: 'reasoning-start', id: event.id, providerMetadata: pm };
+      return {
+        type: 'reasoning-start',
+        id: event.id,
+        providerMetadata: metadata,
+      };
     case 'reasoning-delta':
       return {
         type: 'reasoning-delta',
         id: event.id,
         delta: event.delta,
-        providerMetadata: pm,
+        providerMetadata: metadata,
       };
     case 'reasoning-end':
-      return { type: 'reasoning-end', id: event.id, providerMetadata: pm };
+      return {
+        type: 'reasoning-end',
+        id: event.id,
+        providerMetadata: metadata,
+      };
     case 'tool-call-start':
       return {
         type: 'tool-input-start',
@@ -235,6 +243,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
           const chunk = toUIMessageChunk(event);
           if (chunk) {
             if (chunk.type === 'error') {
+              console.log(chunk);
               controller.error(new Error(chunk.errorText));
               return;
             }
@@ -250,7 +259,9 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
           onEvent,
         })
           .then(() => controller.close())
-          .catch(error => controller.error(error));
+          .catch(error => {
+            controller.error(error);
+          });
       },
     });
 

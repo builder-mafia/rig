@@ -19,22 +19,23 @@ const PROVIDER_NAMES: Record<ProviderId, string> = {
   google: 'Google AI',
   anthropic: 'Anthropic',
   codex: 'Codex',
+  vercel: 'Vercel',
 };
 
 const API_KEY_PLACEHOLDERS: Record<Exclude<ProviderId, 'codex'>, string> = {
   openai: 'sk-...',
   google: 'AIza...',
   anthropic: 'sk-ant-...',
+  vercel: '...',
 };
 
-export const ProviderConfigCommandView = ({
-  providerId,
-}: ProviderConfigViewProps) => {
+export const ProviderAuthPane = ({ providerId }: ProviderConfigViewProps) => {
   const { close } = useCommandPalette();
+  const [isPending, setIsPending] = useState(false);
   const name = providerId ? PROVIDER_NAMES[providerId] : null;
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) close();
+    if (!open && !isPending) close();
   };
 
   if (!providerId || !name) return null;
@@ -48,9 +49,13 @@ export const ProviderConfigCommandView = ({
             <h3 className='font-semibold'>{name}</h3>
           </div>
           {providerId === 'codex' ? (
-            <CodexOAuthSection onClose={close} />
+            <CodexOAuthSection onClose={close} onPendingChange={setIsPending} />
           ) : (
-            <ApiKeySection providerId={providerId} onClose={close} />
+            <ApiKeySection
+              providerId={providerId}
+              onClose={close}
+              onPendingChange={setIsPending}
+            />
           )}
         </div>
       </CommandList>
@@ -60,12 +65,20 @@ export const ProviderConfigCommandView = ({
 
 // -- Codex OAuth Section --
 
-const CodexOAuthSection = ({ onClose }: { onClose: () => void }) => {
+const CodexOAuthSection = ({
+  onClose,
+  onPendingChange,
+}: {
+  onClose: () => void;
+  onPendingChange: (pending: boolean) => void;
+}) => {
   const { authStatus, isConnected, startOAuth, revoke } = useCodexAuth();
 
   const handleLogin = () => {
+    onPendingChange(true);
     startOAuth.mutate(undefined, {
       onSuccess: () => {
+        onPendingChange(false);
         toast.success('Connected to ChatGPT', {
           position: 'top-center',
           duration: 3000,
@@ -73,9 +86,10 @@ const CodexOAuthSection = ({ onClose }: { onClose: () => void }) => {
         onClose();
       },
       onError: e => {
+        onPendingChange(false);
         toast.error(`Login failed: ${e.message}`, {
           position: 'top-center',
-          duration: 15000,
+          duration: 30000,
           closeButton: true,
         });
       },
@@ -178,25 +192,35 @@ const CodexOAuthSection = ({ onClose }: { onClose: () => void }) => {
 const ApiKeySection = ({
   providerId,
   onClose,
+  onPendingChange,
 }: {
   providerId: Exclude<ProviderId, 'codex'>;
   onClose: () => void;
+  onPendingChange: (pending: boolean) => void;
 }) => {
   const [apiKey, setApiKey] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
   const { saveApiKey } = useApiKey();
 
+  const isPending = isValidating || saveApiKey.isPending;
   const placeholder = API_KEY_PLACEHOLDERS[providerId];
 
   const handleSave = async () => {
-    if (!apiKey.trim() || saveApiKey.isPending) return;
+    if (!apiKey.trim() || isPending) return;
 
-    const isValid = await validateApiKey({
+    setIsValidating(true);
+    onPendingChange(true);
+    const { isValid, reason } = await validateApiKey({
       apiKey: apiKey.trim(),
       providerName: providerId,
     });
+    console.log(isValid, reason);
+    setIsValidating(false);
+    onPendingChange(false);
+
     if (!isValid) {
       toast.error(
-        'Invalid API key. Please check your key and try again. Your balance may be insufficient.',
+        `Invalid API key. Please check your key and try again. Your balance may be insufficient. details: ${reason}`,
         {
           position: 'top-center',
           duration: 15000,
@@ -242,17 +266,17 @@ const ApiKeySection = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus
-          disabled={saveApiKey.isPending}
+          disabled={isPending}
         />
       </div>
       <div className='flex justify-end'>
         <Button
           size='sm'
-          disabled={!apiKey.trim() || saveApiKey.isPending}
+          disabled={!apiKey.trim() || isPending}
           className='gap-2'
           onClick={handleSave}
         >
-          {saveApiKey.isPending ? (
+          {isPending ? (
             <Loader2 className='size-4 animate-spin' />
           ) : (
             <>

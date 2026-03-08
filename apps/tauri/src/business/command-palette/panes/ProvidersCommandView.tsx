@@ -16,13 +16,18 @@ import { useApiKey } from '@/lib/gateway/api-key/useApiKeyQuery';
 import { useCodexAuth } from '@/lib/gateway/codex-auth/useCodexAuth';
 
 const PROVIDERS = [
-  { id: 'openai', name: 'OpenAI', description: 'GPT-4o, GPT-4, GPT-3.5' },
-  { id: 'google', name: 'Google AI', description: 'Gemini Pro, Gemini Flash' },
-  { id: 'anthropic', name: 'Anthropic', description: 'Claude 3.5, Claude 3' },
+  { id: 'openai', name: 'OpenAI', description: '' },
+  { id: 'google', name: 'Google AI', description: '' },
+  { id: 'anthropic', name: 'Anthropic', description: '' },
   {
     id: 'codex',
     name: 'Codex',
     description: 'ChatGPT Codex (Free with Pro/Plus)',
+  },
+  {
+    id: 'vercel',
+    name: 'Vercel',
+    description: 'Vercel AI Gateway',
   },
 ] as const;
 

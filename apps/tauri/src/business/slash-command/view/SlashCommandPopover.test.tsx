@@ -1,8 +1,8 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { SlashCommand } from '../ISlashCommand';
 import { SlashCommandManager } from '../SlashCommandManager';
-import type { SlashCommand } from '../types';
 import { SlashCommandPopover } from './SlashCommandPopover';
 
 vi.mock('@allin/ui', () => ({
@@ -54,24 +54,19 @@ vi.mock('@allin/ui', () => ({
 const testCommands: SlashCommand[] = [
   {
     id: 'cmd-a',
-    name: 'Alpha',
+    commandName: 'Alpha',
     description: 'First command',
     mode: 'template',
     template: '$INPUT',
+    toPrompt: () => '',
   },
   {
     id: 'cmd-b',
-    name: 'Beta',
+    commandName: 'Beta',
     description: 'Second command',
     mode: 'template',
     template: '$INPUT',
-  },
-  {
-    id: 'cmd-c',
-    name: 'Charlie',
-    description: 'Third command',
-    mode: 'template',
-    template: '$INPUT',
+    toPrompt: () => '',
   },
 ];
 

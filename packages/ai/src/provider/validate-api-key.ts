@@ -15,15 +15,21 @@ const VALIDATION_MODELS: Record<
   string
 > = {
   openai: 'gpt-4o-mini',
-  google: 'gemini-2.0-flash',
+  google: 'gemini-2.5-flash',
   anthropic: 'claude-3-5-haiku-latest',
+};
+
+type ValidateResult = {
+  isValid: boolean;
+  reason?: string;
 };
 
 export const validateApiKey = async ({
   apiKey,
   providerName,
-}: ValidateApiKeyParams): Promise<boolean> => {
-  if (providerName === 'codex' || providerName === 'vercel') return true;
+}: ValidateApiKeyParams): Promise<ValidateResult> => {
+  if (providerName === 'codex' || providerName === 'vercel')
+    return { isValid: true };
 
   try {
     const modelId = VALIDATION_MODELS[providerName];
@@ -37,11 +43,11 @@ export const validateApiKey = async ({
     await generateText({
       model,
       prompt: 'hi',
-      maxOutputTokens: 1,
+      maxOutputTokens: 100,
     });
 
-    return true;
-  } catch {
-    return false;
+    return { isValid: true };
+  } catch (e) {
+    return { isValid: false, reason: (e as Error)?.message };
   }
 };

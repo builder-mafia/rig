@@ -1,5 +1,5 @@
 import type { ProviderId } from '@allin/ai';
-import { Anthropic, Google, OpenAI } from '@lobehub/icons';
+import { Anthropic, Google, OpenAI, Vercel } from '@lobehub/icons';
 import { match } from 'ts-pattern';
 
 export const getProviderIcon = (
@@ -11,5 +11,6 @@ export const getProviderIcon = (
     .with('google', () => <Google className={className} />)
     .with('anthropic', () => <Anthropic className={className} />)
     .with('codex', () => <OpenAI className={className} />)
+    .with('vercel', () => <Vercel className={className} />)
     .exhaustive();
 };

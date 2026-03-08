@@ -1,6 +1,7 @@
 import { Fzf } from 'fzf';
 import { useMemo } from 'react';
 import { useService } from '@/business/ServiceContext';
+import type { SlashCommand } from '../ISlashCommand';
 
 /**
  * @example
@@ -21,7 +22,8 @@ export const useSlashCommandSearch = (query: string) => {
   }, [slashCommandManager]);
 
   const FZF = useMemo(
-    () => new Fzf(commands, { selector: cmd => cmd.commandName }),
+    () =>
+      new Fzf(commands, { selector: (cmd: SlashCommand) => cmd.commandName }),
     [commands],
   );
 

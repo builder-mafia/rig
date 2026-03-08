@@ -10,7 +10,7 @@ import { AgentEditView, AgentEditViewPropsSchema } from './panes/AgentEditView';
 import { AgentListView } from './panes/AgentListView';
 import { ChannelListView } from './panes/ChannelListView';
 import { HomeCommandView } from './panes/HomeCommandView';
-import { ProviderConfigCommandView } from './panes/ProviderConfigCommandView';
+import { ProviderAuthPane } from './panes/ProviderAuthPane';
 import { ProvidersCommandView } from './panes/ProvidersCommandView';
 import { SwitchModelView } from './panes/SwitchModelView';
 import { useCommandPalette } from './useCommandPalette';
@@ -37,7 +37,7 @@ export const CommandPalette = () => {
         .with('channels', () => <ChannelListView />)
         .with('providers', () => <ProvidersCommandView />)
         .with('provider-config', () => (
-          <ProviderConfigCommandView
+          <ProviderAuthPane
             providerId={
               (currentPane.paneProps as { providerId: ProviderId }).providerId
             }
