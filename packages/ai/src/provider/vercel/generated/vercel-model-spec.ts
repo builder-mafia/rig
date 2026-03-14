@@ -551,7 +551,7 @@ export const vercelModelSpec = {
     "tool_call": false,
     "temperature": true,
     "release_date": "2026-02-26",
-    "last_updated": "2026-03-02",
+    "last_updated": "2026-03-06",
     "modalities": {
       "input": [
         "text",
@@ -564,8 +564,8 @@ export const vercelModelSpec = {
     },
     "open_weights": false,
     "cost": {
-      "input": 0.25,
-      "output": 60
+      "input": 0.5,
+      "output": 3
     },
     "limit": {
       "context": 131072,
@@ -670,7 +670,8 @@ export const vercelModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "openai/gpt-5.2-codex": {
@@ -702,7 +703,8 @@ export const vercelModelSpec = {
     },
     "limit": {
       "context": 400000,
-      "output": 128000
+      "output": 128000,
+      "input": 272000
     }
   },
   "minimax/minimax-m2": {

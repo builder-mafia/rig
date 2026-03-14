@@ -83,7 +83,8 @@ export const openaiModelSpec = {
     "modalities": {
       "input": [
         "text",
-        "image"
+        "image",
+        "pdf"
       ],
       "output": [
         "text"
@@ -103,7 +104,7 @@ export const openaiModelSpec = {
     "limit": {
       "context": 1050000,
       "output": 128000,
-      "input": 272000
+      "input": 922000
     }
   },
   "gpt-5.4-pro": {
@@ -139,7 +140,7 @@ export const openaiModelSpec = {
     "limit": {
       "context": 1050000,
       "output": 128000,
-      "input": 272000
+      "input": 922000
     }
   },
   "gpt-5.2-pro": {

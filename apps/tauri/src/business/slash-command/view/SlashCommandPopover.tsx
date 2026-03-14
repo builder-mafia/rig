@@ -9,28 +9,39 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@allin/ui';
-import { Fzf } from 'fzf';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Subject } from 'rxjs';
-import { useService } from '@/business/ServiceContext';
+import {
+  type SlashCommandExecuteResult,
+  useSlashCommandExecutor,
+} from '../hooks/useSlashCommandExecutor';
 import { useSlashCommandSearch } from '../hooks/useSlashCommandSearch';
-import type { SlashCommand } from '../ISlashCommand';
+
+export type { SlashCommandExecuteResult };
 
 type SlashCommandPopoverProps = {
   query: string;
   modifierKeyEvent$: Subject<'ArrowUp' | 'ArrowDown' | 'Enter'>;
-  onSelect: (command: SlashCommand) => void;
+  onExecute: (result: SlashCommandExecuteResult) => void;
   anchorRef: React.RefObject<HTMLTextAreaElement | null>;
 };
 
-export function SlashCommandPopover({
+export const SlashCommandPopover = ({
   query,
-  onSelect,
+  onExecute,
   anchorRef,
   modifierKeyEvent$,
-}: SlashCommandPopoverProps) {
+}: SlashCommandPopoverProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const filteredCommands = useSlashCommandSearch(query);
+  const { execute } = useSlashCommandExecutor();
+
+  const handleSelect = (index: number) => {
+    const selected = filteredCommands[index];
+    if (selected) {
+      onExecute(execute(selected));
+    }
+  };
 
   useEffect(() => {
     const subscription = modifierKeyEvent$.subscribe(key => {
@@ -45,15 +56,12 @@ export function SlashCommandPopover({
         );
       }
       if (key === 'Enter') {
-        const selected = filteredCommands[selectedIndex];
-        if (selected) {
-          onSelect(selected);
-        }
+        handleSelect(selectedIndex);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [modifierKeyEvent$, filteredCommands, selectedIndex, onSelect]);
+  }, [modifierKeyEvent$, filteredCommands, selectedIndex, onExecute]);
 
   return (
     <Popover open>
@@ -72,11 +80,11 @@ export function SlashCommandPopover({
         >
           <CommandList>
             <CommandEmpty>No matches found.</CommandEmpty>
-            {filteredCommands.map(command => (
+            {filteredCommands.map((command, i) => (
               <CommandItem
                 key={command.id}
                 value={command.commandName}
-                onSelect={() => onSelect(command)}
+                onSelect={() => handleSelect(i)}
               >
                 <span className='text-sm font-medium w-[160px]'>
                   {command.commandName}
@@ -91,4 +99,4 @@ export function SlashCommandPopover({
       </PopoverContent>
     </Popover>
   );
-}
+};

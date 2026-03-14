@@ -3,13 +3,17 @@
 import { Button, Kbd, KbdGroup, Textarea } from '@allin/ui';
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { filter, Subject } from 'rxjs';
+import { match } from 'ts-pattern';
 import { useHotKey } from '@/business/hotkey/useHotKey';
 import { useService } from '@/business/ServiceContext';
 import { InlineOptionSelect } from '@/components/InlineOptionSelect';
 import type { TemplateCommand } from '../../slash-command/ISlashCommand';
-import { SlashCommandPopover } from '../../slash-command/view/SlashCommandPopover';
-import { getTargetTemplateCommand } from './getTargetTemplateCommand';
+import {
+  type SlashCommandExecuteResult,
+  SlashCommandPopover,
+} from '../../slash-command/view/SlashCommandPopover';
 import { AgentSwitchButton } from './AgentSwitchButton';
+import { getTargetTemplateCommand } from './getTargetTemplateCommand';
 
 type PendingHintSelection = {
   command: TemplateCommand;
@@ -202,25 +206,20 @@ export const ChatInputView = ({
       </section>
       {!pendingHint && isSlashCommandOpen && (
         <SlashCommandPopover
+          // Strip leading/trailing slashes so "/translate" becomes "translate" for fuzzy search
           query={input.replace(/^\/|\/$/g, '')}
           modifierKeyEvent$={modifierKeyEvent$}
-          onSelect={command => {
+          onExecute={result => {
             setIsSlashCommandOpen(false);
-
-            if (command.mode === 'action') {
-              const context = {
-                currentInput: input,
-                setInput,
-                close: () => setIsSlashCommandOpen(false),
-              };
-              setInput('');
-              // Promise.resolve(command.execute(context)).catch(err => {
-              //   console.error('Action execute error:', err);
-              // });
-            } else if (command.mode === 'template') {
-              setInput('/' + command.commandName + ' ');
-              textAreaRef.current?.focus();
-            }
+            match(result)
+              .with({ type: 'action' }, () => {
+                setInput('');
+              })
+              .with({ type: 'template' }, ({ inputValue }) => {
+                setInput(inputValue);
+                textAreaRef.current?.focus();
+              })
+              .exhaustive();
           }}
           anchorRef={textAreaRef}
         />

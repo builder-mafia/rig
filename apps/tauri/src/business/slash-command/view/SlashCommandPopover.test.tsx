@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SlashCommand } from '../ISlashCommand';
 import { SlashCommandManager } from '../SlashCommandManager';
+import type { SlashCommandExecuteResult } from './SlashCommandPopover';
 import { SlashCommandPopover } from './SlashCommandPopover';
 
 vi.mock('@allin/ui', () => ({
@@ -72,7 +73,7 @@ const testCommands: SlashCommand[] = [
 
 function setup(query = '') {
   const modifierKeyEvent$ = new Subject<'ArrowUp' | 'ArrowDown' | 'Enter'>();
-  const onSelect = vi.fn();
+  const onExecute = vi.fn<(result: SlashCommandExecuteResult) => void>();
   const anchorRef = { current: document.createElement('textarea') };
 
   const manager = SlashCommandManager.getInstance();
@@ -85,12 +86,12 @@ function setup(query = '') {
     <SlashCommandPopover
       query={query}
       modifierKeyEvent$={modifierKeyEvent$}
-      onSelect={onSelect}
+      onExecute={onExecute}
       anchorRef={anchorRef}
     />,
   );
 
-  return { modifierKeyEvent$, onSelect, ...result };
+  return { modifierKeyEvent$, onExecute, ...result };
 }
 
 describe('SlashCommandPopover', () => {
@@ -157,23 +158,29 @@ describe('SlashCommandPopover', () => {
     expect(command.getAttribute('data-value')).toBe('Beta');
   });
 
-  it('Enter calls onSelect with currently selected command', () => {
-    const { modifierKeyEvent$, onSelect } = setup();
+  it('Enter calls onExecute with result of first command', () => {
+    const { modifierKeyEvent$, onExecute } = setup();
 
     act(() => modifierKeyEvent$.next('Enter'));
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith(testCommands[0]);
+    expect(onExecute).toHaveBeenCalledTimes(1);
+    expect(onExecute).toHaveBeenCalledWith({
+      type: 'template',
+      inputValue: '/Alpha ',
+    });
   });
 
-  it('Enter after ArrowDown calls onSelect with second command', () => {
-    const { modifierKeyEvent$, onSelect } = setup();
+  it('Enter after ArrowDown calls onExecute with result of second command', () => {
+    const { modifierKeyEvent$, onExecute } = setup();
 
     act(() => modifierKeyEvent$.next('ArrowDown'));
     act(() => modifierKeyEvent$.next('Enter'));
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith(testCommands[1]);
+    expect(onExecute).toHaveBeenCalledTimes(1);
+    expect(onExecute).toHaveBeenCalledWith({
+      type: 'template',
+      inputValue: '/Beta ',
+    });
   });
 
   it('filters commands by query using fzf', () => {

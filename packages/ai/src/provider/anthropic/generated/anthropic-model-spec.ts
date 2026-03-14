@@ -12,7 +12,7 @@ export const anthropicModelSpec = {
     "temperature": true,
     "knowledge": "2025-05",
     "release_date": "2026-02-05",
-    "last_updated": "2026-02-05",
+    "last_updated": "2026-03-13",
     "modalities": {
       "input": [
         "text",
@@ -28,16 +28,10 @@ export const anthropicModelSpec = {
       "input": 5,
       "output": 25,
       "cache_read": 0.5,
-      "cache_write": 6.25,
-      "context_over_200k": {
-        "input": 10,
-        "output": 37.5,
-        "cache_read": 1,
-        "cache_write": 12.5
-      }
+      "cache_write": 6.25
     },
     "limit": {
-      "context": 200000,
+      "context": 1000000,
       "output": 128000
     }
   },
@@ -51,7 +45,7 @@ export const anthropicModelSpec = {
     "temperature": true,
     "knowledge": "2025-08",
     "release_date": "2026-02-17",
-    "last_updated": "2026-02-17",
+    "last_updated": "2026-03-13",
     "modalities": {
       "input": [
         "text",
@@ -67,16 +61,10 @@ export const anthropicModelSpec = {
       "input": 3,
       "output": 15,
       "cache_read": 0.3,
-      "cache_write": 3.75,
-      "context_over_200k": {
-        "input": 6,
-        "output": 22.5,
-        "cache_read": 0.6,
-        "cache_write": 7.5
-      }
+      "cache_write": 3.75
     },
     "limit": {
-      "context": 200000,
+      "context": 1000000,
       "output": 64000
     }
   },
