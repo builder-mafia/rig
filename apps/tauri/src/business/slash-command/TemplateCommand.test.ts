@@ -15,36 +15,34 @@ class TestCommand extends TemplateCommand {
 }
 
 describe('TemplateCommand.toPrompt', () => {
-  it('replaces $INPUT with user text after command', () => {
-    const command = new TestCommand('Do: $INPUT');
+  it('replaces $ARGS with user text after command', () => {
+    const command = new TestCommand('Do: $ARGS');
 
     expect(command.toPrompt('/test hello')).toBe('Do: hello');
   });
 
-  it('replaces both $INPUT and $HINT when hintSelection is provided', () => {
-    const command = new TestCommand('To $HINT:\n\n$INPUT');
+  it('replaces both $ARGS and $HINT when hintSelection is provided', () => {
+    const command = new TestCommand('To $HINT:\n\n$ARGS');
 
     expect(command.toPrompt('/test hello world', 'Korean')).toBe(
       'To Korean:\n\nhello world',
     );
   });
 
-  it('leaves $HINT unreplaced when hintSelection is not provided', () => {
-    const command = new TestCommand('To $HINT:\n\n$INPUT');
+  it('replaces $HINT with empty string when hintSelection is not provided', () => {
+    const command = new TestCommand('To $HINT:\n\n$ARGS');
 
-    expect(command.toPrompt('/test hello world')).toBe(
-      'To $HINT:\n\nhello world',
-    );
+    expect(command.toPrompt('/test hello world')).toBe('To :\n\nhello world');
   });
 
-  it('replaces only first $INPUT placeholder', () => {
-    const command = new TestCommand('$INPUT and $INPUT');
+  it('replaces only first $ARGS placeholder', () => {
+    const command = new TestCommand('$ARGS and $ARGS');
 
-    expect(command.toPrompt('/test foo')).toBe('foo and $INPUT');
+    expect(command.toPrompt('/test foo')).toBe('foo and $ARGS');
   });
 
   it('handles input with only command (no user text)', () => {
-    const command = new TestCommand('Result: $INPUT');
+    const command = new TestCommand('Result: $ARGS');
 
     expect(command.toPrompt('/test')).toBe('Result: ');
   });
