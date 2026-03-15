@@ -1,6 +1,7 @@
 mod api_key;
 mod auth;
 mod chat;
+mod font;
 mod provider;
 mod storage;
 
@@ -46,6 +47,7 @@ pub fn run() {
             auth::commands::start_codex_oauth,
             auth::commands::get_codex_auth_status,
             auth::commands::revoke_codex_auth,
+            font::commands::get_system_fonts,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

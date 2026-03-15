@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@allin/ui';
-import { Bot, MessageSquare, Plug, Plus, User } from 'lucide-react';
+import { Bot, MessageSquare, Plug, Plus, Type, User } from 'lucide-react';
 import * as React from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { useService } from '@/business/ServiceContext';
@@ -77,6 +77,16 @@ export function HomeCommandView() {
           <CommandItem onSelect={() => navigate('agent-list')}>
             <User />
             <span>Manage Agents</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandGroup
+          heading={
+            <span className='text-blue-500 font-semibold'>Settings</span>
+          }
+        >
+          <CommandItem onSelect={() => navigate('font-family')}>
+            <Type />
+            <span>Font Family</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>

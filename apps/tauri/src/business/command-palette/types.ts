@@ -9,6 +9,7 @@ export type CommandPanePropsMap = {
   'agent-list': undefined;
   'agent-create': undefined;
   'agent-edit': { agentId: string };
+  'font-family': undefined;
 };
 
 export type CommandPaneId = keyof CommandPanePropsMap;

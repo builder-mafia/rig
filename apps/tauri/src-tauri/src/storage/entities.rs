@@ -61,6 +61,8 @@ pub struct AgentsFile {
 pub struct AppSettings {
     pub last_used_provider: Option<String>,
     pub last_used_model: Option<String>,
+    #[serde(default)]
+    pub font_family: Option<String>,
     pub updated_at: i64,
 }
 
@@ -69,6 +71,7 @@ impl Default for AppSettings {
         Self {
             last_used_provider: None,
             last_used_model: None,
+            font_family: None,
             updated_at: Utc::now().timestamp(),
         }
     }

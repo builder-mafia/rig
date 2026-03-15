@@ -9,6 +9,7 @@ import { AgentCreateView } from './panes/AgentCreateView';
 import { AgentEditView, AgentEditViewPropsSchema } from './panes/AgentEditView';
 import { AgentListView } from './panes/AgentListView';
 import { ChannelListView } from './panes/ChannelListView';
+import { FontFamilyView } from './panes/FontFamilyView';
 import { HomeCommandView } from './panes/HomeCommandView';
 import { ProviderAuthPane } from './panes/ProviderAuthPane';
 import { ProvidersCommandView } from './panes/ProvidersCommandView';
@@ -50,6 +51,7 @@ export const CommandPalette = () => {
           const props = AgentEditViewPropsSchema.parse(currentPane.paneProps);
           return <AgentEditView {...props} />;
         })
+        .with('font-family', () => <FontFamilyView />)
         .with(null, () => null)
         .exhaustive()}
     </>
