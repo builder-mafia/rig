@@ -37,6 +37,9 @@ export abstract class TemplateCommand implements BaseCommand {
   public readonly mode = 'template';
 
   public abstract id: string;
+  /**
+   * command name must be lowercase and not contain spaces or hyphens
+   */
   public abstract commandName: string;
   public abstract description: string;
   public abstract template: string;

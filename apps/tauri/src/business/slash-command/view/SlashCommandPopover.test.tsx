@@ -1,6 +1,7 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, screen } from '@testing-library/react';
 import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { renderWithServices } from '@/test-utils/renderWithServices';
 import type { SlashCommand } from '../ISlashCommand';
 import { SlashCommandManager } from '../SlashCommandManager';
 import type { SlashCommandExecuteResult } from './SlashCommandPopover';
@@ -55,18 +56,26 @@ vi.mock('@allin/ui', () => ({
 const testCommands: SlashCommand[] = [
   {
     id: 'cmd-a',
-    commandName: 'Alpha',
+    commandName: 'alpha',
     description: 'First command',
     mode: 'template',
-    template: '$INPUT',
+    template: '$ARGS',
     toPrompt: () => '',
   },
   {
     id: 'cmd-b',
-    commandName: 'Beta',
+    commandName: 'beta',
     description: 'Second command',
     mode: 'template',
-    template: '$INPUT',
+    template: '$ARGS',
+    toPrompt: () => '',
+  },
+  {
+    id: 'cmd-c',
+    commandName: 'charlie',
+    description: 'Third command',
+    mode: 'template',
+    template: '$ARGS',
     toPrompt: () => '',
   },
 ];
@@ -82,13 +91,14 @@ function setup(query = '') {
   }
   manager.registerCommands(testCommands);
 
-  const result = render(
+  const result = renderWithServices(
     <SlashCommandPopover
       query={query}
       modifierKeyEvent$={modifierKeyEvent$}
       onExecute={onExecute}
       anchorRef={anchorRef}
     />,
+    { slashCommandManager: manager },
   );
 
   return { modifierKeyEvent$, onExecute, ...result };
@@ -101,15 +111,15 @@ describe('SlashCommandPopover', () => {
 
   it('renders all commands when query is empty', () => {
     setup();
-    expect(screen.getByTestId('command-item-Alpha')).toBeDefined();
-    expect(screen.getByTestId('command-item-Beta')).toBeDefined();
-    expect(screen.getByTestId('command-item-Charlie')).toBeDefined();
+    expect(screen.getByTestId('command-item-alpha')).toBeDefined();
+    expect(screen.getByTestId('command-item-beta')).toBeDefined();
+    expect(screen.getByTestId('command-item-charlie')).toBeDefined();
   });
 
   it('selects first command by default', () => {
     setup();
     const command = screen.getByTestId('command');
-    expect(command.getAttribute('data-value')).toBe('Alpha');
+    expect(command.getAttribute('data-value')).toBe('alpha');
   });
 
   it('ArrowDown moves selection to next command', () => {
@@ -118,7 +128,7 @@ describe('SlashCommandPopover', () => {
     act(() => modifierKeyEvent$.next('ArrowDown'));
 
     const command = screen.getByTestId('command');
-    expect(command.getAttribute('data-value')).toBe('Beta');
+    expect(command.getAttribute('data-value')).toBe('beta');
   });
 
   it('ArrowDown wraps from last to first', () => {
@@ -130,10 +140,10 @@ describe('SlashCommandPopover', () => {
     });
 
     const command = screen.getByTestId('command');
-    expect(command.getAttribute('data-value')).toBe('Charlie');
+    expect(command.getAttribute('data-value')).toBe('charlie');
 
     act(() => modifierKeyEvent$.next('ArrowDown'));
-    expect(command.getAttribute('data-value')).toBe('Alpha');
+    expect(command.getAttribute('data-value')).toBe('alpha');
   });
 
   it('ArrowUp wraps from first to last', () => {
@@ -142,7 +152,7 @@ describe('SlashCommandPopover', () => {
     act(() => modifierKeyEvent$.next('ArrowUp'));
 
     const command = screen.getByTestId('command');
-    expect(command.getAttribute('data-value')).toBe('Charlie');
+    expect(command.getAttribute('data-value')).toBe('charlie');
   });
 
   it('ArrowUp moves selection to previous command', () => {
@@ -155,7 +165,7 @@ describe('SlashCommandPopover', () => {
     });
 
     const command = screen.getByTestId('command');
-    expect(command.getAttribute('data-value')).toBe('Beta');
+    expect(command.getAttribute('data-value')).toBe('beta');
   });
 
   it('Enter calls onExecute with result of first command', () => {
@@ -166,7 +176,7 @@ describe('SlashCommandPopover', () => {
     expect(onExecute).toHaveBeenCalledTimes(1);
     expect(onExecute).toHaveBeenCalledWith({
       type: 'template',
-      inputValue: '/Alpha ',
+      inputValue: '/alpha ',
     });
   });
 
@@ -179,15 +189,15 @@ describe('SlashCommandPopover', () => {
     expect(onExecute).toHaveBeenCalledTimes(1);
     expect(onExecute).toHaveBeenCalledWith({
       type: 'template',
-      inputValue: '/Beta ',
+      inputValue: '/beta ',
     });
   });
 
   it('filters commands by query using fzf', () => {
     setup('alp');
 
-    expect(screen.getByTestId('command-item-Alpha')).toBeDefined();
-    expect(screen.queryByTestId('command-item-Beta')).toBeNull();
-    expect(screen.queryByTestId('command-item-Charlie')).toBeNull();
+    expect(screen.getByTestId('command-item-alpha')).toBeDefined();
+    expect(screen.queryByTestId('command-item-beta')).toBeNull();
+    expect(screen.queryByTestId('command-item-charlie')).toBeNull();
   });
 });

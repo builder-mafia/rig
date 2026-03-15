@@ -9,9 +9,11 @@ import {
 const createWrapper = (overrides: Partial<Services> = {}) => {
   const services = { ...createServices(), ...overrides };
 
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <ServiceProvider value={services}>{children}</ServiceProvider>
   );
+
+  return Wrapper;
 };
 
 export const renderWithServices = (
