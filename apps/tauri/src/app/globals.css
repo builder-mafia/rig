@@ -4,80 +4,76 @@
 @source "../../node_modules/@allin/ui/dist/**/*.js";
 
 @layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
-    body {
-        @apply bg-background text-foreground;
-        font-family: var(--font-app, );
-    }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-app, var(--font-geist-mono));
+  }
 
-    .prose :where(h1) {
-        font-size: 1.85em !important;
-    }
+  .prose :where(h1) {
+    font-size: 1.85em !important;
+  }
 
-    .prose
-        :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(
-            :first-child
-        ) {
-        margin-top: 0.75em !important;
-    }
-    .prose
-        :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(
-            :last-child
-        ) {
-        margin-bottom: 0.75em !important;
-    }
+  .prose
+    :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(:first-child) {
+    margin-top: 0.75em !important;
+  }
+  .prose
+    :where(p, ul, ol, pre, blockquote, h1, h2, h3, h4, hr):not(:last-child) {
+    margin-bottom: 0.75em !important;
+  }
 
-    /* Shiki dual theme: swap to --shiki-dark variables in dark mode */
-    .dark .shiki,
-    .dark .shiki span {
-        color: var(--shiki-dark) !important;
-        background-color: var(--shiki-dark-bg) !important;
-        /* Optional, if you also want font styles */
-        font-style: var(--shiki-dark-font-style) !important;
-        font-weight: var(--shiki-dark-font-weight) !important;
-        text-decoration: var(--shiki-dark-text-decoration) !important;
-    }
+  /* Shiki dual theme: swap to --shiki-dark variables in dark mode */
+  .dark .shiki,
+  .dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
 }
 
 @layer utilities {
-    @keyframes energy-fill {
-        0% {
-            transform: scaleX(0);
-            opacity: 0;
-        }
-        10% {
-            opacity: 1;
-        }
-        45% {
-            transform: scaleX(1);
-            opacity: 1;
-        }
-        80% {
-            transform: scaleX(1);
-            opacity: 0.35;
-        }
-        100% {
-            transform: scaleX(1);
-            opacity: 0;
-        }
+  @keyframes energy-fill {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
     }
+    10% {
+      opacity: 1;
+    }
+    45% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    80% {
+      transform: scaleX(1);
+      opacity: 0.35;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
 
-    @keyframes energy-shimmer {
-        0% {
-            background-position: 200% 0;
-        }
-        100% {
-            background-position: -200% 0;
-        }
+  @keyframes energy-shimmer {
+    0% {
+      background-position: 200% 0;
     }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 
-    .energy-bar {
-        transform-origin: left;
-        background-size: 200% 100%;
-        animation:
-            energy-fill 1.15s ease-in-out infinite,
-            energy-shimmer 1.15s linear infinite;
-    }
+  .energy-bar {
+    transform-origin: left;
+    background-size: 200% 100%;
+    animation:
+      energy-fill 1.15s ease-in-out infinite,
+      energy-shimmer 1.15s linear infinite;
+  }
 }

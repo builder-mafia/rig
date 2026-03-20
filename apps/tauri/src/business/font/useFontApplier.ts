@@ -6,6 +6,7 @@ export const useFontApplier = () => {
 
   useEffect(() => {
     const root = document.documentElement;
+
     if (settings?.fontFamily) {
       root.style.setProperty('--font-app', settings.fontFamily);
     } else {
