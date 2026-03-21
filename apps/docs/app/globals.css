@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+@variant dark (&:where(.dark *));
+
+@keyframes allin-float-slow {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(-30%, -42px, 0) scale(1.04);
+  }
+  50% {
+    transform: translate3d(-58%, -72px, 0) scale(1.08);
+  }
+  75% {
+    transform: translate3d(-72%, -28px, 0) scale(1.03);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+}
+
+@keyframes allin-float-soft {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  20% {
+    transform: translate3d(24px, -14px, 0) scale(1.03);
+  }
+  45% {
+    transform: translate3d(58px, -52px, 0) scale(1.07);
+  }
+  70% {
+    transform: translate3d(12px, -84px, 0) scale(1.05);
+  }
+  90% {
+    transform: translate3d(-18px, -36px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.allin-float-slow {
+  animation: allin-float-slow 26s ease-in-out infinite;
+}
+
+.allin-float-soft {
+  animation: allin-float-soft 30s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .allin-float-slow,
+  .allin-float-soft {
+    animation: none;
+  }
+}
