@@ -11,9 +11,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use tauri::{ipc::Channel, AppHandle};
-use tauri_plugin_keyring::KeyringExt;
 
-use crate::api_key::constants::KEYRING_SERVICE;
 use crate::provider::Provider;
 
 fn cancel_map() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
@@ -66,11 +64,8 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
     Ok(())
 }
 
-fn get_api_key(app: AppHandle, provider_name: &String, key_name: &str) -> Result<String, String> {
-    let result = app
-        .keyring()
-        .get_password(KEYRING_SERVICE, key_name)
-        .map_err(|e| e.to_string())?
+fn get_api_key(app: &AppHandle, provider_name: &str, provider: Provider) -> Result<String, String> {
+    let result = crate::api_key::commands::get_provider_api_key(app, provider)?
         .ok_or_else(|| {
             format!(
                 "API key not set. Please configure your {} API key in settings.",
@@ -110,7 +105,7 @@ async fn do_stream(
         return Ok(());
     }
 
-    let api_key = get_api_key(app, &provider_name, provider.key_name())?;
+    let api_key = get_api_key(&app, &provider_name, provider)?;
 
     match provider {
         Provider::OpenAI => {

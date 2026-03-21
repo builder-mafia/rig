@@ -1,0 +1,10 @@
+{
+  "worktreeDir": "~/.wt",
+  "baseBranch": "main",
+  "pushRemote": true,
+  "scripts": {
+    "pre": [],
+    "post": ["pnpm i"],
+    "postMode": "async"
+  }
+}

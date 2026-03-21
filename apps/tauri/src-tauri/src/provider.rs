@@ -1,10 +1,5 @@
 use std::str::FromStr;
 
-use crate::api_key::constants::{
-    ANTHROPIC_API_KEY_NAME, CODEX_AUTH_KEY_NAME, GOOGLE_API_KEY_NAME, OPENAI_API_KEY_NAME,
-    VERCEL_API_KEY_NAME,
-};
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Provider {
     OpenAI,
@@ -12,18 +7,6 @@ pub enum Provider {
     Anthropic,
     Vercel,
     Codex,
-}
-
-impl Provider {
-    pub fn key_name(self) -> &'static str {
-        match self {
-            Provider::OpenAI => OPENAI_API_KEY_NAME,
-            Provider::Google => GOOGLE_API_KEY_NAME,
-            Provider::Anthropic => ANTHROPIC_API_KEY_NAME,
-            Provider::Vercel => VERCEL_API_KEY_NAME,
-            Provider::Codex => CODEX_AUTH_KEY_NAME,
-        }
-    }
 }
 
 impl FromStr for Provider {
