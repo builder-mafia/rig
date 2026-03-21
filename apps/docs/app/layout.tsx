@@ -67,6 +67,7 @@ export default async function RootLayout({
           docsRepositoryBase='https://github.com/your-username/allin/tree/main/apps/docs'
           footer={footer}
           darkMode={false}
+          search={false}
         >
           {children}
         </Layout>
