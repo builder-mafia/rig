@@ -8,12 +8,20 @@ import {
   CommandItem,
   CommandList,
 } from '@allin/ui';
-import { Bot, MessageSquare, Plug, Plus, Type, User } from 'lucide-react';
+import {
+  Bot,
+  Download,
+  MessageSquare,
+  Plug,
+  Plus,
+  Type,
+  User,
+} from 'lucide-react';
 import * as React from 'react';
 import { useCommandPalette } from '@/business/command-palette/useCommandPalette';
 import { useService } from '@/business/ServiceContext';
 
-export function HomeCommandView() {
+export const HomeCommandView = () => {
   const { channelManager } = useService();
   const { navigate, close } = useCommandPalette();
 
@@ -84,6 +92,10 @@ export function HomeCommandView() {
             <span className='text-blue-500 font-semibold'>Settings</span>
           }
         >
+          <CommandItem onSelect={() => navigate('app-update')}>
+            <Download />
+            <span>Check for Updates</span>
+          </CommandItem>
           <CommandItem onSelect={() => navigate('font-family')}>
             <Type />
             <span>Font Family</span>
@@ -92,4 +104,4 @@ export function HomeCommandView() {
       </CommandList>
     </CommandDialog>
   );
-}
+};

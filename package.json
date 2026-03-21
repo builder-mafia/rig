@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "turbo dev --concurrency=15",
+    "dev:doc": "turbo dev --filter=docs",
     "dev:app": "turbo dev --filter=desktop-app...",
     "start": "turbo start",
     "build": "turbo build",

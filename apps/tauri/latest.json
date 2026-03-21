@@ -1,0 +1,11 @@
+{
+  "version": "26.3.20",
+  "notes": "Replace this with release notes for the new version.",
+  "pub_date": "2026-03-20T00:00:00Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "REPLACE_WITH_CONTENTS_OF_ALLIN.app.tar.gz.sig",
+      "url": "https://github.com/gaki2/ALLIN/releases/download/v0.1.0/ALLIN.app.tar.gz"
+    }
+  }
+}

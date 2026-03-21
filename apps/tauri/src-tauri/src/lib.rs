@@ -1,3 +1,4 @@
+mod app_updates;
 mod api_key;
 mod auth;
 mod chat;
@@ -5,14 +6,80 @@ mod font;
 mod provider;
 mod storage;
 
+use std::sync::Mutex;
+use tauri::{Emitter, Manager};
+
+const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
+const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
+
+#[cfg(target_os = "macos")]
+fn setup_macos_menu(app: &tauri::App) -> tauri::Result<()> {
+    use tauri::menu::{AboutMetadata, MenuBuilder, SubmenuBuilder};
+
+    let app_menu = SubmenuBuilder::new(app, "ALLIN")
+        .about(Some(AboutMetadata::default()))
+        .separator()
+        .text(CHECK_FOR_UPDATES_MENU_ID, "Check for Updates...")
+        .separator()
+        .services()
+        .separator()
+        .hide()
+        .hide_others()
+        .show_all()
+        .separator()
+        .quit()
+        .build()?;
+
+    let edit_menu = SubmenuBuilder::new(app, "Edit")
+        .undo()
+        .redo()
+        .separator()
+        .cut()
+        .copy()
+        .paste()
+        .select_all()
+        .build()?;
+
+    let window_menu = SubmenuBuilder::new(app, "Window")
+        .minimize()
+        .maximize()
+        .fullscreen()
+        .separator()
+        .close_window()
+        .build()?;
+
+    let menu = MenuBuilder::new(app)
+        .item(&app_menu)
+        .item(&edit_menu)
+        .item(&window_menu)
+        .build()?;
+
+    app.set_menu(menu)?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // load environment variables from .env file
     dotenvy::dotenv().ok();
 
     tauri::Builder::default()
+        .on_menu_event(|app, event| {
+            if event.id() == CHECK_FOR_UPDATES_MENU_ID {
+                let _ = app.emit(OPEN_APP_UPDATE_EVENT, ());
+            }
+        })
         .plugin(tauri_plugin_keyring::init())
         .setup(|app| {
+            app.handle()
+                .plugin(tauri_plugin_updater::Builder::new().build())
+                .map_err(|e| e.to_string())?;
+            app.manage(app_updates::PendingUpdate(Mutex::new(None)));
+
+            #[cfg(target_os = "macos")]
+            setup_macos_menu(app)?;
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -47,6 +114,8 @@ pub fn run() {
             auth::commands::start_codex_oauth,
             auth::commands::get_codex_auth_status,
             auth::commands::revoke_codex_auth,
+            app_updates::fetch_update,
+            app_updates::install_update,
             font::commands::get_system_fonts,
         ])
         .run(tauri::generate_context!())

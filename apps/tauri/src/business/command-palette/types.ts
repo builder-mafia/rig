@@ -9,6 +9,7 @@ export type CommandPanePropsMap = {
   'agent-list': undefined;
   'agent-create': undefined;
   'agent-edit': { agentId: string };
+  'app-update': undefined;
   'font-family': undefined;
 };
 
