@@ -17,7 +17,6 @@ ALLIN/
 │   ├── allin-api/        # 확장 기능용 API 정의
 │   ├── allin-extension/  # 확장 시스템 코어
 │   ├── chat/             # 채팅 기능 (프로바이더, 파사드)
-│   ├── db-atom/          # 데이터베이스 상태 관리
 │   ├── db-schema/        # 데이터베이스 스키마
 │   ├── message-metadata-schema/  # 메시지 메타데이터 타입
 │   └── ui/               # 공유 UI 컴포넌트 (shadcn/ui)

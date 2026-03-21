@@ -17,7 +17,6 @@ ALLIN/
 │   ├── allin-api/        # API definitions for extensions
 │   ├── allin-extension/  # Extension system core
 │   ├── chat/             # Chat functionality (providers, facades)
-│   ├── db-atom/          # Database state management
 │   ├── db-schema/        # Database schemas
 │   ├── message-metadata-schema/  # Message metadata types
 │   └── ui/               # Shared UI components (shadcn/ui)
@@ -77,4 +76,3 @@ Please open an issue to discuss your ideas or submit a pull request.
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
-

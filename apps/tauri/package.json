@@ -22,7 +22,6 @@
     "@ai-sdk/react": "catalog:ai",
     "@ai-sdk/ui-utils": "^1.2.11",
     "@allin/ai": "workspace:*",
-    "@allin/db-atom": "workspace:*",
     "@allin/db-schema": "workspace:*",
     "@allin/message-metadata-schema": "workspace:*",
     "@allin/ui": "workspace:*",

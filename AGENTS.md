@@ -13,7 +13,6 @@ packages/
 ├── ui/        # Shared UI components (@allin/ui)
 ├── ai/        # AI utilities (@allin/ai)
 ├── utils/     # Shared utilities (@allin/utils)
-├── db-atom/   # Database atoms
 ├── db-schema/ # Database schema
 └── ...
 ```
