@@ -70,6 +70,7 @@ pub fn run() {
                 let _ = app.emit(OPEN_APP_UPDATE_EVENT, ());
             }
         })
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_keyring::init())
         .setup(|app| {
             app.handle()
@@ -111,6 +112,12 @@ pub fn run() {
             storage::commands::delete_agent,
             storage::commands::get_app_settings,
             storage::commands::save_app_settings,
+            storage::commands::get_config_files,
+            storage::commands::create_config_file,
+            storage::commands::update_config_file,
+            storage::commands::delete_config_file,
+            storage::commands::read_config_file,
+            storage::commands::write_config_file,
             auth::commands::start_codex_oauth,
             auth::commands::get_codex_auth_status,
             auth::commands::revoke_codex_auth,

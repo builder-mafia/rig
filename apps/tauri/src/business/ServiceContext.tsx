@@ -11,6 +11,7 @@ import { AgentManager } from './agent/AgentManager';
 import { ChannelManager } from './chatting/channel/ChannelManager';
 import { ChatFacadeManager } from './chatting/facade/ChatFacadeManager';
 import { CommandPaletteManager } from './command-palette/CommandPaletteManager';
+import { ConfigFileManager } from './config-file/ConfigFileManager';
 import { SlashCommandManager } from './slash-command/SlashCommandManager';
 
 export type Services = {
@@ -18,6 +19,7 @@ export type Services = {
   channelManager: ChannelManager;
   chatFacadeManager: ChatFacadeManager;
   commandPaletteManager: CommandPaletteManager;
+  configFileManager: ConfigFileManager;
   slashCommandManager: SlashCommandManager;
 };
 
@@ -28,6 +30,7 @@ export const createServices = (): Services => {
   const channelManager = ChannelManager.getInstance();
   const chatFacadeManager = ChatFacadeManager.getInstance();
   const commandPaletteManager = CommandPaletteManager.getInstance();
+  const configFileManager = ConfigFileManager.getInstance();
   const slashCommandManager = SlashCommandManager.getInstance();
 
   return {
@@ -35,6 +38,7 @@ export const createServices = (): Services => {
     channelManager,
     chatFacadeManager,
     commandPaletteManager,
+    configFileManager,
     slashCommandManager,
   };
 };

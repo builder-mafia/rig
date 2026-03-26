@@ -1,21 +1,19 @@
 'use client';
 
 import { Toaster } from '@allin/ui';
-import { ChattingView } from '@/business/chatting/ChattingView';
-import { CommandPalette } from '@/business/command-palette/CommandPaletteView';
-import { Initializer } from '@/business/Initializer';
+import { ConfigFileWorkbenchView } from '@/business/config-file/ConfigFileWorkbenchView';
 import { ServiceProvider } from '@/business/ServiceContext';
 import { QueryProvider } from '@/lib/QueryProvider';
 
-export default function Home() {
+const Home = () => {
   return (
     <ServiceProvider>
       <QueryProvider>
         <Toaster richColors duration={3000} theme='light' />
-        <CommandPalette />
-        <ChattingView />
-        <Initializer />
+        <ConfigFileWorkbenchView />
       </QueryProvider>
     </ServiceProvider>
   );
-}
+};
+
+export default Home;

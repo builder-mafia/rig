@@ -1,12 +1,13 @@
 mod agent;
 mod channel;
+mod config_file;
 pub mod commands;
 pub mod entities;
 mod message;
 mod setting;
 
 use serde::{de::DeserializeOwned, Serialize};
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 use tauri::{AppHandle, Manager};
 
 pub struct Storage {
@@ -121,5 +122,49 @@ impl Storage {
         }
 
         Ok(dirs)
+    }
+
+    fn resolve_local_path(path: &str) -> Result<PathBuf, String> {
+        let trimmed = path.trim();
+
+        if trimmed.is_empty() {
+            return Err("Path is required".to_string());
+        }
+
+        if trimmed == "~" {
+            return env::var("HOME")
+                .map(PathBuf::from)
+                .map_err(|_| "Failed to resolve home directory".to_string());
+        }
+
+        if let Some(stripped) = trimmed.strip_prefix("~/") {
+            let home = env::var("HOME")
+                .map_err(|_| "Failed to resolve home directory".to_string())?;
+            return Ok(PathBuf::from(home).join(stripped));
+        }
+
+        Ok(PathBuf::from(trimmed))
+    }
+
+    pub async fn read_config_file(&self, path: &str) -> Result<String, String> {
+        let target_path = Self::resolve_local_path(path)?;
+
+        tokio::fs::read_to_string(&target_path)
+            .await
+            .map_err(|e| format!("Failed to read file {}: {}", target_path.display(), e))
+    }
+
+    pub async fn write_config_file(&self, path: &str, content: &str) -> Result<(), String> {
+        let target_path = Self::resolve_local_path(path)?;
+
+        if let Some(parent) = target_path.parent() {
+            tokio::fs::create_dir_all(parent)
+                .await
+                .map_err(|e| format!("Failed to create directory {}: {}", parent.display(), e))?;
+        }
+
+        tokio::fs::write(&target_path, content)
+            .await
+            .map_err(|e| format!("Failed to write file {}: {}", target_path.display(), e))
     }
 }

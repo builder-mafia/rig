@@ -1,5 +1,5 @@
 use super::{
-    entities::{Channel, Message},
+    entities::{Channel, ConfigFile, Message},
     Storage,
 };
 use crate::storage::entities::{Agent, AppSettings};
@@ -111,4 +111,44 @@ pub async fn get_app_settings(app: AppHandle) -> Result<AppSettings, String> {
 pub async fn save_app_settings(app: AppHandle, settings: AppSettings) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.save_app_settings(&settings).await
+}
+
+#[tauri::command]
+pub async fn get_config_files(app: AppHandle) -> Result<Vec<ConfigFile>, String> {
+    let storage = Storage::new(&app);
+    storage.get_config_files().await
+}
+
+#[tauri::command]
+pub async fn create_config_file(app: AppHandle, config_file: ConfigFile) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.create_config_file(&config_file).await
+}
+
+#[tauri::command]
+pub async fn update_config_file(app: AppHandle, config_file: ConfigFile) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.update_config_file(&config_file).await
+}
+
+#[tauri::command]
+pub async fn delete_config_file(app: AppHandle, id: String) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.delete_config_file(&id).await
+}
+
+#[tauri::command]
+pub async fn read_config_file(app: AppHandle, path: String) -> Result<String, String> {
+    let storage = Storage::new(&app);
+    storage.read_config_file(&path).await
+}
+
+#[tauri::command]
+pub async fn write_config_file(
+    app: AppHandle,
+    path: String,
+    content: String,
+) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.write_config_file(&path, &content).await
 }

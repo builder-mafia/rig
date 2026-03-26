@@ -78,6 +78,32 @@ impl Default for AppSettings {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigFile {
+    pub id: String,
+    pub name: String,
+    pub path: String,
+    pub icon_type: Option<String>,
+    pub icon_value: Option<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigFilesFile {
+    pub config_files: Vec<ConfigFile>,
+}
+
+impl Default for ConfigFilesFile {
+    fn default() -> Self {
+        Self {
+            config_files: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MessagesFile {
     pub messages: Vec<Message>,
 }
