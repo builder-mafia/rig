@@ -2,6 +2,39 @@ import type { ModelSpec } from '../../model-spec';
 import type { AnthropicModelId } from '../anthropic-models';
 
 export const anthropicModelSpec = {
+  "claude-opus-4-5": {
+    "id": "claude-opus-4-5",
+    "name": "Claude Opus 4.5 (latest)",
+    "family": "claude-opus",
+    "attachment": true,
+    "reasoning": true,
+    "tool_call": true,
+    "temperature": true,
+    "knowledge": "2025-03-31",
+    "release_date": "2025-11-24",
+    "last_updated": "2025-11-24",
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "open_weights": false,
+    "cost": {
+      "input": 5,
+      "output": 25,
+      "cache_read": 0.5,
+      "cache_write": 6.25
+    },
+    "limit": {
+      "context": 200000,
+      "output": 64000
+    }
+  },
   "claude-opus-4-6": {
     "id": "claude-opus-4-6",
     "name": "Claude Opus 4.6",
@@ -65,39 +98,6 @@ export const anthropicModelSpec = {
     },
     "limit": {
       "context": 1000000,
-      "output": 64000
-    }
-  },
-  "claude-opus-4-5": {
-    "id": "claude-opus-4-5",
-    "name": "Claude Opus 4.5 (latest)",
-    "family": "claude-opus",
-    "attachment": true,
-    "reasoning": true,
-    "tool_call": true,
-    "temperature": true,
-    "knowledge": "2025-03-31",
-    "release_date": "2025-11-24",
-    "last_updated": "2025-11-24",
-    "modalities": {
-      "input": [
-        "text",
-        "image",
-        "pdf"
-      ],
-      "output": [
-        "text"
-      ]
-    },
-    "open_weights": false,
-    "cost": {
-      "input": 5,
-      "output": 25,
-      "cache_read": 0.5,
-      "cache_write": 6.25
-    },
-    "limit": {
-      "context": 200000,
       "output": 64000
     }
   },
