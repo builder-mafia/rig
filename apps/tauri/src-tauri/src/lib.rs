@@ -1,5 +1,5 @@
-mod app_updates;
 mod api_key;
+mod app_updates;
 mod auth;
 mod chat;
 mod font;
@@ -7,7 +7,7 @@ mod provider;
 mod storage;
 
 use std::sync::Mutex;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 
 const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
 const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
@@ -64,7 +64,7 @@ pub fn run() {
     // load environment variables from .env file
     dotenvy::dotenv().ok();
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .on_menu_event(|app, event| {
             if event.id() == CHECK_FOR_UPDATES_MENU_ID {
                 let _ = app.emit(OPEN_APP_UPDATE_EVENT, ());
@@ -125,6 +125,31 @@ pub fn run() {
             app_updates::install_update,
             font::commands::get_system_fonts,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| match event {
+        RunEvent::WindowEvent {
+            label,
+            event: WindowEvent::CloseRequested { api, .. },
+            ..
+        } if label == "main" => {
+            api.prevent_close();
+
+            if let Some(window) = app_handle.get_webview_window(&label) {
+                let _ = window.hide();
+            }
+        }
+        #[cfg(target_os = "macos")]
+        RunEvent::Reopen {
+            has_visible_windows: false,
+            ..
+        } => {
+            if let Some(window) = app_handle.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }
+        _ => {}
+    });
 }
