@@ -1,10 +1,16 @@
 {
   "name": "desktop-app",
-  "version": "0.1.0",
+  "version": "25.99.0",
   "private": true,
   "scripts": {
+    "build:prod": "node ./scripts/build-prod.mjs && pnpm run release:upload",
+    "release:upload": "node ./scripts/upload-release-artifacts.mjs",
+    "sync:version": "node ./scripts/sync-tauri-version.mjs",
+    "build:signed": "bash -lc 'source ./scripts/export-env.sh && pnpm tauri build'",
+    "sign:update:macos": "bash -lc 'source ./scripts/export-env.sh && pnpm tauri signer sign ./src-tauri/target/release/bundle/macos/ALLIN.app.tar.gz'",
     "build:worker": "esbuild src/business/chatting/message-ui/shiki/shiki-worker.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=public/workers/shiki-worker.js --tree-shaking=true",
     "dev": "tauri dev",
+    "export-env": "bash -lc 'source ./scripts/export-env.sh'",
     "app-frontend:dev": "pnpm build:worker && next dev",
     "app-frontend:build": "pnpm build:worker && next build",
     "app-frontend:start": "next start",
@@ -13,7 +19,8 @@
     "tauri": "tauri",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "biome check --write ."
+    "format": "biome check --write .",
+    "version": "node ./scripts/sync-tauri-version.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",

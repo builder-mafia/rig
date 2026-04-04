@@ -15,7 +15,6 @@ export const AppUpdateView = () => {
   const [statusMessage, setStatusMessage] = useState(
     'Check the update server for a newer ALLIN build.',
   );
-
   const isPending = checkForUpdate.isPending || installUpdate.isPending;
 
   const handleOpenChange = (open: boolean) => {
@@ -105,10 +104,7 @@ export const AppUpdateView = () => {
               )}
             </Button>
           </div>
-          <p className='text-xs text-muted-foreground'>
-            Requires `plugins.updater.endpoints` and `plugins.updater.pubkey`
-            in `apps/tauri/src-tauri/tauri.conf.json`.
-          </p>
+          <p className='text-xs text-muted-foreground'>Can not load.</p>
         </div>
       </CommandList>
     </CommandDialog>

@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ALLIN",
-  "version": "0.1.0",
+  "version": "25.99.0",
   "identifier": "sh.allin.app",
   "build": {
     "frontendDist": "../out",
@@ -14,10 +14,7 @@
       "endpoints": [
         "https://raw.githubusercontent.com/gaki2/ALLIN/main/apps/tauri/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEwRUExRjhGQzA0MTJCMTIKUldRU0swSEFqeC9xRU9kbjZ6cnNSTWJpSk16ZEhwZkRESyt4bHFnSUZFNW1uNEdBelc5WmE5WlMK"
-    },
-    "sql": {
-      "preload": ["sqlite:ALLIN.sqlite"]
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE1N0U2MkNEQ0Q1QzQwODkKUldTSlFGek56V0orcFdlV3kxMlNCZmQ3YjN2Uktzc2ZleGRkSVIyb1ZNcVBCSUNwaDloREY4aTQK"
     }
   },
   "app": {
