@@ -14,7 +14,7 @@
       "endpoints": [
         "https://raw.githubusercontent.com/gaki2/ALLIN/main/apps/tauri/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVEMzMxMEE2NUQ2Njg2RjIKUldUeWhtWmRwaEF6WFVhbzFVRnJUeUJxZGE4M1hVQWhKRDMxSjYrb01GTWpxclk4b2JTUnNENVQK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDREMThDMTkwMUI0RkZBMzcKUldRMytrOGJrTUVZVFpCaFFuMjVISHoycmhoMllPRHJ5ekpQVy9VUG1oZkhYVXN4NStmVmxNRWIK"
     }
   },
   "app": {
