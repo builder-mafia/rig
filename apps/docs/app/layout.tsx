@@ -13,7 +13,7 @@ export const metadata = {
     template: '%s | ALLIN Docs',
   },
   description:
-    'Official documentation for ALLIN - An open-source AI all-in-one kit',
+    'Official documentation for ALLIN, a desktop app for managing local settings files in one place.',
 };
 
 const navbar = (
@@ -25,7 +25,7 @@ const navbar = (
 const footer = (
   <Footer>
     <div className='flex w-full flex-row justify-center items-center gap-3 text-sm'>
-      <span>최신 소식을 팔로우 하세요.</span>
+      <span>Follow the latest updates.</span>
       <a
         href='https://www.linkedin.com/in/byeonggak/'
         target='_blank'

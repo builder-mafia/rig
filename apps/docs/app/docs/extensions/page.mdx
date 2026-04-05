@@ -1,57 +1,38 @@
-# Extension Development
+# Settings Library
 
-ALLIN provides a powerful extension system that allows you to add custom features.
+ALLIN works best when the settings files you care about are collected with intention.
 
 ## Overview
 
-Extensions are self-contained modules that can:
+Use ALLIN as a lightweight home for the config you touch often:
 
-- Add custom UI components
-- Integrate with the chat system
-- Add sidebar panels
-- Create floating action buttons
+- Add individual settings files you edit regularly
+- Add folders that hold related config together
+- Keep work and personal setups separated when needed
+- Reopen the right file quickly without searching your machine
 
-## Creating an Extension
+## A Good Starting Set
 
-1. Create a new directory in `extensions/`:
+Many people begin with files and folders like these:
 
-```bash
-mkdir extensions/my-extension
-cd extensions/my-extension
-pnpm init
-```
+- `~/.zshrc`
+- `~/.gitconfig`
+- `~/.config/ghostty/`
+- `~/.config/zed/`
+- Project-level `.env` files you revisit often
 
-2. Install the extension package:
+## Organizing Tips
 
-```bash
-pnpm add @allin/extension
-```
+- Group files by tool, project, or context
+- Keep folders when the surrounding structure matters
+- Use ALLIN for the files you reach for often, not every file on disk
 
-3. Create your extension entry point:
+## Why It Helps
 
-```tsx
-// src/index.ts
-import { defineExtension } from '@allin/extension'
+- Less time digging through Finder
+- A cleaner mental model for your setup
+- A faster way to get back to the file you need
 
-export default defineExtension({
-  name: 'my-extension',
-  displayName: 'My Extension',
-  
-  setup(ctx) {
-    // Extension initialization logic
-  }
-})
-```
+## Next Step
 
-## Extension Context API
-
-The `ctx` object provides access to:
-
-- `ctx.ai` - AI chat integration
-- `ctx.sidebar` - Sidebar panel management
-- `ctx.modal` - Modal dialogs
-- `ctx.events` - Event system
-
-## Example: Quiz Extension
-
-Check out the built-in [quiz extension](https://github.com/your-username/allin/tree/main/extensions/quiz) for a complete example.
+Install the app from the home page, then start with the settings files you already edit every week.

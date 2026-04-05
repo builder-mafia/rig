@@ -1,3 +1,16 @@
+import Image from 'next/image';
+import latestRelease from '../../tauri/latest.json';
+
+const releaseVersion = latestRelease.version;
+const updaterUrl = latestRelease.platforms['darwin-aarch64']?.url;
+const downloadUrl =
+  typeof updaterUrl === 'string' && updaterUrl.length > 0
+    ? updaterUrl.replace(
+        '/ALLIN.app.tar.gz',
+        `/ALLIN_${releaseVersion}_aarch64.dmg`,
+      )
+    : `https://github.com/gaki2/ALLIN/releases/download/v${releaseVersion}/ALLIN_${releaseVersion}_aarch64.dmg`;
+
 const HomePage = () => {
   return (
     <main className='relative mx-auto flex min-h-[calc(100vh-180px)] w-full max-w-4xl items-center px-4 py-14 sm:px-6 sm:py-20'>
@@ -11,31 +24,48 @@ const HomePage = () => {
           ALLIN
         </h1>
 
-        <p className='mt-6 max-w-2xl text-lg leading-8 text-neutral-600 dark:text-neutral-300 sm:text-xl'>
-          Your Last AI Chat app.
+        <p className='mt-6 max-w-3xl text-lg leading-8 text-neutral-600 dark:text-neutral-300 sm:text-xl'>
+          All your settings files, in one place.
         </p>
-        <ul className='mt-4 space-y-1 text-base leading-7 text-neutral-500 dark:text-neutral-400 sm:text-lg'>
-          <li>- Supports multiple providers (OpenAI, Claude, Google...)</li>
-          <li>- Easy to customize</li>
-          <li>- Nice GUI</li>
-          <li>- Built for developers</li>
-        </ul>
+        <div className='mt-8 max-w-2xl space-y-1 text-base leading-7 text-neutral-500 dark:text-neutral-400 sm:text-lg'>
+          <p>
+            <span className='font-semibold text-neutral-900 dark:text-white'>
+              Don&apos;t
+            </span>{' '}
+            remember settings file paths.
+          </p>
+          <p>Save your time for the work that matters.</p>
+        </div>
 
-        <div className='mt-8'>
+        <div className='mt-10'>
           <a
-            href='https://github.com/gaki2/ALLIN/releases'
+            href={downloadUrl}
             target='_blank'
             rel='noreferrer noopener'
-            className='inline-flex h-11 items-center justify-center rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white'
+            className='inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-black dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white'
           >
+            <Image
+              src='/apple-white.webp'
+              alt='Apple'
+              width={32}
+              height={32}
+              className='h-4 w-auto dark:hidden'
+            />
+            <Image
+              src='/apple.webp'
+              alt='Apple'
+              width={32}
+              height={32}
+              className='hidden h-4 w-auto dark:block'
+            />
             Download for macOS
           </a>
           <div className='mt-3 flex flex-wrap items-center gap-2'>
             <span className='inline-flex items-center rounded-full border border-black/10 bg-black/5 px-2.5 py-1 text-xs font-medium text-neutral-700 dark:border-white/20 dark:bg-white/10 dark:text-neutral-200'>
-              Beta v26.3.21
+              Version {releaseVersion}
             </span>
             <p className='text-sm text-neutral-500 dark:text-neutral-400'>
-              Requires macOS Tahoe
+              Direct download for Apple silicon (.dmg)
             </p>
           </div>
         </div>

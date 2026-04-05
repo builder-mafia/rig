@@ -4,33 +4,33 @@ Welcome to the official ALLIN documentation.
 
 ## What is ALLIN?
 
-**ALLIN** is an open-source AI all-in-one kit with a chat interface and extensible features. It provides a ChatGPT/Gemini-like chat experience with the ability to extend functionality through plugins.
+**ALLIN** is a desktop app for keeping local settings files and folders together in one place. It helps you organize the configuration you reach for every day, so your setup stays easy to browse and easy to maintain.
 
 ## Features
 
-- **Multi-Provider Support**: OpenAI, Google AI, Anthropic
-- **Desktop App**: Native desktop application powered by Tauri
-- **Extension System**: Build custom features with the extension API
+- **One Place for Config**: Keep the files and folders that shape your local setup together
+- **Desktop App**: Native macOS desktop app powered by Tauri
+- **Fast Navigation**: Browse folders, inspect files, and get to the right config quickly
 - **Modern Stack**: React 19, Next.js 15, TypeScript
 
 ## Quick Links
 
-- [Getting Started](/docs/getting-started) - Set up ALLIN in minutes
-- [Extension Development](/docs/extensions) - Build your own extensions
+- [Getting Started](/docs/getting-started) - Install ALLIN and open the workspace
+- [Settings Library](/docs/extensions) - Organize files and folders inside ALLIN
  
 ## Project Structure
 
 ```
 ALLIN/
 ├── apps/
-│   ├── web/              # Next.js web application
+│   ├── docs/             # Marketing site and docs
 │   └── tauri/            # Tauri desktop application
 ├── packages/
-│   ├── allin-extension/  # Extension system core
-│   ├── chat/             # Chat functionality
-│   └── ui/               # Shared UI components
-└── extensions/
-    └── quiz/             # Example extension
+│   ├── ai/               # Shared AI utilities
+│   ├── db-schema/        # Database schema
+│   ├── ui/               # Shared UI components
+│   └── utils/            # Shared utilities
+└── ...
 ```
 
 ## Tech Stack
@@ -42,4 +42,4 @@ ALLIN/
 | State | Jotai + RxJS |
 | UI | shadcn/ui, Tailwind CSS |
 | Database | IndexedDB |
-| AI | OpenAI, Google AI, Anthropic |
+| Platform | macOS desktop |

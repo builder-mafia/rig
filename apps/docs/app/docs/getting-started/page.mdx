@@ -1,18 +1,37 @@
 # Getting Started
 
-This guide will help you set up ALLIN on your local machine.
+This guide will help you install ALLIN and start organizing your local settings files.
 
 ## Prerequisites
 
-- Node.js 18+
-- pnpm 9.6.0+
+- macOS on Apple silicon
 
-## Installation
+## Install the App
+
+1. Download the latest macOS build from the home page.
+
+2. Open the downloaded `.dmg`.
+
+3. Drag `ALLIN` into your `Applications` folder.
+
+4. Launch ALLIN and start adding the files or folders you want to keep close.
+
+## Add Your First Files
+
+1. Open ALLIN.
+
+2. Add a settings file or folder.
+
+3. Keep related config together so you can get back to it quickly.
+
+## Run from Source
+
+If you want to work on the app locally, you can run it from source:
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/allin.git
+git clone https://github.com/gaki2/ALLIN.git
 cd allin
 ```
 
@@ -22,17 +41,7 @@ cd allin
 pnpm install
 ```
 
-3. Run the development server:
-
-```bash
-pnpm dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Running the Desktop App
-
-To run the Tauri desktop application:
+3. Run the Tauri desktop app:
 
 ```bash
 pnpm dev:app
@@ -46,5 +55,4 @@ pnpm build
 
 ## Next Steps
 
-- Learn about the [Extension System](/docs/extensions)
-- Explore the API Reference
+- Learn how to structure your [Settings Library](/docs/extensions)

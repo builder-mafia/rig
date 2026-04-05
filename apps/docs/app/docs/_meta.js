@@ -5,5 +5,5 @@ export default {
     type: 'separator',
     title: 'Guides',
   },
-  extensions: 'Extension Development',
-}
+  extensions: 'Settings Library',
+};
