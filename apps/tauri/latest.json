@@ -1,11 +1,11 @@
 {
-  "version": "25.99.0",
-  "notes": "Release 25.99.0",
-  "pub_date": "2026-04-04T03:21:02.714Z",
+  "version": "26.4.5",
+  "notes": "Release 26.4.5",
+  "pub_date": "2026-04-05T14:23:59.727Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTSlFGek56V0orcFJRNUdaSVJ1VjlWTzRjcExWdTRIMUdhdXpZSXpKY3dwbEFwWUVkU2FsdnEvZHB1UVhjaWswQVcwMTFQdFZYYWRYRDd3ZEYzNWpjalJtVGJXMmdWQndNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc1MjcyODYyCWZpbGU6QUxMSU4uYXBwLnRhci5nego2ZTVINTFRNzhlcVl1d24yN2NKK2NpTnlLT0N0c1EzYkd6WXBhYVlLNjlybmpqYkdkSlZlQlVsd09aalEyeExuSjhTRjhyeWZud3RLaDdCcUgxRndEQT09Cg==",
-      "url": "https://github.com/gaki2/ALLIN/releases/download/v25.99.0/ALLIN.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTSlFGek56V0orcFcvcmVEK2xiNlhMclNsY0FYSWdoSzVuNDhnZ2drcEViWERrSXBLTzJ6c2w2ay9HNllLM01zNTM3aWdZQXVUbUZGMzBJcnIzK3p2R01qNXl0TklpK0FnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc1Mzk5MDM5CWZpbGU6QUxMSU4uYXBwLnRhci5negpta0tUbHl1UElocUhPL1JlNFoyL09RMWJZSGFpVllSZ05KK2Z5WlhVVExGNU9CSmZZcnFFSlpZZmpVREY0WFFoTU81YWVLUGVxaWxhaTJpN2tvRUlBQT09Cg==",
+      "url": "https://github.com/gaki2/ALLIN/releases/download/v26.4.5/ALLIN.app.tar.gz"
     }
   }
 }
