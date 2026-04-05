@@ -7,9 +7,11 @@ import {
 } from '@allin/ui';
 import { FileJson2, Folder } from 'lucide-react';
 import { APPLICATION_ICON_PRESETS } from './applicationIconPresets';
+import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
 import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
 
 export const ConfigFileCreateFormView = () => {
+  const { setPane } = useConfigFileWorkbenchPane();
   const {
     newIsDirectory: isDirectory,
     newName: name,
@@ -29,7 +31,6 @@ export const ConfigFileCreateFormView = () => {
     selectPresetIcon,
     clearIcon,
     pickPath,
-    setShowCreateForm,
     createEntry,
   } = useConfigFileWorkbench();
 
@@ -216,7 +217,7 @@ export const ConfigFileCreateFormView = () => {
           <Button
             type='button'
             variant='outline'
-            onClick={() => setShowCreateForm(false)}
+            onClick={() => setPane('content')}
           >
             Cancel
           </Button>

@@ -3,7 +3,6 @@
 import { FileJson2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { ComponentProps } from 'react';
-import { ConfigFileCreateFormView } from './ConfigFileCreateFormView';
 import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
 import { getLanguageFromPath } from './configFileWorkbenchUtils';
 
@@ -25,7 +24,6 @@ const configureMonaco: MonacoEditorBeforeMount = monaco => {
 
 export const ConfigFileContentView = () => {
   const {
-    showCreateForm,
     selectedConfigFile,
     selectedBrowserItem,
     isLoadingContent,
@@ -36,10 +34,6 @@ export const ConfigFileContentView = () => {
   const language = selectedBrowserItem?.path
     ? getLanguageFromPath(selectedBrowserItem.path)
     : 'json';
-
-  if (showCreateForm) {
-    return <ConfigFileCreateFormView />;
-  }
 
   if (!selectedConfigFile) {
     return (

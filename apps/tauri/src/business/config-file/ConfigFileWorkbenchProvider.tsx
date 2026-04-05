@@ -17,6 +17,7 @@ import type {
   ConfigDirectoryEntry,
   StorageConfigFile,
 } from '@/lib/gateway/config-file/types';
+import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
 import type { ConfigBrowserItem } from './configFileWorkbenchTypes';
 import {
   getIconUrl,
@@ -35,12 +36,10 @@ type ConfigFileWorkbenchContextValue = {
   directoryEntriesByPath: Record<string, ConfigDirectoryEntry[]>;
   expandedFolderPaths: Record<string, boolean>;
   loadingFolderPaths: Record<string, boolean>;
-  isLoadingList: boolean;
   isLoadingContent: boolean;
   isSaving: boolean;
   isDirty: boolean;
   isDarkMode: boolean;
-  showCreateForm: boolean;
   newName: string;
   newPath: string;
   newIsDirectory: boolean;
@@ -59,7 +58,6 @@ type ConfigFileWorkbenchContextValue = {
   selectedRootIconUrl: string | null;
   finderTargetPath: string | null;
   canSave: boolean;
-  setShowCreateForm: (show: boolean) => void;
   setNewName: (name: string) => void;
   setNewPath: (path: string) => void;
   setNewIsDirectory: (isDirectory: boolean) => void;
@@ -92,7 +90,6 @@ export const ConfigFileWorkbenchProvider = ({
   const {
     configFiles,
     selectedConfigFile,
-    fetchConfigFiles,
     createConfigFile,
     selectConfigFile,
     deleteConfigFile,
@@ -101,11 +98,10 @@ export const ConfigFileWorkbenchProvider = ({
     openConfigFileFolder,
     listConfigDirectoryEntries,
   } = useConfigFile();
+  const { pane, setPane } = useConfigFileWorkbenchPane();
 
-  const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newPath, setNewPath] = useState('');
   const [newIsDirectory, setNewIsDirectory] = useState(false);
@@ -163,7 +159,7 @@ export const ConfigFileWorkbenchProvider = ({
   const finderTargetPath =
     activeDisplayPath ?? selectedConfigFile?.path ?? null;
   const canSave = Boolean(
-    activeEditorPath && isDirty && !isSaving && !showCreateForm,
+    activeEditorPath && isDirty && !isSaving && pane !== 'create-entry',
   );
 
   const loadDirectoryEntries = useCallback(
@@ -274,20 +270,6 @@ export const ConfigFileWorkbenchProvider = ({
   }, []);
 
   useEffect(() => {
-    fetchConfigFiles()
-      .catch(error => {
-        toast.error(`Failed to load config file list: ${String(error)}`, {
-          position: 'top-center',
-          duration: 10000,
-          closeButton: true,
-        });
-      })
-      .finally(() => {
-        setIsLoadingList(false);
-      });
-  }, [fetchConfigFiles]);
-
-  useEffect(() => {
     if (!selectedConfigFile) {
       setSelectedBrowserItem(null);
       return;
@@ -300,11 +282,7 @@ export const ConfigFileWorkbenchProvider = ({
 
       return toBrowserItem(selectedConfigFile);
     });
-  }, [
-    selectedConfigFile?.id,
-    selectedConfigFile?.isDirectory,
-    selectedConfigFile?.path,
-  ]);
+  }, [selectedConfigFile]);
 
   useEffect(() => {
     if (!activeEditorPath) {
@@ -387,14 +365,14 @@ export const ConfigFileWorkbenchProvider = ({
         return;
       }
 
-      setShowCreateForm(false);
+      setPane('content');
       selectConfigFile(configFile.id);
 
       if (configFile.isDirectory) {
         await toggleDirectory(configFile.path, true);
       }
     },
-    [confirmDiscardChanges, selectConfigFile, toggleDirectory],
+    [confirmDiscardChanges, selectConfigFile, setPane, toggleDirectory],
   );
 
   const selectDirectoryEntry = useCallback(
@@ -404,7 +382,7 @@ export const ConfigFileWorkbenchProvider = ({
         return;
       }
 
-      setShowCreateForm(false);
+      setPane('content');
       selectConfigFile(root.id);
       setSelectedBrowserItem({
         rootId: root.id,
@@ -417,7 +395,7 @@ export const ConfigFileWorkbenchProvider = ({
         await toggleDirectory(entry.path, true);
       }
     },
-    [confirmDiscardChanges, selectConfigFile, toggleDirectory],
+    [confirmDiscardChanges, selectConfigFile, setPane, toggleDirectory],
   );
 
   const createEntry = useCallback(async () => {
@@ -445,7 +423,7 @@ export const ConfigFileWorkbenchProvider = ({
       setNewIconType(null);
       setNewIconValue(null);
       setIsIconPopoverOpen(false);
-      setShowCreateForm(false);
+      setPane('content');
       toast.success(`${newIsDirectory ? 'Folder' : 'File'} added`, {
         position: 'top-center',
       });
@@ -463,6 +441,7 @@ export const ConfigFileWorkbenchProvider = ({
     newIsDirectory,
     newName,
     newPath,
+    setPane,
   ]);
 
   const uploadIcon = useCallback(
@@ -610,12 +589,10 @@ export const ConfigFileWorkbenchProvider = ({
       directoryEntriesByPath,
       expandedFolderPaths,
       loadingFolderPaths,
-      isLoadingList,
       isLoadingContent,
       isSaving,
       isDirty,
       isDarkMode,
-      showCreateForm,
       newName,
       newPath,
       newIsDirectory,
@@ -634,7 +611,6 @@ export const ConfigFileWorkbenchProvider = ({
       selectedRootIconUrl,
       finderTargetPath,
       canSave,
-      setShowCreateForm,
       setNewName,
       setNewPath,
       setNewIsDirectory,
@@ -668,7 +644,6 @@ export const ConfigFileWorkbenchProvider = ({
       isDirty,
       isIconPopoverOpen,
       isLoadingContent,
-      isLoadingList,
       isPickingPath,
       isRootItemActive,
       isSaving,
@@ -686,10 +661,10 @@ export const ConfigFileWorkbenchProvider = ({
       saveActiveFile,
       selectConfigFileEntry,
       selectDirectoryEntry,
+      selectPresetIcon,
       selectedBrowserItem,
       selectedConfigFile,
       selectedRootIconUrl,
-      showCreateForm,
       toggleDirectory,
       uploadIcon,
     ],

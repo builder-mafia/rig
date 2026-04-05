@@ -44,6 +44,7 @@
     "dompurify": "^3.3.0",
     "es-toolkit": "^1.44.0",
     "fzf": "^0.5.2",
+    "jotai": "^2.19.0",
     "lucide-react": "^0.513.0",
     "marked": "^15.0.12",
     "monaco-editor": "^0.52.2",

@@ -1,9 +1,21 @@
 'use client';
 
 import { ConfigFileContentView } from './ConfigFileContentView';
+import { ConfigFileCreateFormView } from './ConfigFileCreateFormView';
 import { ConfigFileHeaderView } from './ConfigFileHeaderView';
 import { ConfigFileSidebarView } from './ConfigFileSidebarView';
+import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
 import { ConfigFileWorkbenchProvider } from './ConfigFileWorkbenchProvider';
+
+const ConfigFileWorkbenchMainView = () => {
+  const { pane } = useConfigFileWorkbenchPane();
+
+  return pane === 'create-entry' ? (
+    <ConfigFileCreateFormView />
+  ) : (
+    <ConfigFileContentView />
+  );
+};
 
 export const ConfigFileWorkbenchView = () => {
   return (
@@ -13,7 +25,7 @@ export const ConfigFileWorkbenchView = () => {
         <section className='flex flex-col min-w-0'>
           <ConfigFileHeaderView />
           <div className='flex-1 min-h-0'>
-            <ConfigFileContentView />
+            <ConfigFileWorkbenchMainView />
           </div>
         </section>
       </div>
