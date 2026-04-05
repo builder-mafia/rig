@@ -118,6 +118,20 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
+  const openConfigFileInOpencode = useCallback(
+    async (path: string) => {
+      await configFileManager.openConfigFileInOpencode(path);
+    },
+    [configFileManager],
+  );
+
+  const openConfigFileInZed = useCallback(
+    async (path: string) => {
+      await configFileManager.openConfigFileInZed(path);
+    },
+    [configFileManager],
+  );
+
   const listConfigDirectoryEntries = useCallback(
     async (path: string): Promise<ConfigDirectoryEntry[]> => {
       return configFileManager.listConfigDirectoryEntries(path);
@@ -136,6 +150,8 @@ export const useConfigFile = () => {
     readConfigFile,
     writeConfigFile,
     openConfigFileFolder,
+    openConfigFileInOpencode,
+    openConfigFileInZed,
     listConfigDirectoryEntries,
   };
 };

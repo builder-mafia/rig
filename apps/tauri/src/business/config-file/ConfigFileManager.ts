@@ -141,6 +141,14 @@ export class ConfigFileManager {
     await configFileGateway.openFolder(path);
   }
 
+  public async openConfigFileInOpencode(path: string) {
+    await configFileGateway.openInOpencode(path);
+  }
+
+  public async openConfigFileInZed(path: string) {
+    await configFileGateway.openInZed(path);
+  }
+
   public async listConfigDirectoryEntries(
     path: string,
   ): Promise<ConfigDirectoryEntry[]> {

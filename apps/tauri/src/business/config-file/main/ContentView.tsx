@@ -3,6 +3,7 @@ import { ConfigFileWorkbenchContext } from '../ConfigFileWorkbenchProvider';
 import { getLanguageFromPath } from '../configFileWorkbenchUtils';
 import { ContentPlaceholderView } from './ContentPlaceholderView';
 import { EditorView } from './EditorView';
+import { PreviewActionsView } from './PreviewActionsView';
 
 export const ContentView = () => {
   const context = use(ConfigFileWorkbenchContext);
@@ -39,14 +40,31 @@ export const ContentView = () => {
   }
 
   return (
-    <EditorView
-      language={
-        context.selectedBrowserItem?.path
-          ? getLanguageFromPath(context.selectedBrowserItem.path)
-          : 'json'
-      }
-      value={context.editorValue}
-      onChange={context.setEditorValue}
-    />
+    <div className='flex h-full min-h-0'>
+      <div className='min-w-0 flex-1'>
+        <EditorView
+          language={
+            context.selectedBrowserItem?.path
+              ? getLanguageFromPath(context.selectedBrowserItem.path)
+              : 'json'
+          }
+          value={context.editorValue}
+          isReadOnly
+          onChange={context.setEditorValue}
+        />
+      </div>
+      <PreviewActionsView
+        isDarkMode={context.isDarkMode}
+        onOpenInFinder={() => {
+          void context.openInFinder();
+        }}
+        onOpenInOpencode={() => {
+          void context.openInOpencode();
+        }}
+        onOpenInZed={() => {
+          void context.openInZed();
+        }}
+      />
+    </div>
   );
 };

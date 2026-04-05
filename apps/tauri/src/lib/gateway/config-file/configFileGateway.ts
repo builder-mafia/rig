@@ -18,6 +18,12 @@ export const configFileGateway = {
   openFolder: (path: string) =>
     invoke<void>('open_config_file_folder', { path }),
 
+  openInOpencode: (path: string) =>
+    invoke<void>('open_config_file_in_opencode', { path }),
+
+  openInZed: (path: string) =>
+    invoke<void>('open_config_file_in_zed', { path }),
+
   readContent: (path: string) => invoke<string>('read_config_file', { path }),
 
   writeContent: (path: string, content: string) =>

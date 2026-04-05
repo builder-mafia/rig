@@ -22,10 +22,16 @@ const configureMonaco: MonacoEditorBeforeMount = monaco => {
 type Props = {
   language: string;
   value: string;
+  isReadOnly?: boolean;
   onChange: (value: string) => void;
 };
 
-export const EditorView = ({ language, value, onChange }: Props) => {
+export const EditorView = ({
+  language,
+  value,
+  isReadOnly = false,
+  onChange,
+}: Props) => {
   return (
     <MonacoEditor
       height='100%'
@@ -40,6 +46,8 @@ export const EditorView = ({ language, value, onChange }: Props) => {
         tabSize: 2,
         insertSpaces: true,
         automaticLayout: true,
+        readOnly: isReadOnly,
+        domReadOnly: isReadOnly,
         renderValidationDecorations: 'on',
       }}
     />

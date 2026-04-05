@@ -76,6 +76,8 @@ type ConfigFileWorkbenchContextValue = {
   pickPath: () => Promise<void>;
   removeSelectedEntry: () => Promise<void>;
   openInFinder: () => Promise<void>;
+  openInOpencode: () => Promise<void>;
+  openInZed: () => Promise<void>;
   saveActiveFile: () => Promise<void>;
 };
 
@@ -96,6 +98,8 @@ export const ConfigFileWorkbenchProvider = ({
     readConfigFile,
     writeConfigFile,
     openConfigFileFolder,
+    openConfigFileInOpencode,
+    openConfigFileInZed,
     listConfigDirectoryEntries,
   } = useConfigFile();
 
@@ -240,34 +244,7 @@ export const ConfigFileWorkbenchProvider = ({
     [ensureDirectoryEntriesLoaded],
   );
 
-  useEffect(() => {
-    const updateDarkMode = () => {
-      const hasDarkClass = document.documentElement.classList.contains('dark');
-      if (hasDarkClass) {
-        setIsDarkMode(true);
-        return;
-      }
 
-      setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    };
-
-    updateDarkMode();
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => updateDarkMode();
-    mediaQuery.addEventListener('change', handleChange);
-
-    const observer = new MutationObserver(updateDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-      observer.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     if (!selectedConfigFile) {
@@ -571,13 +548,45 @@ export const ConfigFileWorkbenchProvider = ({
     try {
       await openConfigFileFolder(finderTargetPath);
     } catch (error) {
-      toast.error(`Failed to open folder: ${String(error)}`, {
+      toast.error(`Failed to open Finder: ${String(error)}`, {
         position: 'top-center',
         duration: 10000,
         closeButton: true,
       });
     }
   }, [finderTargetPath, openConfigFileFolder]);
+
+  const openInOpencode = useCallback(async () => {
+    if (!finderTargetPath) {
+      return;
+    }
+
+    try {
+      await openConfigFileInOpencode(finderTargetPath);
+    } catch (error) {
+      toast.error(`Failed to open Opencode: ${String(error)}`, {
+        position: 'top-center',
+        duration: 10000,
+        closeButton: true,
+      });
+    }
+  }, [finderTargetPath, openConfigFileInOpencode]);
+
+  const openInZed = useCallback(async () => {
+    if (!finderTargetPath) {
+      return;
+    }
+
+    try {
+      await openConfigFileInZed(finderTargetPath);
+    } catch (error) {
+      toast.error(`Failed to open Zed: ${String(error)}`, {
+        position: 'top-center',
+        duration: 10000,
+        closeButton: true,
+      });
+    }
+  }, [finderTargetPath, openConfigFileInZed]);
 
   const value = useMemo<ConfigFileWorkbenchContextValue>(
     () => ({
@@ -628,6 +637,8 @@ export const ConfigFileWorkbenchProvider = ({
       pickPath,
       removeSelectedEntry,
       openInFinder,
+      openInOpencode,
+      openInZed,
       saveActiveFile,
     }),
     [
@@ -658,6 +669,8 @@ export const ConfigFileWorkbenchProvider = ({
       newName,
       newPath,
       openInFinder,
+      openInOpencode,
+      openInZed,
       pane,
       pickPath,
       removeSelectedEntry,

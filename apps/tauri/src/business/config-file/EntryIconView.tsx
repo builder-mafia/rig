@@ -9,7 +9,7 @@ type Props = {
 export const EntryIconView = ({
   isDirectory,
   iconUrl,
-  imageClassName = 'size-5 rounded-sm object-cover border',
+  imageClassName = 'size-5 rounded-sm object-contain border',
 }: Props) => {
   if (iconUrl) {
     return <img src={iconUrl} alt='icon' className={imageClassName} />;
