@@ -6,13 +6,21 @@ import {
   PopoverTrigger,
 } from '@allin/ui';
 import { FileJson2, Folder } from 'lucide-react';
+import { use } from 'react';
 import { APPLICATION_ICON_PRESETS } from './applicationIconPresets';
-import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
-import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
+import { ConfigFileWorkbenchContext } from './ConfigFileWorkbenchProvider';
 
 export const ConfigFileCreateFormView = () => {
-  const { setPane } = useConfigFileWorkbenchPane();
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'ConfigFileCreateFormView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
   const {
+    setPane,
     newIsDirectory: isDirectory,
     newName: name,
     newPath: path,
@@ -32,7 +40,7 @@ export const ConfigFileCreateFormView = () => {
     clearIcon,
     pickPath,
     createEntry,
-  } = useConfigFileWorkbench();
+  } = context;
 
   return (
     <div className='h-full flex items-center justify-center p-6'>

@@ -2,8 +2,8 @@
 
 import { FileJson2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import type { ComponentProps } from 'react';
-import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
+import { type ComponentProps, use } from 'react';
+import { ConfigFileWorkbenchContext } from './ConfigFileWorkbenchProvider';
 import { getLanguageFromPath } from './configFileWorkbenchUtils';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -23,13 +23,21 @@ const configureMonaco: MonacoEditorBeforeMount = monaco => {
 };
 
 export const ConfigFileContentView = () => {
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'ConfigFileContentView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
   const {
     selectedConfigFile,
     selectedBrowserItem,
     isLoadingContent,
     editorValue,
     setEditorValue,
-  } = useConfigFileWorkbench();
+  } = context;
 
   const language = selectedBrowserItem?.path
     ? getLanguageFromPath(selectedBrowserItem.path)

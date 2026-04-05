@@ -2,14 +2,19 @@
 
 import { toast } from '@allin/ui';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import type { MouseEvent, ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import {
+  type MouseEvent,
+  type ReactNode,
+  use,
+  useEffect,
+  useState,
+} from 'react';
 import type {
   ConfigDirectoryEntry,
   StorageConfigFile,
 } from '@/lib/gateway/config-file/types';
 import { ConfigFileEntryIconView } from './ConfigFileEntryIconView';
-import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
+import { ConfigFileWorkbenchContext } from './ConfigFileWorkbenchProvider';
 import { getIconUrl } from './configFileWorkbenchUtils';
 import { useConfigFile } from './useConfigFile';
 
@@ -134,6 +139,14 @@ const NestedEntryItemView = ({
   entry,
   depth,
 }: NestedEntryItemViewProps) => {
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'NestedEntryItemView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
   const {
     selectedBrowserItemPath,
     expandedFolderPaths,
@@ -141,7 +154,7 @@ const NestedEntryItemView = ({
     directoryEntriesByPath,
     selectDirectoryEntry,
     toggleDirectory,
-  } = useConfigFileWorkbench();
+  } = context;
 
   const isSelected = selectedBrowserItemPath === entry.path;
 
@@ -194,6 +207,14 @@ type RootEntryItemViewProps = {
 };
 
 const RootEntryItemView = ({ configFile }: RootEntryItemViewProps) => {
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'RootEntryItemView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
   const {
     selectedConfigFileId,
     isDarkMode,
@@ -202,7 +223,7 @@ const RootEntryItemView = ({ configFile }: RootEntryItemViewProps) => {
     directoryEntriesByPath,
     selectConfigFileEntry,
     toggleDirectory,
-  } = useConfigFileWorkbench();
+  } = context;
 
   const isSelected = selectedConfigFileId === configFile.id;
   const iconUrl = getIconUrl(

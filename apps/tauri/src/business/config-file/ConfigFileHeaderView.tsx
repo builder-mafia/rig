@@ -1,13 +1,21 @@
 import { Button } from '@allin/ui';
 import { Save, Trash2 } from 'lucide-react';
+import { use } from 'react';
 import { ConfigFileEntryIconView } from './ConfigFileEntryIconView';
-import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
-import { useConfigFileWorkbench } from './ConfigFileWorkbenchProvider';
+import { ConfigFileWorkbenchContext } from './ConfigFileWorkbenchProvider';
 import { FINDER_ICON_PATH } from './configFileWorkbenchUtils';
 
 export const ConfigFileHeaderView = () => {
-  const { pane } = useConfigFileWorkbenchPane();
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'ConfigFileHeaderView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
   const {
+    pane,
     activeDisplayName,
     activeDisplayPath,
     activeIsDirectory,
@@ -20,7 +28,7 @@ export const ConfigFileHeaderView = () => {
     openInFinder,
     removeSelectedEntry,
     saveActiveFile,
-  } = useConfigFileWorkbench();
+  } = context;
 
   const isCreateEntryPane = pane === 'create-entry';
 

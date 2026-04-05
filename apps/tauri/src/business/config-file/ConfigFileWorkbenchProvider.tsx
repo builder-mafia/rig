@@ -6,7 +6,6 @@ import type { ChangeEvent, ReactNode, RefObject } from 'react';
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -17,7 +16,6 @@ import type {
   ConfigDirectoryEntry,
   StorageConfigFile,
 } from '@/lib/gateway/config-file/types';
-import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
 import type { ConfigBrowserItem } from './configFileWorkbenchTypes';
 import {
   getIconUrl,
@@ -28,6 +26,7 @@ import {
 import { useConfigFile } from './useConfigFile';
 
 type ConfigFileWorkbenchContextValue = {
+  pane: 'content' | 'create-entry';
   configFiles: StorageConfigFile[];
   selectedConfigFile: StorageConfigFile | null;
   selectedBrowserItem: ConfigBrowserItem | null;
@@ -58,6 +57,7 @@ type ConfigFileWorkbenchContextValue = {
   selectedRootIconUrl: string | null;
   finderTargetPath: string | null;
   canSave: boolean;
+  setPane: (pane: 'content' | 'create-entry') => void;
   setNewName: (name: string) => void;
   setNewPath: (path: string) => void;
   setNewIsDirectory: (isDirectory: boolean) => void;
@@ -79,7 +79,7 @@ type ConfigFileWorkbenchContextValue = {
   saveActiveFile: () => Promise<void>;
 };
 
-const ConfigFileWorkbenchContext =
+export const ConfigFileWorkbenchContext =
   createContext<ConfigFileWorkbenchContextValue | null>(null);
 
 export const ConfigFileWorkbenchProvider = ({
@@ -98,8 +98,8 @@ export const ConfigFileWorkbenchProvider = ({
     openConfigFileFolder,
     listConfigDirectoryEntries,
   } = useConfigFile();
-  const { pane, setPane } = useConfigFileWorkbenchPane();
 
+  const [pane, setPane] = useState<'content' | 'create-entry'>('content');
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [newName, setNewName] = useState('');
@@ -581,6 +581,7 @@ export const ConfigFileWorkbenchProvider = ({
 
   const value = useMemo<ConfigFileWorkbenchContextValue>(
     () => ({
+      pane,
       configFiles,
       selectedConfigFile,
       selectedBrowserItem,
@@ -611,6 +612,7 @@ export const ConfigFileWorkbenchProvider = ({
       selectedRootIconUrl,
       finderTargetPath,
       canSave,
+      setPane,
       setNewName,
       setNewPath,
       setNewIsDirectory,
@@ -656,9 +658,11 @@ export const ConfigFileWorkbenchProvider = ({
       newName,
       newPath,
       openInFinder,
+      pane,
       pickPath,
       removeSelectedEntry,
       saveActiveFile,
+      setPane,
       selectConfigFileEntry,
       selectDirectoryEntry,
       selectPresetIcon,
@@ -675,16 +679,4 @@ export const ConfigFileWorkbenchProvider = ({
       {children}
     </ConfigFileWorkbenchContext.Provider>
   );
-};
-
-export const useConfigFileWorkbench = () => {
-  const context = useContext(ConfigFileWorkbenchContext);
-
-  if (!context) {
-    throw new Error(
-      'useConfigFileWorkbench must be used within ConfigFileWorkbenchProvider',
-    );
-  }
-
-  return context;
 };

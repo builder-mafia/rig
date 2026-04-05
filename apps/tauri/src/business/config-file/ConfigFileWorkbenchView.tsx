@@ -1,14 +1,25 @@
 'use client';
 
+import { use } from 'react';
 import { ConfigFileContentView } from './ConfigFileContentView';
 import { ConfigFileCreateFormView } from './ConfigFileCreateFormView';
 import { ConfigFileHeaderView } from './ConfigFileHeaderView';
 import { ConfigFileSidebarView } from './ConfigFileSidebarView';
-import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
-import { ConfigFileWorkbenchProvider } from './ConfigFileWorkbenchProvider';
+import {
+  ConfigFileWorkbenchContext,
+  ConfigFileWorkbenchProvider,
+} from './ConfigFileWorkbenchProvider';
 
 const ConfigFileWorkbenchMainView = () => {
-  const { pane } = useConfigFileWorkbenchPane();
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'ConfigFileWorkbenchMainView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
+  const { pane } = context;
 
   return pane === 'create-entry' ? (
     <ConfigFileCreateFormView />

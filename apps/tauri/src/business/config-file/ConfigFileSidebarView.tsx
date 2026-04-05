@@ -1,10 +1,19 @@
 import { Button } from '@allin/ui';
 import { Plus } from 'lucide-react';
+import { use } from 'react';
 import { ConfigFileEntryListView } from './ConfigFileEntryListView';
-import { useConfigFileWorkbenchPane } from './ConfigFileWorkbenchPaneState';
+import { ConfigFileWorkbenchContext } from './ConfigFileWorkbenchProvider';
 
 export const ConfigFileSidebarView = () => {
-  const { setPane } = useConfigFileWorkbenchPane();
+  const context = use(ConfigFileWorkbenchContext);
+
+  if (!context) {
+    throw new Error(
+      'ConfigFileSidebarView must be used within ConfigFileWorkbenchProvider',
+    );
+  }
+
+  const { setPane } = context;
 
   return (
     <aside className='border-r bg-muted/10 flex flex-col'>
