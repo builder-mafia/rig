@@ -154,16 +154,30 @@ pub async fn write_config_file(
 }
 
 #[tauri::command]
+pub async fn list_config_directory_entries(
+    app: AppHandle,
+    path: String,
+) -> Result<Vec<super::entities::ConfigDirectoryEntry>, String> {
+    let storage = Storage::new(&app);
+    storage.list_config_directory_entries(&path).await
+}
+
+#[tauri::command]
 pub async fn open_config_file_folder(path: String) -> Result<(), String> {
     let resolved_path = Storage::resolve_local_path(&path)?;
 
-    let parent_directory = resolved_path
-        .parent()
-        .ok_or_else(|| "Could not determine parent folder for the file".to_string())?;
+    let target_directory = if resolved_path.is_dir() {
+        resolved_path
+    } else {
+        resolved_path
+            .parent()
+            .ok_or_else(|| "Could not determine parent folder for the file".to_string())?
+            .to_path_buf()
+    };
 
-    if !parent_directory.exists() {
-        return Err("The parent folder does not exist".to_string());
+    if !target_directory.exists() {
+        return Err("The target folder does not exist".to_string());
     }
 
-    open::that(parent_directory).map_err(|e| e.to_string())
+    open::that(target_directory).map_err(|e| e.to_string())
 }

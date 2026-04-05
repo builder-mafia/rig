@@ -1,5 +1,5 @@
 use chrono::Utc;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,10 +83,24 @@ pub struct ConfigFile {
     pub id: String,
     pub name: String,
     pub path: String,
+    #[serde(
+        default,
+        alias = "entryType",
+        deserialize_with = "deserialize_is_directory"
+    )]
+    pub is_directory: bool,
     pub icon_type: Option<String>,
     pub icon_value: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfigDirectoryEntry {
+    pub name: String,
+    pub path: String,
+    pub is_directory: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -101,6 +115,26 @@ impl Default for ConfigFilesFile {
             config_files: Vec::new(),
         }
     }
+}
+
+fn deserialize_is_directory<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum IsDirectoryValue {
+        Bool(bool),
+        String(String),
+    }
+
+    let value = Option::<IsDirectoryValue>::deserialize(deserializer)?;
+
+    Ok(match value {
+        Some(IsDirectoryValue::Bool(value)) => value,
+        Some(IsDirectoryValue::String(value)) => value == "folder",
+        None => false,
+    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

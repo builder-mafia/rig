@@ -19,7 +19,7 @@ impl Storage {
     }
 
     pub async fn create_config_file(&self, config_file: &entities::ConfigFile) -> Result<(), String> {
-        self.validate_existing_config_file_path(&config_file.path)?;
+        self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -32,7 +32,7 @@ impl Storage {
     }
 
     pub async fn update_config_file(&self, config_file: &entities::ConfigFile) -> Result<(), String> {
-        self.validate_existing_config_file_path(&config_file.path)?;
+        self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -58,17 +58,84 @@ impl Storage {
         self.write(&["config_file"], &file).await
     }
 
-    fn validate_existing_config_file_path(&self, path: &str) -> Result<(), String> {
+    pub async fn list_config_directory_entries(
+        &self,
+        path: &str,
+    ) -> Result<Vec<entities::ConfigDirectoryEntry>, String> {
         let resolved_path = Self::resolve_local_path(path)?;
 
         if !resolved_path.exists() {
             return Err(format!(
-                "Config file does not exist: {}",
+                "Directory does not exist: {}",
                 resolved_path.display()
             ));
         }
 
-        if !resolved_path.is_file() {
+        if !resolved_path.is_dir() {
+            return Err(format!(
+                "Path is not a directory: {}",
+                resolved_path.display()
+            ));
+        }
+
+        let mut entries = Vec::new();
+        let mut read_dir = tokio::fs::read_dir(&resolved_path)
+            .await
+            .map_err(|e| format!("Failed to read directory {}: {}", resolved_path.display(), e))?;
+
+        while let Some(entry) = read_dir
+            .next_entry()
+            .await
+            .map_err(|e| format!("Failed to read directory entry {}: {}", resolved_path.display(), e))?
+        {
+            let entry_path = entry.path();
+            let metadata = entry
+                .metadata()
+                .await
+                .map_err(|e| format!("Failed to read metadata {}: {}", entry_path.display(), e))?;
+
+            let is_directory = if metadata.is_dir() {
+                true
+            } else if metadata.is_file() {
+                false
+            } else {
+                continue;
+            };
+
+            entries.push(entities::ConfigDirectoryEntry {
+                name: entry.file_name().to_string_lossy().to_string(),
+                path: entry_path.to_string_lossy().to_string(),
+                is_directory,
+            });
+        }
+
+        entries.sort_by(|a, b| match (a.is_directory, b.is_directory) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
+        });
+
+        Ok(entries)
+    }
+
+    fn validate_existing_config_file_path(&self, path: &str, is_directory: bool) -> Result<(), String> {
+        let resolved_path = Self::resolve_local_path(path)?;
+
+        if !resolved_path.exists() {
+            return Err(format!(
+                "Config entry does not exist: {}",
+                resolved_path.display()
+            ));
+        }
+
+        if is_directory {
+            if !resolved_path.is_dir() {
+                return Err(format!(
+                    "Path is not a folder: {}",
+                    resolved_path.display()
+                ));
+            }
+        } else if !resolved_path.is_file() {
             return Err(format!(
                 "Path is not a file: {}",
                 resolved_path.display()

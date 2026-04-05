@@ -2,11 +2,15 @@ import { StateSubject } from '@allin/utils';
 import type { Observable } from 'rxjs';
 import { v4 } from 'uuid';
 import { configFileGateway } from '@/lib/gateway/config-file/configFileGateway';
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
+import type {
+  ConfigDirectoryEntry,
+  StorageConfigFile,
+} from '@/lib/gateway/config-file/types';
 
 type ConfigFileProps = {
   name: string;
   path: string;
+  isDirectory: boolean;
   iconType: 'preset' | 'uploaded' | null;
   iconValue: string | null;
 };
@@ -79,6 +83,7 @@ export class ConfigFileManager {
       id: v4(),
       name: params.name,
       path: params.path,
+      isDirectory: params.isDirectory,
       iconType: params.iconType,
       iconValue: params.iconValue,
       createdAt: now,
@@ -134,5 +139,11 @@ export class ConfigFileManager {
 
   public async openConfigFileFolder(path: string) {
     await configFileGateway.openFolder(path);
+  }
+
+  public async listConfigDirectoryEntries(
+    path: string,
+  ): Promise<ConfigDirectoryEntry[]> {
+    return configFileGateway.listDirectory(path);
   }
 }
