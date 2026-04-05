@@ -18,18 +18,24 @@ export const FileItemView = ({
   onSelect,
 }: Props) => {
   return (
-    <div className='rounded-md'>
+    <div
+      className={`relative rounded-md ${
+        isSelected ? 'bg-accent text-accent-foreground' : 'hover:bg-muted/50'
+      }`}
+    >
+      <button
+        type='button'
+        className='absolute inset-0 rounded-md'
+        onClick={onSelect}
+        aria-label={`Select ${name}`}
+      />
       <div
         className={`flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition-colors ${
-          isSelected ? 'bg-accent text-accent-foreground' : 'hover:bg-muted/50'
+          isSelected ? 'bg-accent text-accent-foreground' : ''
         }`}
       >
         <span className='mt-0.5 size-4 shrink-0' />
-        <button
-          type='button'
-          className='flex min-w-0 flex-1 items-start gap-2 text-left'
-          onClick={onSelect}
-        >
+        <div className='flex min-w-0 flex-1 items-start gap-2 text-left'>
           <span className='mt-0.5 inline-flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-sm'>
             <EntryIconView isDirectory={isDirectory} iconUrl={iconUrl} />
           </span>
@@ -39,7 +45,7 @@ export const FileItemView = ({
               {path}
             </span>
           </span>
-        </button>
+        </div>
       </div>
     </div>
   );
