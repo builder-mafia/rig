@@ -99,9 +99,7 @@ export const CreateFormIconSectionView = ({
                       onClick={() => onSelectPreset(preset.id)}
                     >
                       <img
-                        src={
-                          isDarkMode ? preset.darkIconUrl : preset.lightIconUrl
-                        }
+                        src={isDarkMode ? preset.dark : preset.light}
                         alt={preset.label}
                         className='mx-auto size-6 object-contain'
                       />

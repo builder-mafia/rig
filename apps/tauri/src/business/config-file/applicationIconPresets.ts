@@ -1,64 +1,70 @@
 export type ApplicationIconPreset = {
   id: string;
   label: string;
-  lightIconUrl: string;
-  darkIconUrl: string;
+  light: string;
+  dark: string;
 };
 
 export const APPLICATION_ICON_PRESETS: ApplicationIconPreset[] = [
   {
     id: 'chrome',
     label: 'Chrome',
-    lightIconUrl: '/application_icon/chrome.webp',
-    darkIconUrl: '/application_icon/chrome.webp',
+    light: '/application_icon/chrome.webp',
+    dark: '/application_icon/chrome.webp',
   },
   {
     id: 'claude',
     label: 'Claude',
-    lightIconUrl: '/application_icon/claude-ai.svg',
-    darkIconUrl: '/application_icon/claude-ai.svg',
+    light: '/application_icon/claude-ai.svg',
+    dark: '/application_icon/claude-ai.svg',
   },
   {
     id: 'clawd',
     label: 'Clawd',
-    lightIconUrl: '/application_icon/clawd.webp',
-    darkIconUrl: '/application_icon/clawd.webp',
+    light: '/application_icon/clawd.webp',
+    dark: '/application_icon/clawd.webp',
   },
   {
     id: 'ghostty',
     label: 'Ghostty',
-    lightIconUrl: '/application_icon/ghostty.webp',
-    darkIconUrl: '/application_icon/ghostty.webp',
+    light: '/application_icon/ghostty.webp',
+    dark: '/application_icon/ghostty.webp',
   },
   {
     id: 'ollama',
     label: 'Ollama',
-    lightIconUrl: '/application_icon/ollama.webp',
-    darkIconUrl: '/application_icon/ollama.webp',
+    light: '/application_icon/ollama.webp',
+    dark: '/application_icon/ollama.webp',
   },
   {
     id: 'openai',
     label: 'OpenAI',
-    lightIconUrl: '/application_icon/openai.webp',
-    darkIconUrl: '/application_icon/openai.webp',
+    light: '/application_icon/openai.webp',
+    dark: '/application_icon/openai.webp',
   },
   {
     id: 'opencode',
     label: 'OpenCode',
-    lightIconUrl: '/application_icon/opencode-light.webp',
-    darkIconUrl: '/application_icon/opencode-dark.webp',
+    light: '/application_icon/opencode-light.webp',
+    dark: '/application_icon/opencode-dark.webp',
   },
   {
     id: 'terminal',
     label: 'Terminal',
-    lightIconUrl: '/application_icon/terminal.webp',
-    darkIconUrl: '/application_icon/terminal.webp',
+    light: '/application_icon/terminal.webp',
+    dark: '/application_icon/terminal.webp',
   },
   {
     id: 'zed',
     label: 'Zed',
-    lightIconUrl: '/application_icon/zed.png',
-    darkIconUrl: '/application_icon/zed.png',
+    light: '/application_icon/zed.png',
+    dark: '/application_icon/zed.png',
+  },
+  {
+    id: 'vscode',
+    label: 'vscode',
+    light: '/application_icon/vscode.webp',
+    dark: '/application_icon/vscode.webp',
   },
 ];
 
@@ -77,5 +83,5 @@ export const getApplicationIconUrl = (
     return null;
   }
 
-  return isDarkMode ? preset.darkIconUrl : preset.lightIconUrl;
+  return isDarkMode ? preset.dark : preset.light;
 };
