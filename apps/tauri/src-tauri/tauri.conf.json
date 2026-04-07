@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ALLIN",
-  "version": "26.4.5",
+  "version": "26.4.7",
   "identifier": "sh.allin.app",
   "build": {
     "frontendDist": "../out",

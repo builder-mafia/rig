@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ALLIN"
-version = "26.4.5"
+version = "26.4.7"
 dependencies = [
  "aisdk",
  "base64 0.22.1",
