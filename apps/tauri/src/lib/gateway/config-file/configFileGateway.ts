@@ -1,11 +1,19 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { ConfigDirectoryEntry, StorageConfigFile } from './types';
+import type {
+  ConfigDirectoryEntry,
+  LocalPathCheckInput,
+  LocalPathCheckResult,
+  StorageConfigFile,
+} from './types';
 
 export const configFileGateway = {
   getAll: () => invoke<StorageConfigFile[]>('get_config_files'),
 
   create: (configFile: StorageConfigFile) =>
     invoke<void>('create_config_file', { configFile }),
+
+  checkLocalPaths: (paths: LocalPathCheckInput[]) =>
+    invoke<LocalPathCheckResult[]>('check_local_paths', { paths }),
 
   update: (configFile: StorageConfigFile) =>
     invoke<void>('update_config_file', { configFile }),

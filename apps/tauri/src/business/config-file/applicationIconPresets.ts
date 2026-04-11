@@ -25,6 +25,12 @@ export const APPLICATION_ICON_PRESETS: ApplicationIconPreset[] = [
     dark: '/application_icon/clawd.webp',
   },
   {
+    id: 'cursor',
+    label: 'Cursor',
+    light: '/application_icon/cursor.png',
+    dark: '/application_icon/cursor.png',
+  },
+  {
     id: 'ghostty',
     label: 'Ghostty',
     light: '/application_icon/ghostty.webp',

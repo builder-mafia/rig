@@ -2,7 +2,11 @@
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useService } from '@/business/ServiceContext';
-import type { ConfigDirectoryEntry } from '@/lib/gateway/config-file/types';
+import type {
+  ConfigDirectoryEntry,
+  LocalPathCheckInput,
+  LocalPathCheckResult,
+} from '@/lib/gateway/config-file/types';
 
 export const useConfigFile = () => {
   const { configFileManager } = useService();
@@ -72,6 +76,13 @@ export const useConfigFile = () => {
         iconType,
         iconValue,
       });
+    },
+    [configFileManager],
+  );
+
+  const checkLocalPaths = useCallback(
+    async (paths: LocalPathCheckInput[]): Promise<LocalPathCheckResult[]> => {
+      return configFileManager.checkLocalPaths(paths);
     },
     [configFileManager],
   );
@@ -151,6 +162,7 @@ export const useConfigFile = () => {
     selectedConfigFile,
     fetchConfigFiles,
     createConfigFile,
+    checkLocalPaths,
     updateConfigFile,
     deleteConfigFile,
     selectConfigFile,

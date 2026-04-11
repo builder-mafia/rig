@@ -9,7 +9,7 @@
     "build:signed": "bash -lc 'source ./scripts/export-env.sh && pnpm tauri build'",
     "sign:update:macos": "bash -lc 'source ./scripts/export-env.sh && pnpm tauri signer sign ./src-tauri/target/release/bundle/macos/ALLIN.app.tar.gz'",
     "build:worker": "esbuild src/business/chatting/message-ui/shiki/shiki-worker.ts --bundle --format=esm --platform=browser --target=es2020 --outfile=public/workers/shiki-worker.js --tree-shaking=true",
-    "dev": "tauri dev",
+    "dev": "tauri dev --config src-tauri/tauri.local.conf.json",
     "export-env": "bash -lc 'source ./scripts/export-env.sh'",
     "app-frontend:dev": "pnpm build:worker && next dev",
     "app-frontend:build": "pnpm build:worker && next build",

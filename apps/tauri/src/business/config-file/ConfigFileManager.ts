@@ -4,6 +4,8 @@ import { v4 } from 'uuid';
 import { configFileGateway } from '@/lib/gateway/config-file/configFileGateway';
 import type {
   ConfigDirectoryEntry,
+  LocalPathCheckInput,
+  LocalPathCheckResult,
   StorageConfigFile,
 } from '@/lib/gateway/config-file/types';
 
@@ -94,6 +96,12 @@ export class ConfigFileManager {
     await this.fetchConfigFiles();
     this._selectedConfigFileId$.next(configFile.id);
     return configFile;
+  }
+
+  public async checkLocalPaths(
+    paths: LocalPathCheckInput[],
+  ): Promise<LocalPathCheckResult[]> {
+    return configFileGateway.checkLocalPaths(paths);
   }
 
   public async updateConfigFile(

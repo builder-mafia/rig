@@ -7,7 +7,7 @@ mod message;
 mod setting;
 
 use serde::{de::DeserializeOwned, Serialize};
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
 pub struct Storage {
@@ -16,11 +16,17 @@ pub struct Storage {
 
 impl Storage {
     pub fn new(app: &AppHandle) -> Self {
+        let storage_dir_name = if cfg!(debug_assertions) {
+            "storage-dev"
+        } else {
+            "storage"
+        };
+
         let base_path = app
             .path()
             .app_data_dir()
             .expect("Failed to get app data dir")
-            .join("storage");
+            .join(storage_dir_name);
 
         Self { base_path }
     }
@@ -131,19 +137,9 @@ impl Storage {
             return Err("Path is required".to_string());
         }
 
-        if trimmed == "~" {
-            return env::var("HOME")
-                .map(PathBuf::from)
-                .map_err(|_| "Failed to resolve home directory".to_string());
-        }
+        let expanded = shellexpand::tilde(trimmed);
 
-        if let Some(stripped) = trimmed.strip_prefix("~/") {
-            let home = env::var("HOME")
-                .map_err(|_| "Failed to resolve home directory".to_string())?;
-            return Ok(PathBuf::from(home).join(stripped));
-        }
-
-        Ok(PathBuf::from(trimmed))
+        Ok(PathBuf::from(expanded.as_ref()))
     }
 
     pub async fn read_config_file(&self, path: &str) -> Result<String, String> {

@@ -23,7 +23,6 @@ export const CreateFormView = () => {
             Register a local file or folder and browse it from the sidebar.
           </p>
         </div>
-
         <CreateFormTypeSectionView
           isDirectory={context.newIsDirectory}
           onSelectFile={() => context.setNewIsDirectory(false)}
