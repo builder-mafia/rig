@@ -2,6 +2,39 @@ import type { ModelSpec } from '../../model-spec';
 import type { AnthropicModelId } from '../anthropic-models';
 
 export const anthropicModelSpec = {
+  "claude-sonnet-4-6": {
+    "id": "claude-sonnet-4-6",
+    "name": "Claude Sonnet 4.6",
+    "family": "claude-sonnet",
+    "attachment": true,
+    "reasoning": true,
+    "tool_call": true,
+    "temperature": true,
+    "knowledge": "2025-08",
+    "release_date": "2026-02-17",
+    "last_updated": "2026-03-13",
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "open_weights": false,
+    "cost": {
+      "input": 3,
+      "output": 15,
+      "cache_read": 0.3,
+      "cache_write": 3.75
+    },
+    "limit": {
+      "context": 1000000,
+      "output": 64000
+    }
+  },
   "claude-opus-4-5": {
     "id": "claude-opus-4-5",
     "name": "Claude Opus 4.5 (latest)",
@@ -66,39 +99,6 @@ export const anthropicModelSpec = {
     "limit": {
       "context": 1000000,
       "output": 128000
-    }
-  },
-  "claude-sonnet-4-6": {
-    "id": "claude-sonnet-4-6",
-    "name": "Claude Sonnet 4.6",
-    "family": "claude-sonnet",
-    "attachment": true,
-    "reasoning": true,
-    "tool_call": true,
-    "temperature": true,
-    "knowledge": "2025-08",
-    "release_date": "2026-02-17",
-    "last_updated": "2026-03-13",
-    "modalities": {
-      "input": [
-        "text",
-        "image",
-        "pdf"
-      ],
-      "output": [
-        "text"
-      ]
-    },
-    "open_weights": false,
-    "cost": {
-      "input": 3,
-      "output": 15,
-      "cache_read": 0.3,
-      "cache_write": 3.75
-    },
-    "limit": {
-      "context": 1000000,
-      "output": 64000
     }
   },
   "claude-sonnet-4-5": {
