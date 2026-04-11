@@ -16,11 +16,17 @@ pub struct Storage {
 
 impl Storage {
     pub fn new(app: &AppHandle) -> Self {
+        let storage_dir_name = if cfg!(debug_assertions) {
+            "storage-dev"
+        } else {
+            "storage"
+        };
+
         let base_path = app
             .path()
             .app_data_dir()
             .expect("Failed to get app data dir")
-            .join("storage");
+            .join(storage_dir_name);
 
         Self { base_path }
     }
