@@ -14,13 +14,8 @@ import {
 import { filter, fromEvent } from 'rxjs';
 import type {
   ConfigDirectoryEntry,
-  LocalPathCheckResult,
   StorageConfigFile,
 } from '@/lib/gateway/config-file/types';
-import {
-  CONFIG_FILE_PRESETS,
-  type ConfigFilePreset,
-} from './configFilePresets';
 import type { ConfigBrowserItem } from './configFileWorkbenchTypes';
 import {
   getIconUrl,
@@ -29,11 +24,6 @@ import {
   toBrowserItem,
 } from './configFileWorkbenchUtils';
 import { useConfigFile } from './useConfigFile';
-
-type CheckedPresetEntry = ConfigFilePreset &
-  LocalPathCheckResult & {
-    alreadyRegistered: boolean;
-  };
 
 type ConfigFileWorkbenchContextValue = {
   pane: 'content' | 'create-entry';
@@ -57,10 +47,7 @@ type ConfigFileWorkbenchContextValue = {
   newIconDisplayUrl: string | null;
   isIconPopoverOpen: boolean;
   isPickingPath: boolean;
-  isCheckingPresetEntries: boolean;
   iconUploadInputRef: RefObject<HTMLInputElement | null>;
-  checkedPresetEntries: CheckedPresetEntry[];
-  selectedPresetEntryIds: string[];
   editorValue: string;
   language: string;
   activeDisplayName: string | null;
@@ -87,9 +74,6 @@ type ConfigFileWorkbenchContextValue = {
   selectPresetIcon: (presetId: string) => void;
   clearIcon: () => void;
   pickPath: () => Promise<void>;
-  scanPresetEntries: () => Promise<void>;
-  togglePresetEntrySelection: (presetId: string) => void;
-  registerSelectedPresetEntries: () => Promise<void>;
   removeSelectedEntry: () => Promise<void>;
   openInFinder: () => Promise<void>;
   openInOpencode: () => Promise<void>;
@@ -110,7 +94,6 @@ export const ConfigFileWorkbenchProvider = ({
     configFiles,
     selectedConfigFile,
     createConfigFile,
-    checkLocalPaths,
     selectConfigFile,
     deleteConfigFile,
     readConfigFile,
@@ -135,15 +118,8 @@ export const ConfigFileWorkbenchProvider = ({
   const [editorValue, setEditorValue] = useState('');
   const [loadedValue, setLoadedValue] = useState('');
   const [isPickingPath, setIsPickingPath] = useState(false);
-  const [isCheckingPresetEntries, setIsCheckingPresetEntries] = useState(false);
   const [isIconPopoverOpen, setIsIconPopoverOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [checkedPresetEntries, setCheckedPresetEntries] = useState<
-    CheckedPresetEntry[]
-  >([]);
-  const [selectedPresetEntryIds, setSelectedPresetEntryIds] = useState<
-    string[]
-  >([]);
   const [selectedBrowserItem, setSelectedBrowserItem] =
     useState<ConfigBrowserItem | null>(null);
   const [expandedFolderPaths, setExpandedFolderPaths] = useState<
@@ -502,110 +478,6 @@ export const ConfigFileWorkbenchProvider = ({
     setIsIconPopoverOpen(false);
   }, []);
 
-  const scanPresetEntries = useCallback(async () => {
-    setIsCheckingPresetEntries(true);
-
-    try {
-      const results = await checkLocalPaths(
-        CONFIG_FILE_PRESETS.map(preset => ({
-          path: preset.path,
-          isDirectory: preset.isDirectory,
-        })),
-      );
-      setCheckedPresetEntries(
-        CONFIG_FILE_PRESETS.map((preset, index) => ({
-          ...preset,
-          ...results[index],
-          alreadyRegistered: configFiles.some(
-            configFile => configFile.path === results[index]?.resolvedPath,
-          ),
-        })),
-      );
-      setSelectedPresetEntryIds(
-        results
-          .map((result, index) => ({
-            result,
-            preset: CONFIG_FILE_PRESETS[index],
-          }))
-          .filter(
-            ({ result }) =>
-              result.exists &&
-              result.matchesType &&
-              !configFiles.some(
-                configFile => configFile.path === result.resolvedPath,
-              ),
-          )
-          .map(({ preset }) => preset.presetId),
-      );
-    } catch (error) {
-      toast.error(`Failed to scan common settings: ${String(error)}`, {
-        position: 'top-center',
-        duration: 10000,
-        closeButton: true,
-      });
-    } finally {
-      setIsCheckingPresetEntries(false);
-    }
-  }, [checkLocalPaths, configFiles]);
-
-  const togglePresetEntrySelection = useCallback((presetId: string) => {
-    setSelectedPresetEntryIds(prev =>
-      prev.includes(presetId)
-        ? prev.filter(id => id !== presetId)
-        : [...prev, presetId],
-    );
-  }, []);
-
-  const registerSelectedPresetEntries = useCallback(async () => {
-    const selectedPresets = checkedPresetEntries.filter(
-      preset =>
-        selectedPresetEntryIds.includes(preset.presetId) &&
-        preset.exists &&
-        preset.matchesType &&
-        !preset.alreadyRegistered,
-    );
-
-    if (selectedPresets.length === 0) {
-      toast.error('Select at least one available preset to register', {
-        position: 'top-center',
-      });
-      return;
-    }
-
-    try {
-      for (const preset of selectedPresets) {
-        await createConfigFile(
-          preset.name,
-          preset.resolvedPath,
-          preset.isDirectory,
-          preset.iconType,
-          preset.iconValue,
-        );
-      }
-
-      await scanPresetEntries();
-      setPane('content');
-      toast.success(
-        `${selectedPresets.length} setting ${selectedPresets.length === 1 ? 'entry' : 'entries'} added`,
-        {
-          position: 'top-center',
-        },
-      );
-    } catch (error) {
-      toast.error(`Failed to register selected presets: ${String(error)}`, {
-        position: 'top-center',
-        duration: 10000,
-        closeButton: true,
-      });
-    }
-  }, [
-    checkedPresetEntries,
-    createConfigFile,
-    scanPresetEntries,
-    selectedPresetEntryIds,
-    setPane,
-  ]);
-
   const pickPath = useCallback(async () => {
     setIsPickingPath(true);
     try {
@@ -755,10 +627,7 @@ export const ConfigFileWorkbenchProvider = ({
       newIconDisplayUrl,
       isIconPopoverOpen,
       isPickingPath,
-      isCheckingPresetEntries,
       iconUploadInputRef,
-      checkedPresetEntries,
-      selectedPresetEntryIds,
       editorValue,
       language,
       activeDisplayName,
@@ -782,9 +651,6 @@ export const ConfigFileWorkbenchProvider = ({
       selectPresetIcon,
       clearIcon,
       pickPath,
-      scanPresetEntries,
-      togglePresetEntrySelection,
-      registerSelectedPresetEntries,
       removeSelectedEntry,
       openInFinder,
       openInOpencode,
@@ -807,14 +673,12 @@ export const ConfigFileWorkbenchProvider = ({
       isDarkMode,
       isDirty,
       isIconPopoverOpen,
-      isCheckingPresetEntries,
       isLoadingContent,
       isPickingPath,
       isRootItemActive,
       isSaving,
       language,
       loadingFolderPaths,
-      checkedPresetEntries,
       newIconDisplayUrl,
       newIconType,
       newIconValue,
@@ -827,11 +691,8 @@ export const ConfigFileWorkbenchProvider = ({
       openInZed,
       pane,
       pickPath,
-      registerSelectedPresetEntries,
       removeSelectedEntry,
       saveActiveFile,
-      scanPresetEntries,
-      selectedPresetEntryIds,
       setPane,
       selectConfigFileEntry,
       selectDirectoryEntry,
@@ -839,7 +700,6 @@ export const ConfigFileWorkbenchProvider = ({
       selectedBrowserItem,
       selectedConfigFile,
       selectedRootIconUrl,
-      togglePresetEntrySelection,
       toggleDirectory,
       uploadIcon,
     ],
