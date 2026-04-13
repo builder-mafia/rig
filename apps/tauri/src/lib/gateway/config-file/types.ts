@@ -17,13 +17,9 @@ export type ConfigDirectoryEntry = {
 
 export type LocalPathCheckInput = {
   path: string;
-  isDirectory: boolean;
 };
 
 export type LocalPathCheckResult = {
-  path: string;
   resolvedPath: string;
   exists: boolean;
-  matchesType: boolean;
-  message: string | null;
 };

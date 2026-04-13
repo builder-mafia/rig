@@ -12,9 +12,8 @@ export const configFileGateway = {
   create: (configFile: StorageConfigFile) =>
     invoke<void>('create_config_file', { configFile }),
 
-  checkLocalPaths: (paths: LocalPathCheckInput[]) =>
-    invoke<LocalPathCheckResult[]>('check_local_paths', { paths }),
-
+  checkLocalPath: (input: LocalPathCheckInput) =>
+    invoke<LocalPathCheckResult>('check_local_path', { input }),
   update: (configFile: StorageConfigFile) =>
     invoke<void>('update_config_file', { configFile }),
 

@@ -114,7 +114,7 @@ pub fn run() {
             storage::commands::save_app_settings,
             storage::commands::get_config_files,
             storage::commands::create_config_file,
-            storage::commands::check_local_paths,
+            storage::commands::check_local_path,
             storage::commands::update_config_file,
             storage::commands::delete_config_file,
             storage::commands::open_config_file_folder,

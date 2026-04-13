@@ -80,9 +80,9 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
-  const checkLocalPaths = useCallback(
-    async (paths: LocalPathCheckInput[]): Promise<LocalPathCheckResult[]> => {
-      return configFileManager.checkLocalPaths(paths);
+  const checkLocalPath = useCallback(
+    async (input: LocalPathCheckInput): Promise<LocalPathCheckResult> => {
+      return configFileManager.checkLocalPath(input);
     },
     [configFileManager],
   );
@@ -134,7 +134,7 @@ export const useConfigFile = () => {
     selectedConfigFile,
     fetchConfigFiles,
     createConfigFile,
-    checkLocalPaths,
+    checkLocalPath,
     updateConfigFile,
     deleteConfigFile,
     selectConfigFile,

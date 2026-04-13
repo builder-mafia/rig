@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@allin/ui/theme.css";
+@import "./radar.css";
 @plugin "@tailwindcss/typography";
 @source "../../node_modules/@allin/ui/dist/**/*.js";
 

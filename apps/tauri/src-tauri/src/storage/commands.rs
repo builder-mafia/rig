@@ -11,17 +11,13 @@ use tauri::AppHandle;
 #[serde(rename_all = "camelCase")]
 pub struct LocalPathCheckInput {
     pub path: String,
-    pub is_directory: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LocalPathCheckResult {
-    pub path: String,
     pub resolved_path: String,
     pub exists: bool,
-    pub matches_type: bool,
-    pub message: Option<String>,
 }
 
 fn resolve_config_target_path(path: &str) -> Result<std::path::PathBuf, String> {
@@ -185,51 +181,21 @@ pub async fn create_config_file(app: AppHandle, config_file: ConfigFile) -> Resu
 }
 
 #[tauri::command]
-pub async fn check_local_paths(
-    paths: Vec<LocalPathCheckInput>,
-) -> Result<Vec<LocalPathCheckResult>, String> {
-    Ok(paths
-        .into_iter()
-        .map(|input| match Storage::resolve_local_path(&input.path) {
-            Ok(resolved_path) => {
-                let resolved_path_string = resolved_path.to_string_lossy().to_string();
-                let exists = resolved_path.exists();
-                let matches_type = exists
-                    && if input.is_directory {
-                        resolved_path.is_dir()
-                    } else {
-                        resolved_path.is_file()
-                    };
+pub async fn check_local_path(input: LocalPathCheckInput) -> Result<LocalPathCheckResult, String> {
+    Ok(match Storage::resolve_local_path(&input.path) {
+        Ok(resolved_path) => {
+            let resolved_path_string = resolved_path.to_string_lossy().to_string();
 
-                let message = if !exists {
-                    Some("Path does not exist".to_string())
-                } else if !matches_type {
-                    Some(if input.is_directory {
-                        "Expected a folder".to_string()
-                    } else {
-                        "Expected a file".to_string()
-                    })
-                } else {
-                    None
-                };
-
-                LocalPathCheckResult {
-                    path: input.path,
-                    resolved_path: resolved_path_string,
-                    exists,
-                    matches_type,
-                    message,
-                }
+            LocalPathCheckResult {
+                resolved_path: resolved_path_string,
+                exists: resolved_path.exists(),
             }
-            Err(error) => LocalPathCheckResult {
-                path: input.path.clone(),
-                resolved_path: input.path,
-                exists: false,
-                matches_type: false,
-                message: Some(error),
-            },
-        })
-        .collect())
+        }
+        Err(error) => LocalPathCheckResult {
+            resolved_path: error,
+            exists: false,
+        },
+    })
 }
 
 #[tauri::command]

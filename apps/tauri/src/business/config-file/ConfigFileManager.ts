@@ -87,10 +87,10 @@ export class ConfigFileManager {
     return configFile;
   }
 
-  public async checkLocalPaths(
-    paths: LocalPathCheckInput[],
-  ): Promise<LocalPathCheckResult[]> {
-    return configFileGateway.checkLocalPaths(paths);
+  public async checkLocalPath(
+    input: LocalPathCheckInput,
+  ): Promise<LocalPathCheckResult> {
+    return configFileGateway.checkLocalPath(input);
   }
 
   public async updateConfigFile(
