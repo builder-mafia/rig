@@ -97,14 +97,6 @@ pub struct ConfigFile {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ConfigDirectoryEntry {
-    pub name: String,
-    pub path: String,
-    pub is_directory: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ConfigFilesFile {
     pub config_files: Vec<ConfigFile>,
 }

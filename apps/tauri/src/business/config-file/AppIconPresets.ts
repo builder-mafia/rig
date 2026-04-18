@@ -203,10 +203,20 @@ export const APPLICATION_ICON_PRESETS = [
     light: '/application_icon/shell-light.webp',
     dark: '/application_icon/shell-dark.webp',
   },
+  {
+    id: 'yarn',
+    label: 'Yarn',
+    light: '/application_icon/yarn.webp',
+    dark: '/application_icon/yarn.webp',
+  },
 ] as const;
 
 export const getApplicationIconPreset = (presetId: string) => {
   return APPLICATION_ICON_PRESETS.find(preset => preset.id === presetId);
+};
+
+export const getApplicationIconLabel = (presetId: string) => {
+  return getApplicationIconPreset(presetId)?.label ?? null;
 };
 
 export const getApplicationIconUrl = (

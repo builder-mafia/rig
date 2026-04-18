@@ -2,6 +2,7 @@
 
 import { Suspense, use } from 'react';
 import { match } from 'ts-pattern';
+import { ScanView } from '@/business/file-scaner/ScanView';
 import { SelectionContext } from '../SelectionContext';
 import { usePaneType } from '../usePaneType';
 import { ContentView } from './ContentView';
@@ -25,6 +26,7 @@ export const MainView = () => {
         </Suspense>
       ),
     )
+    .with('new-user', () => <ScanView />)
     .when(
       type => type === 'create-entry',
       () => <FileAddFormView />,

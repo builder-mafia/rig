@@ -133,10 +133,4 @@ export class ConfigFileManager {
   public async writeConfigFile(path: string, content: string) {
     await configFileGateway.writeContent(path, content);
   }
-
-  public async listConfigDirectoryEntries(
-    path: string,
-  ): Promise<ConfigDirectoryEntry[]> {
-    return configFileGateway.listDirectory(path);
-  }
 }

@@ -122,13 +122,6 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
-  const listConfigDirectoryEntries = useCallback(
-    async (path: string): Promise<ConfigDirectoryEntry[]> => {
-      return configFileManager.listConfigDirectoryEntries(path);
-    },
-    [configFileManager],
-  );
-
   return {
     configFiles,
     selectedConfigFile,
@@ -140,7 +133,5 @@ export const useConfigFile = () => {
     selectConfigFile,
     readConfigFile,
     writeConfigFile,
-
-    listConfigDirectoryEntries,
   };
 };

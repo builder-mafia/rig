@@ -43,22 +43,22 @@ export const PreviewActionsView = () => {
   return (
     <aside className='flex w-56 shrink-0 flex-col justify-center gap-3 border-l bg-slate-50/80 p-4'>
       <PreviewActionButton
-        iconSrc={getApplicationIconUrl('chrome')}
+        iconSrc={getApplicationIconUrl('chrome')!}
         label='Finder'
         onClick={() => openApp('finder', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={getApplicationIconUrl('opencode')}
+        iconSrc={getApplicationIconUrl('opencode')!}
         label='Opencode'
         onClick={() => openApp('opencode', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={getApplicationIconUrl('cursor')}
+        iconSrc={getApplicationIconUrl('cursor')!}
         label='Cursor'
         onClick={() => openApp('cursor', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={getApplicationIconUrl('zed')}
+        iconSrc={getApplicationIconUrl('zed')!}
         label='Zed'
         onClick={() => openApp('zed', selectedFile.path)}
       />
