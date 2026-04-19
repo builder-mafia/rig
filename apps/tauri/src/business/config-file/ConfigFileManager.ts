@@ -3,7 +3,6 @@ import type { Observable } from 'rxjs';
 import { v4 } from 'uuid';
 import { configFileGateway } from '@/lib/gateway/config-file/configFileGateway';
 import type {
-  ConfigDirectoryEntry,
   LocalPathCheckInput,
   LocalPathCheckResult,
   StorageConfigFile,
@@ -13,8 +12,16 @@ type ConfigFileProps = {
   name: string;
   path: string;
   isDirectory: boolean;
-  iconType: 'preset' | 'uploaded' | null;
-  iconValue: string | null;
+  iconUrl: string | null;
+  groupId: string | null;
+};
+
+const omitUndefined = <T extends Record<string, unknown>>(
+  value: T,
+): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, fieldValue]) => fieldValue !== undefined),
+  ) as Partial<T>;
 };
 
 export class ConfigFileManager {
@@ -75,8 +82,8 @@ export class ConfigFileManager {
       name: params.name,
       path: params.path,
       isDirectory: params.isDirectory,
-      iconType: params.iconType,
-      iconValue: params.iconValue,
+      iconUrl: params.iconUrl,
+      groupId: params.groupId,
       createdAt: now,
       updatedAt: now,
     };
@@ -106,7 +113,7 @@ export class ConfigFileManager {
 
     await configFileGateway.update({
       ...current,
-      ...params,
+      ...omitUndefined(params),
       updatedAt: Date.now(),
     });
 

@@ -62,20 +62,14 @@ export const useConfigFile = () => {
   }, [configFileManager]);
 
   const createConfigFile = useCallback(
-    async (
-      name: string,
-      path: string,
-      isDirectory: boolean,
-      iconType: 'preset' | 'uploaded' | null,
-      iconValue: string | null,
-    ) => {
-      return configFileManager.createConfigFile({
-        name,
-        path,
-        isDirectory,
-        iconType,
-        iconValue,
-      });
+    async (params: {
+      name: string;
+      path: string;
+      isDirectory: boolean;
+      iconUrl: string | null;
+      groupId: string | null;
+    }) => {
+      return configFileManager.createConfigFile(params);
     },
     [configFileManager],
   );
@@ -88,8 +82,17 @@ export const useConfigFile = () => {
   );
 
   const updateConfigFile = useCallback(
-    async (configFileId: string, name: string, path: string) => {
-      await configFileManager.updateConfigFile(configFileId, { name, path });
+    async (
+      configFileId: string,
+      params: {
+        name?: string;
+        path?: string;
+        isDirectory?: boolean;
+        iconUrl?: string | null;
+        groupId?: string | null;
+      },
+    ) => {
+      await configFileManager.updateConfigFile(configFileId, params);
     },
     [configFileManager],
   );

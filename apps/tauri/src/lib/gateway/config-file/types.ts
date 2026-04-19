@@ -3,8 +3,8 @@ export type StorageConfigFile = {
   name: string;
   path: string;
   isDirectory: boolean;
-  iconType: 'preset' | 'uploaded' | null;
-  iconValue: string | null;
+  iconUrl: string | null;
+  groupId: string | null;
   createdAt: number;
   updatedAt: number;
 };

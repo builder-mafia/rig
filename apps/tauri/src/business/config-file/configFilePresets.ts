@@ -3,8 +3,7 @@ export type ConfigFilePreset = {
   name: string;
   path: string;
   isDirectory: boolean;
-  iconType: 'preset' | 'uploaded' | null;
-  iconValue: string | null;
+  iconUrl: string | null;
 };
 
 export const CONFIG_FILE_PRESETS: ConfigFilePreset[] = [
@@ -13,31 +12,27 @@ export const CONFIG_FILE_PRESETS: ConfigFilePreset[] = [
     name: 'Zed Settings',
     path: '~/.config/zed/settings.json',
     isDirectory: false,
-    iconType: 'preset',
-    iconValue: 'zed',
+    iconUrl: '/application_icon/zed.png',
   },
   {
     presetId: 'ghostty-config',
     name: 'Ghostty Config',
     path: '~/.config/ghostty/config',
     isDirectory: false,
-    iconType: 'preset',
-    iconValue: 'ghostty',
+    iconUrl: '/application_icon/ghostty.webp',
   },
   {
     presetId: 'cursor-settings',
     name: 'Cursor Settings',
     path: '~/Library/Application Support/Cursor/User/settings.json',
     isDirectory: false,
-    iconType: 'preset',
-    iconValue: 'cursor',
+    iconUrl: '/application_icon/cursor.png',
   },
   {
     presetId: 'vscode-settings',
     name: 'VS Code Settings',
     path: '~/Library/Application Support/Code/User/settings.json',
     isDirectory: false,
-    iconType: 'preset',
-    iconValue: 'vscode',
+    iconUrl: '/application_icon/vscode.webp',
   },
 ];

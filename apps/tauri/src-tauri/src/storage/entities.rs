@@ -83,14 +83,22 @@ pub struct ConfigFile {
     pub id: String,
     pub name: String,
     pub path: String,
-    #[serde(
-        default,
-        alias = "entryType",
-        deserialize_with = "deserialize_is_directory"
-    )]
     pub is_directory: bool,
-    pub icon_type: Option<String>,
-    pub icon_value: Option<String>,
+    #[serde(default)]
+    pub icon_url: Option<String>,
+    #[serde(default)]
+    pub group_id: Option<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Group {
+    pub id: String,
+    pub name: String,
+    #[serde(default)]
+    pub icon_url: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
 }

@@ -22,7 +22,7 @@ export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {
         <span className='size-6 inline-flex items-center justify-center text-base rounded-sm overflow-hidden'>
           <EntryIconView
             isDirectory={selectedFile.isDirectory}
-            iconUrl={selectedFile.iconValue}
+            iconUrl={selectedFile.iconUrl}
             imageClassName='size-5 rounded-sm object-cover border'
           />
         </span>
