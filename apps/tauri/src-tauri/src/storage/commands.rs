@@ -1,5 +1,5 @@
 use super::{
-    entities::{Channel, ConfigFile, Message},
+    entities::{Channel, ConfigFile, Group, Message},
     external_file::{
         check_local_path as check_external_local_path, read_text_file,
         resolve_local_path, write_text_file, LocalPathCheckInput,
@@ -166,9 +166,21 @@ pub async fn get_config_files(app: AppHandle) -> Result<Vec<ConfigFile>, String>
 }
 
 #[tauri::command]
+pub async fn get_groups(app: AppHandle) -> Result<Vec<Group>, String> {
+    let storage = Storage::new(&app);
+    storage.get_groups().await
+}
+
+#[tauri::command]
 pub async fn create_config_file(app: AppHandle, config_file: ConfigFile) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.create_config_file(&config_file).await
+}
+
+#[tauri::command]
+pub async fn create_group(app: AppHandle, group: Group) -> Result<Group, String> {
+    let storage = Storage::new(&app);
+    storage.create_group(&group).await
 }
 
 #[tauri::command]
@@ -183,9 +195,21 @@ pub async fn update_config_file(app: AppHandle, config_file: ConfigFile) -> Resu
 }
 
 #[tauri::command]
+pub async fn update_group(app: AppHandle, group: Group) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.update_group(&group).await
+}
+
+#[tauri::command]
 pub async fn delete_config_file(app: AppHandle, id: String) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.delete_config_file(&id).await
+}
+
+#[tauri::command]
+pub async fn delete_group(app: AppHandle, id: String) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.delete_group(&id).await
 }
 
 #[tauri::command]

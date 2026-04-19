@@ -9,6 +9,14 @@ export type StorageConfigFile = {
   updatedAt: number;
 };
 
+export type StorageGroup = {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type ConfigDirectoryEntry = {
   name: string;
   path: string;

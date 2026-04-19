@@ -6,6 +6,7 @@ import type {
   LocalPathCheckInput,
   LocalPathCheckResult,
   StorageConfigFile,
+  StorageGroup,
 } from '@/lib/gateway/config-file/types';
 
 type ConfigFileProps = {
@@ -14,6 +15,11 @@ type ConfigFileProps = {
   isDirectory: boolean;
   iconUrl: string | null;
   groupId: string | null;
+};
+
+type GroupProps = {
+  name: string;
+  iconUrl: string | null;
 };
 
 const omitUndefined = <T extends Record<string, unknown>>(
@@ -28,6 +34,7 @@ export class ConfigFileManager {
   private static instance: ConfigFileManager;
 
   private _configFiles$ = new StateSubject<StorageConfigFile[]>([]);
+  private _groups$ = new StateSubject<StorageGroup[]>([]);
   private _selectedConfigFileId$ = new StateSubject<string | null>(null);
 
   private constructor() {}
@@ -45,6 +52,14 @@ export class ConfigFileManager {
 
   public get configFiles$(): Observable<StorageConfigFile[]> {
     return this._configFiles$.asObservable();
+  }
+
+  public get groups(): StorageGroup[] {
+    return this._groups$.getValue();
+  }
+
+  public get groups$(): Observable<StorageGroup[]> {
+    return this._groups$.asObservable();
   }
 
   public get selectedConfigFileId(): string | null {
@@ -67,10 +82,17 @@ export class ConfigFileManager {
   }
 
   public async fetchFiles() {
-    const configFiles = await configFileGateway.getAll();
+    const configFiles = await configFileGateway.getFiles();
     this._configFiles$.next(configFiles);
 
     return configFiles;
+  }
+
+  public async fetchGroups() {
+    const groups = await configFileGateway.getGroups();
+    this._groups$.next(groups);
+
+    return groups;
   }
 
   public async createConfigFile(
@@ -123,6 +145,41 @@ export class ConfigFileManager {
   public async deleteConfigFile(configFileId: string) {
     await configFileGateway.delete(configFileId);
     await this.fetchFiles();
+  }
+
+  public async createGroup(params: GroupProps): Promise<StorageGroup> {
+    const now = Date.now();
+    const group = await configFileGateway.createGroup({
+      id: v4(),
+      name: params.name,
+      iconUrl: params.iconUrl,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await this.fetchGroups();
+
+    return group;
+  }
+
+  public async updateGroup(groupId: string, params: Partial<GroupProps>) {
+    const current = this.groups.find(group => group.id === groupId);
+    if (!current) {
+      throw new Error(`Group with id ${groupId} not found`);
+    }
+
+    await configFileGateway.updateGroup({
+      ...current,
+      ...omitUndefined(params),
+      updatedAt: Date.now(),
+    });
+
+    await this.fetchGroups();
+  }
+
+  public async deleteGroup(groupId: string) {
+    await configFileGateway.deleteGroup(groupId);
+    await this.fetchGroups();
   }
 
   public selectConfigFile(configFileId: string) {

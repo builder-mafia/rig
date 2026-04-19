@@ -26,6 +26,7 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
+        self.validate_group_id(config_file.group_id.as_deref()).await?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -42,6 +43,7 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
+        self.validate_group_id(config_file.group_id.as_deref()).await?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -66,11 +68,90 @@ impl Storage {
         self.save_config_files(&filtered).await
     }
 
+    pub async fn get_groups(&self) -> Result<Vec<entities::Group>, String> {
+        match self.read::<entities::GroupsFile>(&["groups"]).await {
+            Ok(file) => {
+                let mut groups = file.groups;
+                groups.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+                Ok(groups)
+            }
+            Err(error) => {
+                if error.contains("No such file or directory") {
+                    Ok(Vec::new())
+                } else {
+                    Err(error)
+                }
+            }
+        }
+    }
+
+    pub async fn create_group(&self, group: &entities::Group) -> Result<entities::Group, String> {
+        let mut groups = self.get_groups().await?;
+
+        if groups.iter().any(|item| item.id == group.id) {
+            return Err(format!("Group already exists: {}", group.id));
+        }
+
+        if groups.iter().any(|item| item.name == group.name) {
+            return Err(format!("Group name already exists: {}", group.name));
+        }
+
+        groups.push(group.clone());
+        self.save_groups(&groups).await?;
+
+        Ok(group.clone())
+    }
+
+    pub async fn update_group(&self, group: &entities::Group) -> Result<(), String> {
+        let mut groups = self.get_groups().await?;
+
+        if groups
+            .iter()
+            .any(|item| item.id != group.id && item.name == group.name)
+        {
+            return Err(format!("Group name already exists: {}", group.name));
+        }
+
+        if let Some(existing) = groups.iter_mut().find(|item| item.id == group.id) {
+            *existing = group.clone();
+        } else {
+            return Err(format!("Group not found: {}", group.id));
+        }
+
+        self.save_groups(&groups).await
+    }
+
+    pub async fn delete_group(&self, id: &str) -> Result<(), String> {
+        if self
+            .get_config_files()
+            .await?
+            .iter()
+            .any(|config_file| config_file.group_id.as_deref() == Some(id))
+        {
+            return Err(format!("Group is still used by config files: {}", id));
+        }
+
+        let groups = self.get_groups().await?;
+        if !groups.iter().any(|item| item.id == id) {
+            return Err(format!("Group not found: {}", id));
+        }
+
+        let filtered: Vec<_> = groups.into_iter().filter(|item| item.id != id).collect();
+        self.save_groups(&filtered).await
+    }
+
     async fn save_config_files(&self, config_files: &[entities::ConfigFile]) -> Result<(), String> {
         let file = entities::ConfigFilesFile {
             config_files: config_files.to_vec(),
         };
         self.write(&["config_file"], &file).await
+    }
+
+    async fn save_groups(&self, groups: &[entities::Group]) -> Result<(), String> {
+        let file = entities::GroupsFile {
+            groups: groups.to_vec(),
+        };
+        self.write(&["groups"], &file).await
     }
 
     fn validate_existing_config_file_path(
@@ -96,5 +177,22 @@ impl Storage {
         }
 
         Ok(())
+    }
+
+    async fn validate_group_id(&self, group_id: Option<&str>) -> Result<(), String> {
+        let Some(group_id) = group_id else {
+            return Ok(());
+        };
+
+        if self
+            .get_groups()
+            .await?
+            .iter()
+            .any(|group| group.id == group_id)
+        {
+            return Ok(());
+        }
+
+        Err(format!("Group not found: {}", group_id))
     }
 }

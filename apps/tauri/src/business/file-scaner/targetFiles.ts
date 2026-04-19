@@ -496,4 +496,22 @@ export const TARGET_FILES = [
     path: '~/.config/zsh/',
     isDirectory: true,
   },
+  {
+    groupId: 'openclaw',
+    name: 'openclaw.json',
+    path: '~/.openclaw/openclaw.json',
+    isDirectory: false,
+  },
+  {
+    groupId: 'openclaw',
+    name: 'workspace',
+    path: '~/.openclaw/workspace',
+    isDirectory: true,
+  },
+  {
+    groupId: 'openclaw',
+    name: 'credentials',
+    path: '~/.openclaw/credentials',
+    isDirectory: true,
+  },
 ];

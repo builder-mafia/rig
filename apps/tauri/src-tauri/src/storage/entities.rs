@@ -1,5 +1,5 @@
 use chrono::Utc;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -117,24 +117,16 @@ impl Default for ConfigFilesFile {
     }
 }
 
-fn deserialize_is_directory<'de, D>(deserializer: D) -> Result<bool, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum IsDirectoryValue {
-        Bool(bool),
-        String(String),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupsFile {
+    pub groups: Vec<Group>,
+}
+
+impl Default for GroupsFile {
+    fn default() -> Self {
+        Self { groups: Vec::new() }
     }
-
-    let value = Option::<IsDirectoryValue>::deserialize(deserializer)?;
-
-    Ok(match value {
-        Some(IsDirectoryValue::Bool(value)) => value,
-        Some(IsDirectoryValue::String(value)) => value == "folder",
-        None => false,
-    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

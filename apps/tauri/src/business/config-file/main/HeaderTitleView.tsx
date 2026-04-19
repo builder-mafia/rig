@@ -9,11 +9,7 @@ type Props = {
 
 export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {
   if (paneType === 'create-entry') {
-    return (
-      <div className='text-sm text-muted-foreground'>
-        Add a settings file or folder
-      </div>
-    );
+    return <div className='text-sm text-muted-foreground'></div>;
   }
 
   if (selectedFile) {
@@ -36,9 +32,5 @@ export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {
     );
   }
 
-  return (
-    <div className='text-sm text-muted-foreground'>
-      Select a file from the sidebar
-    </div>
-  );
+  return <div className='text-sm text-muted-foreground'></div>;
 };

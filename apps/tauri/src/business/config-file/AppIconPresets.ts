@@ -209,6 +209,12 @@ export const APPLICATION_ICON_PRESETS = [
     light: '/application_icon/yarn.webp',
     dark: '/application_icon/yarn.webp',
   },
+  {
+    id: 'openclaw',
+    label: 'OpenClaw',
+    light: '/application_icon/openclaw.webp',
+    dark: '/application_icon/openclaw.webp',
+  },
 ] as const;
 
 export const getApplicationIconPreset = (presetId: string) => {

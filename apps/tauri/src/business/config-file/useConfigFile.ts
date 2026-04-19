@@ -3,9 +3,9 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useService } from '@/business/ServiceContext';
 import type {
-  ConfigDirectoryEntry,
   LocalPathCheckInput,
   LocalPathCheckResult,
+  StorageGroup,
 } from '@/lib/gateway/config-file/types';
 
 export const useConfigFile = () => {
@@ -28,6 +28,25 @@ export const useConfigFile = () => {
     subscribeToConfigFiles,
     getConfigFilesSnapshot,
     getConfigFilesSnapshot,
+  );
+
+  const subscribeToGroups = useCallback(
+    (onChange: () => void) => {
+      const subscription = configFileManager.groups$.subscribe(onChange);
+      return () => subscription.unsubscribe();
+    },
+    [configFileManager],
+  );
+
+  const getGroupsSnapshot = useCallback(
+    () => configFileManager.groups,
+    [configFileManager],
+  );
+
+  const groups = useSyncExternalStore(
+    subscribeToGroups,
+    getGroupsSnapshot,
+    getGroupsSnapshot,
   );
 
   const subscribeToSelectedConfigFileId = useCallback(
@@ -74,6 +93,17 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
+  const fetchGroups = useCallback(async () => {
+    await configFileManager.fetchGroups();
+  }, [configFileManager]);
+
+  const createGroup = useCallback(
+    async (params: { name: string; iconUrl: string | null }) => {
+      return configFileManager.createGroup(params);
+    },
+    [configFileManager],
+  );
+
   const checkLocalPath = useCallback(
     async (input: LocalPathCheckInput): Promise<LocalPathCheckResult> => {
       return configFileManager.checkLocalPath(input);
@@ -104,6 +134,26 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
+  const updateGroup = useCallback(
+    async (
+      groupId: string,
+      params: {
+        name?: string;
+        iconUrl?: string | null;
+      },
+    ) => {
+      await configFileManager.updateGroup(groupId, params);
+    },
+    [configFileManager],
+  );
+
+  const deleteGroup = useCallback(
+    async (groupId: string) => {
+      await configFileManager.deleteGroup(groupId);
+    },
+    [configFileManager],
+  );
+
   const selectConfigFile = useCallback(
     (configFileId: string) => {
       configFileManager.selectConfigFile(configFileId);
@@ -127,12 +177,17 @@ export const useConfigFile = () => {
 
   return {
     configFiles,
+    groups,
     selectedConfigFile,
     fetchConfigFiles,
+    fetchGroups,
     createConfigFile,
+    createGroup,
     checkLocalPath,
     updateConfigFile,
+    updateGroup,
     deleteConfigFile,
+    deleteGroup,
     selectConfigFile,
     readConfigFile,
     writeConfigFile,
