@@ -11,19 +11,17 @@ export const FileItemView = ({ file }: Props) => {
   const { id, name, path, iconUrl, isDirectory } = file;
   const { selectedFile, setSelectedFile } = use(SelectionContext);
   const isSelected = selectedFile?.id === id;
+
   return (
     <div
-      className={`relative rounded-md ${
+      className={`relative rounded-md w-full ${
         isSelected ? 'bg-accent text-accent-foreground' : 'hover:bg-muted/50'
       }`}
     >
       <button
         type='button'
-        className='absolute inset-0 rounded-md'
         onClick={() => setSelectedFile(file)}
         aria-label={`Select ${name}`}
-      />
-      <div
         className={`flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition-colors ${
           isSelected ? 'bg-accent text-accent-foreground' : ''
         }`}
@@ -40,7 +38,7 @@ export const FileItemView = ({ file }: Props) => {
             </span>
           </span>
         </div>
-      </div>
+      </button>
     </div>
   );
 };

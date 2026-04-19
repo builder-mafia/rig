@@ -156,6 +156,7 @@ export const useSetConfigFile = () => {
         isDirectory?: boolean;
         iconUrl?: string | null;
         groupId?: string | null;
+        order?: number;
       },
     ) => {
       await configFileManager.updateConfigFile(configFileId, params);
@@ -176,6 +177,7 @@ export const useSetConfigFile = () => {
       params: {
         name?: string;
         iconUrl?: string | null;
+        order?: number;
       },
     ) => {
       await configFileManager.updateGroup(groupId, params);
