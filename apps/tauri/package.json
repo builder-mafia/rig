@@ -33,6 +33,7 @@
     "@allin/message-metadata-schema": "workspace:*",
     "@allin/ui": "workspace:*",
     "@allin/utils": "workspace:*",
+    "@dnd-kit/collision": "^0.4.0",
     "@dnd-kit/dom": "^0.4.0",
     "@dnd-kit/react": "^0.4.0",
     "@lobehub/icons": "^2.43.1",
