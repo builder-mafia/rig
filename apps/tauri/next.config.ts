@@ -4,6 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const internalHost = process.env.TAURI_DEV_HOST || 'localhost';
 
 const nextConfig: NextConfig = {
+  reactCompiler: true,
   /* config options here */
   output: 'export',
   images: {
