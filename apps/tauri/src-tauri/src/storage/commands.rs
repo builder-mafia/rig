@@ -1,9 +1,9 @@
 use super::{
     entities::{Channel, ConfigFile, Group, Message},
     external_file::{
-        check_local_path as check_external_local_path, read_text_file,
-        resolve_local_path, write_text_file, LocalPathCheckInput,
-        LocalPathCheckResult,
+        check_local_path as check_external_local_path,
+        read_directory_entries as read_external_directory_entries, read_text_file,
+        resolve_local_path, write_text_file, File, LocalPathCheckInput, LocalPathCheckResult,
     },
     Storage,
 };
@@ -215,6 +215,11 @@ pub async fn delete_group(app: AppHandle, id: String) -> Result<(), String> {
 #[tauri::command]
 pub async fn read_file(path: String) -> Result<String, String> {
     read_text_file(&path).await
+}
+
+#[tauri::command]
+pub async fn read_directory_entries(path: String) -> Result<Vec<File>, String> {
+    read_external_directory_entries(&path).await
 }
 
 #[tauri::command]

@@ -126,6 +126,7 @@ pub fn run() {
             storage::commands::open_config_file_in_cursor,
             storage::commands::open_config_file_in_zed,
             storage::commands::read_file,
+            storage::commands::read_directory_entries,
             storage::commands::write_file,
             auth::commands::start_codex_oauth,
             auth::commands::get_codex_auth_status,
