@@ -17,13 +17,12 @@ export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {
       <div className='min-w-0 flex items-center gap-2'>
         <span className='size-6 inline-flex items-center justify-center text-base rounded-sm overflow-hidden'>
           <EntryIconView
-            isDirectory={selectedFile.isDirectory}
-            iconUrl={selectedFile.iconUrl}
+            isDirectory={false}
             imageClassName='size-5 rounded-sm object-cover border'
           />
         </span>
         <div className='min-w-0'>
-          <p className='text-sm font-medium truncate'>{selectedFile.name}</p>
+          <p className='text-sm font-medium truncate'>{selectedFile.fileName}</p>
           <p className='text-xs text-muted-foreground truncate'>
             {selectedFile.path}
           </p>
