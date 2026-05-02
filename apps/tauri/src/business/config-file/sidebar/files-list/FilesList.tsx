@@ -29,7 +29,7 @@ const LONG_PRESS_POINTER_SENSOR = PointerSensor.configure({
   ],
 });
 
-const applyOptimisticFileUpdate = (
+const updateOptimistically = (
   state: GroupedConfigFilesItem[],
   updatedFile: StorageConfigFile,
 ): GroupedConfigFilesItem[] => {
@@ -59,14 +59,14 @@ export const FilesList = () => {
   const [, startTransition] = useTransition();
   const {
     configFiles,
-    groupedConfigFiles,
+    groupedConfigFiles: _groupedConfigFiles,
     updateConfigFile,
     fetchConfigFiles,
     fetchGroups,
   } = useConfigFile();
-  const [optimisticGroupedConfigFiles, addOptimisticFileUpdate] = useOptimistic(
-    groupedConfigFiles,
-    applyOptimisticFileUpdate,
+  const [groupedConfigFiles, updateFile] = useOptimistic(
+    _groupedConfigFiles,
+    updateOptimistically,
   );
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export const FilesList = () => {
     }
 
     const maxOrderInTargetGroup = Math.max(
-      ...(optimisticGroupedConfigFiles
+      ...(groupedConfigFiles
         .find(({ group }) => group?.id === targetGroupId)
         ?.configFiles.map(file => file.order) ?? []),
       -Infinity,
@@ -107,7 +107,7 @@ export const FilesList = () => {
 
     startTransition(async () => {
       if (sourceFile) {
-        addOptimisticFileUpdate({
+        updateFile({
           ...sourceFile,
           groupId: targetGroupId,
           order: newOrder,
@@ -126,9 +126,9 @@ export const FilesList = () => {
       sensors={[LONG_PRESS_POINTER_SENSOR]}
       onDragEnd={handleDragEnd}
     >
-      <div className='flex-1 overflow-y-auto p-2'>
+      <div className='p-2'>
         <div className='flex flex-col gap-3'>
-          {optimisticGroupedConfigFiles
+          {groupedConfigFiles
             .filter(({ group }) => Filter.notNullish(group))
             .map(({ group, configFiles }) => {
               return (
@@ -139,7 +139,7 @@ export const FilesList = () => {
                 />
               );
             })}
-          {optimisticGroupedConfigFiles
+          {groupedConfigFiles
             .filter(item => item.group === null)
             .map(item => {
               return (

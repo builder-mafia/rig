@@ -1,23 +1,36 @@
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
-import { getFileTypeFromPath } from '../configFileWorkbenchUtils';
-import { EditorView } from './EditorView';
-import { PreviewActionsView } from './PreviewActionsView';
+'use client';
 
-export const ContentView = ({
-  selectedFile,
-}: {
-  selectedFile: StorageConfigFile;
-}) => {
-  return (
-    <div className='flex h-full min-h-0'>
-      <div className='min-w-0 flex-1'>
-        <EditorView
-          language={getFileTypeFromPath(selectedFile.path)}
-          value={''}
-          onChange={() => {}}
-        />
-      </div>
-      <PreviewActionsView />
-    </div>
-  );
+import { useAtomValue } from 'jotai';
+import { Suspense } from 'react';
+import { match } from 'ts-pattern';
+import { ScanView } from '@/business/file-scaner/ScanView';
+import { contentTypeAtom } from '../contentTypeAtom';
+import { useSelectionContext } from '../SelectionContext';
+import { EmptyPaneView } from './EmptyPaneView';
+import { FileAddFormView } from './FileAddFormView';
+import { FileEditorView } from './FileEditorView';
+
+export const ContentView = () => {
+  const contentType = useAtomValue(contentTypeAtom);
+  const { selectedFile } = useSelectionContext();
+
+  return match(contentType)
+    .when(
+      type => type === 'content' && selectedFile,
+      () => (
+        <Suspense
+          fallback={
+            <EmptyPaneView title='Loading' description='Loading file...' />
+          }
+        >
+          <FileEditorView selectedFile={selectedFile!} />
+        </Suspense>
+      ),
+    )
+    .with('new-user', () => <ScanView />)
+    .when(
+      type => type === 'create-entry',
+      () => <FileAddFormView />,
+    )
+    .otherwise(() => null);
 };

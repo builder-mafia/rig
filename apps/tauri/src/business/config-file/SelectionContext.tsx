@@ -1,9 +1,16 @@
-import { createContext, useMemo, useState } from 'react';
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
+import { createContext, use, useMemo, useState } from 'react';
+
+export type SelectedFile = {
+  fileName: string;
+  path: string;
+  content: string;
+  createdAt: number;
+  updatedAt: number;
+};
 
 export const SelectionContext = createContext<{
-  selectedFile: StorageConfigFile | null;
-  setSelectedFile: (file: StorageConfigFile | null) => void;
+  selectedFile: SelectedFile | null;
+  setSelectedFile: (file: SelectedFile | null) => void;
 }>({
   selectedFile: null,
   setSelectedFile: () => {},
@@ -14,9 +21,7 @@ export const SelectionProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [selectedFile, setSelectedFile] = useState<StorageConfigFile | null>(
-    null,
-  );
+  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const value = useMemo(
     () => ({
       selectedFile,
@@ -26,4 +31,8 @@ export const SelectionProvider = ({
   );
 
   return <SelectionContext value={value}>{children}</SelectionContext>;
+};
+
+export const useSelectionContext = () => {
+  return use(SelectionContext);
 };

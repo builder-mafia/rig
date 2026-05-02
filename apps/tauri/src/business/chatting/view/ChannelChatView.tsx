@@ -60,7 +60,6 @@ export const ChannelChatView = ({ channel }: { channel: StorageChannel }) => {
           )}
         </div>
       </div>
-
       <div className='border-t bg-background/80 backdrop-blur px-4 py-3'>
         <div className='mx-auto max-w-3xl flex flex-col gap-2'>
           <div className='flex items-center gap-2'>

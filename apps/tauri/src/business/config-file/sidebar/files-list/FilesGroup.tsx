@@ -1,5 +1,7 @@
 import { pointerIntersection } from '@dnd-kit/collision';
 import { useDroppable } from '@dnd-kit/react';
+import { ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import type z from 'zod/v4';
 import type {
   StorageConfigFile,
@@ -18,6 +20,7 @@ export const FilesGroup = ({
   configFiles: StorageConfigFile[];
 }) => {
   const groupId = group.id;
+  const [isOpen, setIsOpen] = useState(true);
   const { ref: droppableRef, isDropTarget } = useDroppable<
     z.infer<typeof DroppableGroupDataSchema>
   >({
@@ -36,13 +39,31 @@ export const FilesGroup = ({
       ref={droppableRef}
       className={`group relative flex flex-col gap-1`}
     >
-      <div className='px-2 pt-1.5'>
-        <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground group-data-[drop-target=true]:text-blue-400 group-data-[drop-target=true]:font-bold'>
+      <button
+        type='button'
+        onClick={() => setIsOpen(current => !current)}
+        className='flex min-w-0 flex-row items-center gap-1.5 rounded-md px-1 py-2 text-left hover:bg-secondary'
+      >
+        <ChevronRight
+          className={`size-3 shrink-0 text-muted-foreground transition-transform ${isOpen ? 'rotate-90' : ''}`}
+        />
+        {group.iconUrl ? (
+          <img
+            src={group.iconUrl}
+            alt={group.name}
+            className='size-4 shrink-0 rounded-md'
+          />
+        ) : (
+          <div className='flex size-4 shrink-0 select-none items-center justify-center rounded-md border bg-background text-xs font-semibold text-muted-foreground'>
+            {group.name.slice(0, 1).toUpperCase()}
+          </div>
+        )}
+        <p className='min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground select-none group-data-[drop-target=true]:font-bold group-data-[drop-target=true]:text-blue-400'>
           {group.name}
         </p>
-      </div>
-      {configFiles.length > 0 && (
-        <div className='mt-[-2px] ml-3 flex min-h-10 flex-col gap-1 rounded-md transition-colors group-data-[drop-target=true]:bg-blue-300/40'>
+      </button>
+      {isOpen && configFiles.length > 0 && (
+        <div className='mt-[-2px] flex min-h-10 flex-col gap-0 rounded-md transition-colors group-data-[drop-target=true]:bg-blue-300/40'>
           {configFiles.map(file =>
             file.isDirectory ? (
               <FolderRow

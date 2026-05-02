@@ -1,10 +1,10 @@
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
+import type { ContentType } from '../contentTypeAtom';
 import { EntryIconView } from '../EntryIconView';
-import type { PaneType } from '../usePaneType';
+import type { SelectedFile } from '../SelectionContext';
 
 type Props = {
-  paneType: PaneType;
-  selectedFile: StorageConfigFile | null;
+  paneType: ContentType;
+  selectedFile: SelectedFile | null;
 };
 
 export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {

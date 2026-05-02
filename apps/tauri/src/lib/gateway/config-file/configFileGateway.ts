@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
   StorageConfigFile,
   StorageGroup,
 } from './types';
@@ -29,6 +30,9 @@ export const configFileGateway = {
   deleteGroup: (id: string) => invoke<void>('delete_group', { id }),
 
   readContent: (path: string) => invoke<string>('read_file', { path }),
+
+  readDirectoryEntries: (path: string) =>
+    invoke<ScannedFile[]>('read_directory_entries', { path }),
 
   writeContent: (path: string, content: string) =>
     invoke<void>('write_file', { path, content }),

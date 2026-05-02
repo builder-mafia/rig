@@ -1,9 +1,8 @@
 import { Button } from '@allin/ui';
 import { assert } from 'es-toolkit';
 import { ExternalLink } from 'lucide-react';
-import { use } from 'react';
 import { getApplicationIconUrl } from '../AppIconPresets';
-import { SelectionContext } from '../SelectionContext';
+import { useSelectionContext } from '../SelectionContext';
 import { useAppOpener } from './useAppOpener';
 
 type PreviewActionButtonProps = {
@@ -37,7 +36,7 @@ const PreviewActionButton = ({
 
 export const PreviewActionsView = () => {
   const { openApp } = useAppOpener();
-  const { selectedFile } = use(SelectionContext);
+  const { selectedFile } = useSelectionContext();
   assert(selectedFile?.path, 'Selected file path is required');
 
   return (

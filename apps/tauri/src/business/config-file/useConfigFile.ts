@@ -5,6 +5,7 @@ import { useService } from '@/business/ServiceContext';
 import type {
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
   StorageConfigFile,
   StorageGroup,
 } from '@/lib/gateway/config-file/types';
@@ -71,9 +72,9 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
-  const read = useCallback(
-    async (path: string) => {
-      return configFileManager.read(path);
+  const readDirectoryEntries = useCallback(
+    async (path: string): Promise<ScannedFile[]> => {
+      return configFileManager.readDirectoryFiles(path);
     },
     [configFileManager],
   );
@@ -125,7 +126,7 @@ export const useConfigFile = () => {
     fetchConfigFiles,
     fetchGroups,
     checkLocalPath,
-    read,
+    readDirectoryEntries,
     ...setConfigFile,
   };
 };
@@ -192,13 +193,6 @@ export const useSetConfigFile = () => {
     [configFileManager],
   );
 
-  const write = useCallback(
-    async (path: string, content: string) => {
-      await configFileManager.write(path, content);
-    },
-    [configFileManager],
-  );
-
   return {
     createConfigFile,
     createGroup,
@@ -206,6 +200,5 @@ export const useSetConfigFile = () => {
     updateGroup,
     deleteConfigFile,
     deleteGroup,
-    write,
   };
 };

@@ -1,6 +1,4 @@
 import { match } from 'ts-pattern';
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
-import type { ConfigBrowserItem } from './configFileWorkbenchTypes';
 
 export const getFileTypeFromPath = (path: string) => {
   const lowerCasePath = path.toLowerCase();
@@ -32,17 +30,3 @@ export const getFileTypeFromPath = (path: string) => {
     )
     .otherwise(() => 'plaintext');
 };
-
-export const getNameFromPath = (path: string) => {
-  const normalizedPath = path.replace(/\/+$|\/+$/g, '');
-  return normalizedPath.split('/').at(-1) ?? path;
-};
-
-export const toBrowserItem = (
-  configFile: StorageConfigFile,
-): ConfigBrowserItem => ({
-  rootId: configFile.id,
-  name: configFile.name,
-  path: configFile.path,
-  isDirectory: configFile.isDirectory,
-});

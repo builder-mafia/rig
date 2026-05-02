@@ -1,11 +1,11 @@
 import { Button } from '@allin/ui';
 import { Trash2 } from 'lucide-react';
-import type { StorageConfigFile } from '@/lib/gateway/config-file/types';
-import type { PaneType } from '../usePaneType';
+import type { ContentType } from '../contentTypeAtom';
+import type { SelectedFile } from '../SelectionContext';
 
 type Props = {
-  paneType: PaneType;
-  selectedFile: StorageConfigFile | null;
+  paneType: ContentType;
+  selectedFile: SelectedFile | null;
 };
 
 export const HeaderActionsView = ({ paneType, selectedFile }: Props) => {

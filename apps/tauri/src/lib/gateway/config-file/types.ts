@@ -19,7 +19,7 @@ export type StorageGroup = {
   updatedAt: number;
 };
 
-export type ConfigDirectoryEntry = {
+export type ScannedFile = {
   name: string;
   path: string;
   isDirectory: boolean;

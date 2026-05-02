@@ -4,6 +4,7 @@ import { configFileGateway } from '@/lib/gateway/config-file/configFileGateway';
 import type {
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
   StorageConfigFile,
   StorageGroup,
 } from '@/lib/gateway/config-file/types';
@@ -129,6 +130,10 @@ export class ConfigFileManager {
 
   public async read(path: string) {
     return configFileGateway.readContent(path);
+  }
+
+  public async readDirectoryFiles(path: string): Promise<ScannedFile[]> {
+    return configFileGateway.readDirectoryEntries(path);
   }
 
   public async write(path: string, content: string) {
