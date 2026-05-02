@@ -1,4 +1,4 @@
-use super::{entities, Storage};
+use super::{entities, external_file::resolve_local_path, Storage};
 
 impl Storage {
     pub async fn get_config_files(&self) -> Result<Vec<entities::ConfigFile>, String> {
@@ -8,7 +8,7 @@ impl Storage {
         {
             Ok(file) => {
                 let mut config_files = file.config_files;
-                config_files.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+                config_files.sort_by(|a, b| a.order.total_cmp(&b.order));
                 Ok(config_files)
             }
             Err(error) => {
@@ -26,6 +26,7 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
+        self.validate_group_id(config_file.group_id.as_deref()).await?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -42,6 +43,7 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
+        self.validate_group_id(config_file.group_id.as_deref()).await?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -66,6 +68,78 @@ impl Storage {
         self.save_config_files(&filtered).await
     }
 
+    pub async fn get_groups(&self) -> Result<Vec<entities::Group>, String> {
+        match self.read::<entities::GroupsFile>(&["groups"]).await {
+            Ok(file) => {
+                let mut groups = file.groups;
+                groups.sort_by(|a, b| a.order.total_cmp(&b.order));
+                Ok(groups)
+            }
+            Err(error) => {
+                if error.contains("No such file or directory") {
+                    Ok(Vec::new())
+                } else {
+                    Err(error)
+                }
+            }
+        }
+    }
+
+    pub async fn create_group(&self, group: &entities::Group) -> Result<entities::Group, String> {
+        let mut groups = self.get_groups().await?;
+
+        if groups.iter().any(|item| item.id == group.id) {
+            return Err(format!("Group already exists: {}", group.id));
+        }
+
+        if groups.iter().any(|item| item.name == group.name) {
+            return Err(format!("Group name already exists: {}", group.name));
+        }
+
+        groups.push(group.clone());
+        self.save_groups(&groups).await?;
+
+        Ok(group.clone())
+    }
+
+    pub async fn update_group(&self, group: &entities::Group) -> Result<(), String> {
+        let mut groups = self.get_groups().await?;
+
+        if groups
+            .iter()
+            .any(|item| item.id != group.id && item.name == group.name)
+        {
+            return Err(format!("Group name already exists: {}", group.name));
+        }
+
+        if let Some(existing) = groups.iter_mut().find(|item| item.id == group.id) {
+            *existing = group.clone();
+        } else {
+            return Err(format!("Group not found: {}", group.id));
+        }
+
+        self.save_groups(&groups).await
+    }
+
+    pub async fn delete_group(&self, id: &str) -> Result<(), String> {
+        if self
+            .get_config_files()
+            .await?
+            .iter()
+            .any(|config_file| config_file.group_id.as_deref() == Some(id))
+        {
+            return Err(format!("Group is still used by config files: {}", id));
+        }
+
+        let groups = self.get_groups().await?;
+        if !groups.iter().any(|item| item.id == id) {
+            return Err(format!("Group not found: {}", id));
+        }
+
+        let filtered: Vec<_> = groups.into_iter().filter(|item| item.id != id).collect();
+        self.save_groups(&filtered).await
+    }
+
     async fn save_config_files(&self, config_files: &[entities::ConfigFile]) -> Result<(), String> {
         let file = entities::ConfigFilesFile {
             config_files: config_files.to_vec(),
@@ -73,70 +147,11 @@ impl Storage {
         self.write(&["config_file"], &file).await
     }
 
-    pub async fn list_config_directory_entries(
-        &self,
-        path: &str,
-    ) -> Result<Vec<entities::ConfigDirectoryEntry>, String> {
-        let resolved_path = Self::resolve_local_path(path)?;
-
-        if !resolved_path.exists() {
-            return Err(format!(
-                "Directory does not exist: {}",
-                resolved_path.display()
-            ));
-        }
-
-        if !resolved_path.is_dir() {
-            return Err(format!(
-                "Path is not a directory: {}",
-                resolved_path.display()
-            ));
-        }
-
-        let mut entries = Vec::new();
-        let mut read_dir = tokio::fs::read_dir(&resolved_path).await.map_err(|e| {
-            format!(
-                "Failed to read directory {}: {}",
-                resolved_path.display(),
-                e
-            )
-        })?;
-
-        while let Some(entry) = read_dir.next_entry().await.map_err(|e| {
-            format!(
-                "Failed to read directory entry {}: {}",
-                resolved_path.display(),
-                e
-            )
-        })? {
-            let entry_path = entry.path();
-            let metadata = entry
-                .metadata()
-                .await
-                .map_err(|e| format!("Failed to read metadata {}: {}", entry_path.display(), e))?;
-
-            let is_directory = if metadata.is_dir() {
-                true
-            } else if metadata.is_file() {
-                false
-            } else {
-                continue;
-            };
-
-            entries.push(entities::ConfigDirectoryEntry {
-                name: entry.file_name().to_string_lossy().to_string(),
-                path: entry_path.to_string_lossy().to_string(),
-                is_directory,
-            });
-        }
-
-        entries.sort_by(|a, b| match (a.is_directory, b.is_directory) {
-            (true, false) => std::cmp::Ordering::Less,
-            (false, true) => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        });
-
-        Ok(entries)
+    async fn save_groups(&self, groups: &[entities::Group]) -> Result<(), String> {
+        let file = entities::GroupsFile {
+            groups: groups.to_vec(),
+        };
+        self.write(&["groups"], &file).await
     }
 
     fn validate_existing_config_file_path(
@@ -144,7 +159,7 @@ impl Storage {
         path: &str,
         is_directory: bool,
     ) -> Result<(), String> {
-        let resolved_path = Self::resolve_local_path(path)?;
+        let resolved_path = resolve_local_path(path)?;
 
         if !resolved_path.exists() {
             return Err(format!(
@@ -162,5 +177,22 @@ impl Storage {
         }
 
         Ok(())
+    }
+
+    async fn validate_group_id(&self, group_id: Option<&str>) -> Result<(), String> {
+        let Some(group_id) = group_id else {
+            return Ok(());
+        };
+
+        if self
+            .get_groups()
+            .await?
+            .iter()
+            .any(|group| group.id == group_id)
+        {
+            return Ok(());
+        }
+
+        Err(format!("Group not found: {}", group_id))
     }
 }

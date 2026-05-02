@@ -3,13 +3,23 @@ export type StorageConfigFile = {
   name: string;
   path: string;
   isDirectory: boolean;
-  iconType: 'preset' | 'uploaded' | null;
-  iconValue: string | null;
+  iconUrl: string | null;
+  groupId: string | null;
+  order: number;
   createdAt: number;
   updatedAt: number;
 };
 
-export type ConfigDirectoryEntry = {
+export type StorageGroup = {
+  id: string;
+  name: string;
+  iconUrl: string | null;
+  order: number;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type ScannedFile = {
   name: string;
   path: string;
   isDirectory: boolean;
@@ -17,13 +27,11 @@ export type ConfigDirectoryEntry = {
 
 export type LocalPathCheckInput = {
   path: string;
-  isDirectory: boolean;
 };
 
 export type LocalPathCheckResult = {
-  path: string;
   resolvedPath: string;
   exists: boolean;
-  matchesType: boolean;
-  message: string | null;
+  createdAt: number | null;
+  updatedAt: number | null;
 };

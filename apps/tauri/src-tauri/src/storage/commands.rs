@@ -1,31 +1,18 @@
 use super::{
-    entities::{Channel, ConfigFile, Message},
+    entities::{Channel, ConfigFile, Group, Message},
+    external_file::{
+        check_local_path as check_external_local_path,
+        read_directory_entries as read_external_directory_entries, read_text_file,
+        resolve_local_path, write_text_file, File, LocalPathCheckInput, LocalPathCheckResult,
+    },
     Storage,
 };
 use crate::storage::entities::{Agent, AppSettings};
-use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tauri::AppHandle;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LocalPathCheckInput {
-    pub path: String,
-    pub is_directory: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LocalPathCheckResult {
-    pub path: String,
-    pub resolved_path: String,
-    pub exists: bool,
-    pub matches_type: bool,
-    pub message: Option<String>,
-}
-
 fn resolve_config_target_path(path: &str) -> Result<std::path::PathBuf, String> {
-    Storage::resolve_local_path(path)
+    resolve_local_path(path)
 }
 
 fn resolve_config_target_directory(path: &str) -> Result<std::path::PathBuf, String> {
@@ -179,57 +166,26 @@ pub async fn get_config_files(app: AppHandle) -> Result<Vec<ConfigFile>, String>
 }
 
 #[tauri::command]
+pub async fn get_groups(app: AppHandle) -> Result<Vec<Group>, String> {
+    let storage = Storage::new(&app);
+    storage.get_groups().await
+}
+
+#[tauri::command]
 pub async fn create_config_file(app: AppHandle, config_file: ConfigFile) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.create_config_file(&config_file).await
 }
 
 #[tauri::command]
-pub async fn check_local_paths(
-    paths: Vec<LocalPathCheckInput>,
-) -> Result<Vec<LocalPathCheckResult>, String> {
-    Ok(paths
-        .into_iter()
-        .map(|input| match Storage::resolve_local_path(&input.path) {
-            Ok(resolved_path) => {
-                let resolved_path_string = resolved_path.to_string_lossy().to_string();
-                let exists = resolved_path.exists();
-                let matches_type = exists
-                    && if input.is_directory {
-                        resolved_path.is_dir()
-                    } else {
-                        resolved_path.is_file()
-                    };
+pub async fn create_group(app: AppHandle, group: Group) -> Result<Group, String> {
+    let storage = Storage::new(&app);
+    storage.create_group(&group).await
+}
 
-                let message = if !exists {
-                    Some("Path does not exist".to_string())
-                } else if !matches_type {
-                    Some(if input.is_directory {
-                        "Expected a folder".to_string()
-                    } else {
-                        "Expected a file".to_string()
-                    })
-                } else {
-                    None
-                };
-
-                LocalPathCheckResult {
-                    path: input.path,
-                    resolved_path: resolved_path_string,
-                    exists,
-                    matches_type,
-                    message,
-                }
-            }
-            Err(error) => LocalPathCheckResult {
-                path: input.path.clone(),
-                resolved_path: input.path,
-                exists: false,
-                matches_type: false,
-                message: Some(error),
-            },
-        })
-        .collect())
+#[tauri::command]
+pub async fn check_local_path(input: LocalPathCheckInput) -> Result<LocalPathCheckResult, String> {
+    Ok(check_external_local_path(&input.path))
 }
 
 #[tauri::command]
@@ -239,34 +195,36 @@ pub async fn update_config_file(app: AppHandle, config_file: ConfigFile) -> Resu
 }
 
 #[tauri::command]
+pub async fn update_group(app: AppHandle, group: Group) -> Result<(), String> {
+    let storage = Storage::new(&app);
+    storage.update_group(&group).await
+}
+
+#[tauri::command]
 pub async fn delete_config_file(app: AppHandle, id: String) -> Result<(), String> {
     let storage = Storage::new(&app);
     storage.delete_config_file(&id).await
 }
 
 #[tauri::command]
-pub async fn read_config_file(app: AppHandle, path: String) -> Result<String, String> {
+pub async fn delete_group(app: AppHandle, id: String) -> Result<(), String> {
     let storage = Storage::new(&app);
-    storage.read_config_file(&path).await
+    storage.delete_group(&id).await
 }
 
 #[tauri::command]
-pub async fn write_config_file(
-    app: AppHandle,
-    path: String,
-    content: String,
-) -> Result<(), String> {
-    let storage = Storage::new(&app);
-    storage.write_config_file(&path, &content).await
+pub async fn read_file(path: String) -> Result<String, String> {
+    read_text_file(&path).await
 }
 
 #[tauri::command]
-pub async fn list_config_directory_entries(
-    app: AppHandle,
-    path: String,
-) -> Result<Vec<super::entities::ConfigDirectoryEntry>, String> {
-    let storage = Storage::new(&app);
-    storage.list_config_directory_entries(&path).await
+pub async fn read_directory_entries(path: String) -> Result<Vec<File>, String> {
+    read_external_directory_entries(&path).await
+}
+
+#[tauri::command]
+pub async fn write_file(path: String, content: String) -> Result<(), String> {
+    write_text_file(&path, &content).await
 }
 
 #[tauri::command]

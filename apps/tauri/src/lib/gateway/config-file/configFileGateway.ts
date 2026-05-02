@@ -1,42 +1,39 @@
 import { invoke } from '@tauri-apps/api/core';
 import type {
-  ConfigDirectoryEntry,
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
   StorageConfigFile,
+  StorageGroup,
 } from './types';
 
 export const configFileGateway = {
-  getAll: () => invoke<StorageConfigFile[]>('get_config_files'),
+  getFiles: () => invoke<StorageConfigFile[]>('get_config_files'),
+
+  getGroups: () => invoke<StorageGroup[]>('get_groups'),
 
   create: (configFile: StorageConfigFile) =>
     invoke<void>('create_config_file', { configFile }),
 
-  checkLocalPaths: (paths: LocalPathCheckInput[]) =>
-    invoke<LocalPathCheckResult[]>('check_local_paths', { paths }),
+  createGroup: (group: StorageGroup) =>
+    invoke<StorageGroup>('create_group', { group }),
 
+  checkLocalPath: (input: LocalPathCheckInput) =>
+    invoke<LocalPathCheckResult>('check_local_path', { input }),
   update: (configFile: StorageConfigFile) =>
     invoke<void>('update_config_file', { configFile }),
 
+  updateGroup: (group: StorageGroup) => invoke<void>('update_group', { group }),
+
   delete: (id: string) => invoke<void>('delete_config_file', { id }),
 
-  listDirectory: (path: string) =>
-    invoke<ConfigDirectoryEntry[]>('list_config_directory_entries', { path }),
+  deleteGroup: (id: string) => invoke<void>('delete_group', { id }),
 
-  openFolder: (path: string) =>
-    invoke<void>('open_config_file_folder', { path }),
+  readContent: (path: string) => invoke<string>('read_file', { path }),
 
-  openInOpencode: (path: string) =>
-    invoke<void>('open_config_file_in_opencode', { path }),
-
-  openInCursor: (path: string) =>
-    invoke<void>('open_config_file_in_cursor', { path }),
-
-  openInZed: (path: string) =>
-    invoke<void>('open_config_file_in_zed', { path }),
-
-  readContent: (path: string) => invoke<string>('read_config_file', { path }),
+  readDirectoryEntries: (path: string) =>
+    invoke<ScannedFile[]>('read_directory_entries', { path }),
 
   writeContent: (path: string, content: string) =>
-    invoke<void>('write_config_file', { path, content }),
+    invoke<void>('write_file', { path, content }),
 };

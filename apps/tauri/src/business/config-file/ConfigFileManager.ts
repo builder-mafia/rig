@@ -1,27 +1,27 @@
 import { StateSubject } from '@allin/utils';
 import type { Observable } from 'rxjs';
-import { v4 } from 'uuid';
 import { configFileGateway } from '@/lib/gateway/config-file/configFileGateway';
 import type {
-  ConfigDirectoryEntry,
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
   StorageConfigFile,
+  StorageGroup,
 } from '@/lib/gateway/config-file/types';
 
-type ConfigFileProps = {
-  name: string;
-  path: string;
-  isDirectory: boolean;
-  iconType: 'preset' | 'uploaded' | null;
-  iconValue: string | null;
+const omitUndefined = <T extends Record<string, unknown>>(
+  value: T,
+): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, fieldValue]) => fieldValue !== undefined),
+  ) as Partial<T>;
 };
 
 export class ConfigFileManager {
   private static instance: ConfigFileManager;
 
   private _configFiles$ = new StateSubject<StorageConfigFile[]>([]);
-  private _selectedConfigFileId$ = new StateSubject<string | null>(null);
+  private _groups$ = new StateSubject<StorageGroup[]>([]);
 
   private constructor() {}
 
@@ -32,138 +32,111 @@ export class ConfigFileManager {
     return ConfigFileManager.instance;
   }
 
-  public get configFiles(): StorageConfigFile[] {
+  public get files(): StorageConfigFile[] {
     return this._configFiles$.getValue();
   }
 
-  public get configFiles$(): Observable<StorageConfigFile[]> {
+  public get files$(): Observable<StorageConfigFile[]> {
     return this._configFiles$.asObservable();
   }
 
-  public get selectedConfigFileId(): string | null {
-    return this._selectedConfigFileId$.getValue();
+  public get groups(): StorageGroup[] {
+    return this._groups$.getValue();
   }
 
-  public get selectedConfigFileId$(): Observable<string | null> {
-    return this._selectedConfigFileId$.asObservable();
+  public get groups$(): Observable<StorageGroup[]> {
+    return this._groups$.asObservable();
   }
 
-  public get selectedConfigFile(): StorageConfigFile | null {
-    const selectedId = this._selectedConfigFileId$.getValue();
-    if (!selectedId) {
-      return null;
-    }
-
-    return (
-      this.configFiles.find(configFile => configFile.id === selectedId) ?? null
-    );
-  }
-
-  public async fetchConfigFiles() {
-    const configFiles = await configFileGateway.getAll();
+  public async fetchFiles() {
+    const configFiles = await configFileGateway.getFiles();
     this._configFiles$.next(configFiles);
 
-    const selectedConfigFileId = this._selectedConfigFileId$.getValue();
-    if (!selectedConfigFileId && configFiles[0]) {
-      this._selectedConfigFileId$.next(configFiles[0].id);
-      return;
-    }
+    return configFiles;
+  }
 
-    if (
-      selectedConfigFileId &&
-      !configFiles.find(configFile => configFile.id === selectedConfigFileId)
-    ) {
-      this._selectedConfigFileId$.next(configFiles[0]?.id ?? null);
-    }
+  public async fetchGroups() {
+    const groups = await configFileGateway.getGroups();
+    this._groups$.next(groups);
+
+    return groups;
   }
 
   public async createConfigFile(
-    params: ConfigFileProps,
+    file: StorageConfigFile,
   ): Promise<StorageConfigFile> {
-    const now = Date.now();
-    const configFile: StorageConfigFile = {
-      id: v4(),
-      name: params.name,
-      path: params.path,
-      isDirectory: params.isDirectory,
-      iconType: params.iconType,
-      iconValue: params.iconValue,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    await configFileGateway.create(configFile);
-    await this.fetchConfigFiles();
-    this._selectedConfigFileId$.next(configFile.id);
-    return configFile;
+    await configFileGateway.create(file);
+    await this.fetchFiles();
+    return file;
   }
 
-  public async checkLocalPaths(
-    paths: LocalPathCheckInput[],
-  ): Promise<LocalPathCheckResult[]> {
-    return configFileGateway.checkLocalPaths(paths);
+  public async checkLocalPath(
+    input: LocalPathCheckInput,
+  ): Promise<LocalPathCheckResult> {
+    return configFileGateway.checkLocalPath(input);
   }
 
   public async updateConfigFile(
-    configFileId: string,
-    params: Partial<ConfigFileProps>,
+    id: string,
+    params: Partial<Exclude<StorageConfigFile, 'id'>>,
   ) {
-    const current = this.configFiles.find(
-      configFile => configFile.id === configFileId,
-    );
+    const current = this.files.find(configFile => configFile.id === id);
     if (!current) {
-      throw new Error(`Config file with id ${configFileId} not found`);
+      throw new Error(`Config file with id ${id} not found`);
     }
 
     await configFileGateway.update({
       ...current,
-      ...params,
+      ...omitUndefined(params),
       updatedAt: Date.now(),
     });
 
-    await this.fetchConfigFiles();
+    await this.fetchFiles();
   }
 
-  public async deleteConfigFile(configFileId: string) {
-    await configFileGateway.delete(configFileId);
-    await this.fetchConfigFiles();
+  public async deleteConfigFile(id: string) {
+    await configFileGateway.delete(id);
+    await this.fetchFiles();
   }
 
-  public selectConfigFile(configFileId: string) {
-    this._selectedConfigFileId$.next(configFileId);
+  public async createGroup(group: StorageGroup): Promise<StorageGroup> {
+    await configFileGateway.createGroup(group);
+    await this.fetchGroups();
+    return group;
   }
 
-  public clearSelectedConfigFile() {
-    this._selectedConfigFileId$.next(null);
+  public async updateGroup(
+    id: string,
+    params: Partial<Exclude<StorageGroup, 'id'>>,
+  ) {
+    const current = this.groups.find(group => group.id === id);
+    if (!current) {
+      throw new Error(`Group with id ${id} not found`);
+    }
+
+    await configFileGateway.updateGroup({
+      ...current,
+      ...omitUndefined(params),
+      updatedAt: Date.now(),
+    });
+
+    await this.fetchGroups();
   }
 
-  public async readConfigFile(path: string) {
+  public async deleteGroup(groupId: string) {
+    await configFileGateway.deleteGroup(groupId);
+    await this.fetchGroups();
+  }
+
+  public async read(path: string) {
     return configFileGateway.readContent(path);
   }
 
-  public async writeConfigFile(path: string, content: string) {
+  public async readDirectoryFiles(path: string): Promise<ScannedFile[]> {
+    return configFileGateway.readDirectoryEntries(path);
+  }
+
+  public async write(path: string, content: string) {
     await configFileGateway.writeContent(path, content);
-  }
-
-  public async openConfigFileFolder(path: string) {
-    await configFileGateway.openFolder(path);
-  }
-
-  public async openConfigFileInOpencode(path: string) {
-    await configFileGateway.openInOpencode(path);
-  }
-
-  public async openConfigFileInCursor(path: string) {
-    await configFileGateway.openInCursor(path);
-  }
-
-  public async openConfigFileInZed(path: string) {
-    await configFileGateway.openInZed(path);
-  }
-
-  public async listConfigDirectoryEntries(
-    path: string,
-  ): Promise<ConfigDirectoryEntry[]> {
-    return configFileGateway.listDirectory(path);
   }
 }

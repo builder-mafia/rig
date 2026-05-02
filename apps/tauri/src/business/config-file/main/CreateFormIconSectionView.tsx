@@ -1,7 +1,7 @@
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@allin/ui';
 import { FileJson2, Folder } from 'lucide-react';
 import type { ChangeEvent, RefObject } from 'react';
-import { APPLICATION_ICON_PRESETS } from '../applicationIconPresets';
+import { APPLICATION_ICON_PRESETS } from '../AppIconPresets';
 
 type Props = {
   isDirectory: boolean;

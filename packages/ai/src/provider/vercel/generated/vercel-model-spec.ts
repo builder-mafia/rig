@@ -798,7 +798,7 @@ export const vercelModelSpec = {
     "reasoning": true,
     "tool_call": true,
     "temperature": true,
-    "knowledge": "2025-05",
+    "knowledge": "2025-05-31",
     "release_date": "2026-02",
     "last_updated": "2026-02",
     "modalities": {
@@ -866,7 +866,7 @@ export const vercelModelSpec = {
     "reasoning": true,
     "tool_call": true,
     "temperature": true,
-    "knowledge": "2025-08",
+    "knowledge": "2025-08-31",
     "release_date": "2026-02-17",
     "last_updated": "2026-02-17",
     "modalities": {

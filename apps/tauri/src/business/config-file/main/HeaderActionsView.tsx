@@ -1,47 +1,33 @@
 import { Button } from '@allin/ui';
-import { Save, Trash2 } from 'lucide-react';
-import { FINDER_ICON_PATH } from '../configFileWorkbenchUtils';
+import { Trash2 } from 'lucide-react';
+import type { ContentType } from '../contentTypeAtom';
+import type { SelectedFile } from '../SelectionContext';
 
 type Props = {
-  pane: 'content' | 'create-entry';
-  isDirty: boolean;
-  finderTargetPath: string | null;
-  hasSelectedConfigFile: boolean;
-  canSave: boolean;
-  onOpenInFinder: () => void;
-  onRemoveSelectedEntry: () => void;
-  onSaveActiveFile: () => void;
+  paneType: ContentType;
+  selectedFile: SelectedFile | null;
 };
 
-export const HeaderActionsView = ({
-  pane,
-  isDirty,
-  finderTargetPath,
-  hasSelectedConfigFile,
-  canSave,
-  onOpenInFinder,
-  onRemoveSelectedEntry,
-  onSaveActiveFile,
-}: Props) => {
-  const isCreateEntryPane = pane === 'create-entry';
+export const HeaderActionsView = ({ paneType, selectedFile }: Props) => {
+  const isCreateEntryPane = paneType === 'create-entry';
 
   return (
     <div className='flex items-center gap-2'>
-      {pane === 'content' && isDirty ? (
-        <span className='text-xs text-amber-600 font-medium'>Unsaved</span>
+      {paneType === 'content' &&
+      selectedFile &&
+      selectedFile.updatedAt > selectedFile.createdAt ? (
+        <span className='text-xs text-amber-600 font-medium'>
+          Changes occurred
+        </span>
       ) : null}
       <Button
-        onClick={onRemoveSelectedEntry}
+        onClick={() => {}}
         size='sm'
         variant='outline'
-        disabled={!hasSelectedConfigFile || isCreateEntryPane}
+        disabled={isCreateEntryPane}
       >
         <Trash2 className='size-4' />
         Remove
-      </Button>
-      <Button onClick={onSaveActiveFile} size='sm' disabled={!canSave}>
-        <Save className='size-4' />
-        Save
       </Button>
     </div>
   );

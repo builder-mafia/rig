@@ -6,7 +6,7 @@ type Props = {
   showIcon?: boolean;
 };
 
-export const ContentPlaceholderView = ({
+export const EmptyPaneView = ({
   title,
   description,
   showIcon = false,

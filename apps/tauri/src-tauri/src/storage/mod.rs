@@ -3,6 +3,7 @@ mod channel;
 mod config_file;
 pub mod commands;
 pub mod entities;
+pub mod external_file;
 mod message;
 mod setting;
 
@@ -130,37 +131,4 @@ impl Storage {
         Ok(dirs)
     }
 
-    pub(crate) fn resolve_local_path(path: &str) -> Result<PathBuf, String> {
-        let trimmed = path.trim();
-
-        if trimmed.is_empty() {
-            return Err("Path is required".to_string());
-        }
-
-        let expanded = shellexpand::tilde(trimmed);
-
-        Ok(PathBuf::from(expanded.as_ref()))
-    }
-
-    pub async fn read_config_file(&self, path: &str) -> Result<String, String> {
-        let target_path = Self::resolve_local_path(path)?;
-
-        tokio::fs::read_to_string(&target_path)
-            .await
-            .map_err(|e| format!("Failed to read file {}: {}", target_path.display(), e))
-    }
-
-    pub async fn write_config_file(&self, path: &str, content: &str) -> Result<(), String> {
-        let target_path = Self::resolve_local_path(path)?;
-
-        if let Some(parent) = target_path.parent() {
-            tokio::fs::create_dir_all(parent)
-                .await
-                .map_err(|e| format!("Failed to create directory {}: {}", parent.display(), e))?;
-        }
-
-        tokio::fs::write(&target_path, content)
-            .await
-            .map_err(|e| format!("Failed to write file {}: {}", target_path.display(), e))
-    }
 }

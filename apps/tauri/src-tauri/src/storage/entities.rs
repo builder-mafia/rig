@@ -1,5 +1,5 @@
 use chrono::Utc;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,24 +83,26 @@ pub struct ConfigFile {
     pub id: String,
     pub name: String,
     pub path: String,
-    #[serde(
-        default,
-        alias = "entryType",
-        deserialize_with = "deserialize_is_directory"
-    )]
     pub is_directory: bool,
-    pub icon_type: Option<String>,
-    pub icon_value: Option<String>,
+    #[serde(default)]
+    pub icon_url: Option<String>,
+    #[serde(default)]
+    pub group_id: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
+    pub order: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ConfigDirectoryEntry {
+pub struct Group {
+    pub id: String,
     pub name: String,
-    pub path: String,
-    pub is_directory: bool,
+    #[serde(default)]
+    pub icon_url: Option<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub order: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -117,24 +119,16 @@ impl Default for ConfigFilesFile {
     }
 }
 
-fn deserialize_is_directory<'de, D>(deserializer: D) -> Result<bool, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum IsDirectoryValue {
-        Bool(bool),
-        String(String),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GroupsFile {
+    pub groups: Vec<Group>,
+}
+
+impl Default for GroupsFile {
+    fn default() -> Self {
+        Self { groups: Vec::new() }
     }
-
-    let value = Option::<IsDirectoryValue>::deserialize(deserializer)?;
-
-    Ok(match value {
-        Some(IsDirectoryValue::Bool(value)) => value,
-        Some(IsDirectoryValue::String(value)) => value == "folder",
-        None => false,
-    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

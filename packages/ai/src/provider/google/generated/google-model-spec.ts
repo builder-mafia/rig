@@ -150,7 +150,12 @@ export const googleModelSpec = {
     "cost": {
       "input": 1.25,
       "output": 10,
-      "cache_read": 0.31
+      "cache_read": 0.125,
+      "context_over_200k": {
+        "input": 2.5,
+        "output": 15,
+        "cache_read": 0.25
+      }
     },
     "limit": {
       "context": 1048576,
@@ -185,7 +190,7 @@ export const googleModelSpec = {
     "cost": {
       "input": 0.3,
       "output": 2.5,
-      "cache_read": 0.075,
+      "cache_read": 0.03,
       "input_audio": 1
     },
     "limit": {

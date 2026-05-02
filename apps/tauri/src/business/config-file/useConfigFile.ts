@@ -3,24 +3,32 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useService } from '@/business/ServiceContext';
 import type {
-  ConfigDirectoryEntry,
   LocalPathCheckInput,
   LocalPathCheckResult,
+  ScannedFile,
+  StorageConfigFile,
+  StorageGroup,
 } from '@/lib/gateway/config-file/types';
+
+type ConfigFileGroupItem = {
+  group: StorageGroup | null;
+  configFiles: StorageConfigFile[];
+};
 
 export const useConfigFile = () => {
   const { configFileManager } = useService();
+  const setConfigFile = useSetConfigFile();
 
   const subscribeToConfigFiles = useCallback(
     (onChange: () => void) => {
-      const subscription = configFileManager.configFiles$.subscribe(onChange);
+      const subscription = configFileManager.files$.subscribe(onChange);
       return () => subscription.unsubscribe();
     },
     [configFileManager],
   );
 
   const getConfigFilesSnapshot = useCallback(
-    () => configFileManager.configFiles,
+    () => configFileManager.files,
     [configFileManager],
   );
 
@@ -30,66 +38,129 @@ export const useConfigFile = () => {
     getConfigFilesSnapshot,
   );
 
-  const subscribeToSelectedConfigFileId = useCallback(
+  const subscribeToGroups = useCallback(
     (onChange: () => void) => {
-      const subscription =
-        configFileManager.selectedConfigFileId$.subscribe(onChange);
+      const subscription = configFileManager.groups$.subscribe(onChange);
       return () => subscription.unsubscribe();
     },
     [configFileManager],
   );
 
-  const getSelectedConfigFileIdSnapshot = useCallback(
-    () => configFileManager.selectedConfigFileId,
+  const getGroupsSnapshot = useCallback(
+    () => configFileManager.groups,
     [configFileManager],
   );
 
-  const selectedConfigFileId = useSyncExternalStore(
-    subscribeToSelectedConfigFileId,
-    getSelectedConfigFileIdSnapshot,
-    getSelectedConfigFileIdSnapshot,
+  const groups = useSyncExternalStore(
+    subscribeToGroups,
+    getGroupsSnapshot,
+    getGroupsSnapshot,
   );
 
-  const selectedConfigFile = useMemo(() => {
-    return (
-      configFiles.find(configFile => configFile.id === selectedConfigFileId) ??
-      null
-    );
-  }, [configFiles, selectedConfigFileId]);
-
   const fetchConfigFiles = useCallback(async () => {
-    await configFileManager.fetchConfigFiles();
+    await configFileManager.fetchFiles();
   }, [configFileManager]);
 
-  const createConfigFile = useCallback(
-    async (
-      name: string,
-      path: string,
-      isDirectory: boolean,
-      iconType: 'preset' | 'uploaded' | null,
-      iconValue: string | null,
-    ) => {
-      return configFileManager.createConfigFile({
-        name,
-        path,
-        isDirectory,
-        iconType,
-        iconValue,
-      });
+  const fetchGroups = useCallback(async () => {
+    await configFileManager.fetchGroups();
+  }, [configFileManager]);
+
+  const checkLocalPath = useCallback(
+    async (input: LocalPathCheckInput): Promise<LocalPathCheckResult> => {
+      return configFileManager.checkLocalPath(input);
     },
     [configFileManager],
   );
 
-  const checkLocalPaths = useCallback(
-    async (paths: LocalPathCheckInput[]): Promise<LocalPathCheckResult[]> => {
-      return configFileManager.checkLocalPaths(paths);
+  const readDirectoryEntries = useCallback(
+    async (path: string): Promise<ScannedFile[]> => {
+      return configFileManager.readDirectoryFiles(path);
+    },
+    [configFileManager],
+  );
+
+  const groupedConfigFiles = useMemo(() => {
+    const groupedConfigFilesMap = new Map<string | null, StorageConfigFile[]>();
+
+    for (const configFile of configFiles) {
+      const current = groupedConfigFilesMap.get(configFile.groupId) ?? [];
+      current.push(configFile);
+      groupedConfigFilesMap.set(configFile.groupId, current);
+    }
+
+    const groupedConfigFiles: ConfigFileGroupItem[] = [];
+    const ungroupedConfigFiles = groupedConfigFilesMap.get(null) ?? [];
+
+    groupedConfigFiles.push({
+      group: null,
+      configFiles: ungroupedConfigFiles,
+    });
+
+    for (const group of groups) {
+      groupedConfigFiles.push({
+        group,
+        configFiles: groupedConfigFilesMap.get(group.id) ?? [],
+      });
+    }
+
+    for (const [groupId, groupedFiles] of groupedConfigFilesMap.entries()) {
+      if (groupId === null) {
+        continue;
+      }
+
+      const hasGroup = groups.some(group => group.id === groupId);
+      if (hasGroup) {
+        continue;
+      }
+
+      groupedConfigFiles[0].configFiles.push(...groupedFiles);
+    }
+
+    return groupedConfigFiles;
+  }, [configFiles, groups]);
+
+  return {
+    configFiles,
+    groups,
+    groupedConfigFiles,
+    fetchConfigFiles,
+    fetchGroups,
+    checkLocalPath,
+    readDirectoryEntries,
+    ...setConfigFile,
+  };
+};
+
+export const useSetConfigFile = () => {
+  const { configFileManager } = useService();
+
+  const createConfigFile = useCallback(
+    async (file: StorageConfigFile) => {
+      return configFileManager.createConfigFile(file);
+    },
+    [configFileManager],
+  );
+
+  const createGroup = useCallback(
+    async (params: StorageGroup) => {
+      return configFileManager.createGroup(params);
     },
     [configFileManager],
   );
 
   const updateConfigFile = useCallback(
-    async (configFileId: string, name: string, path: string) => {
-      await configFileManager.updateConfigFile(configFileId, { name, path });
+    async (
+      configFileId: string,
+      params: {
+        name?: string;
+        path?: string;
+        isDirectory?: boolean;
+        iconUrl?: string | null;
+        groupId?: string | null;
+        order?: number;
+      },
+    ) => {
+      await configFileManager.updateConfigFile(configFileId, params);
     },
     [configFileManager],
   );
@@ -101,77 +172,33 @@ export const useConfigFile = () => {
     [configFileManager],
   );
 
-  const selectConfigFile = useCallback(
-    (configFileId: string) => {
-      configFileManager.selectConfigFile(configFileId);
+  const updateGroup = useCallback(
+    async (
+      groupId: string,
+      params: {
+        name?: string;
+        iconUrl?: string | null;
+        order?: number;
+      },
+    ) => {
+      await configFileManager.updateGroup(groupId, params);
     },
     [configFileManager],
   );
 
-  const readConfigFile = useCallback(
-    async (path: string) => {
-      return configFileManager.readConfigFile(path);
-    },
-    [configFileManager],
-  );
-
-  const writeConfigFile = useCallback(
-    async (path: string, content: string) => {
-      await configFileManager.writeConfigFile(path, content);
-    },
-    [configFileManager],
-  );
-
-  const openConfigFileFolder = useCallback(
-    async (path: string) => {
-      await configFileManager.openConfigFileFolder(path);
-    },
-    [configFileManager],
-  );
-
-  const openConfigFileInOpencode = useCallback(
-    async (path: string) => {
-      await configFileManager.openConfigFileInOpencode(path);
-    },
-    [configFileManager],
-  );
-
-  const openConfigFileInCursor = useCallback(
-    async (path: string) => {
-      await configFileManager.openConfigFileInCursor(path);
-    },
-    [configFileManager],
-  );
-
-  const openConfigFileInZed = useCallback(
-    async (path: string) => {
-      await configFileManager.openConfigFileInZed(path);
-    },
-    [configFileManager],
-  );
-
-  const listConfigDirectoryEntries = useCallback(
-    async (path: string): Promise<ConfigDirectoryEntry[]> => {
-      return configFileManager.listConfigDirectoryEntries(path);
+  const deleteGroup = useCallback(
+    async (groupId: string) => {
+      await configFileManager.deleteGroup(groupId);
     },
     [configFileManager],
   );
 
   return {
-    configFiles,
-    selectedConfigFile,
-    fetchConfigFiles,
     createConfigFile,
-    checkLocalPaths,
+    createGroup,
     updateConfigFile,
+    updateGroup,
     deleteConfigFile,
-    selectConfigFile,
-    readConfigFile,
-    writeConfigFile,
-    openConfigFileFolder,
-    openConfigFileInOpencode,
-    openConfigFileInCursor,
-    openConfigFileInZed,
-    listConfigDirectoryEntries,
+    deleteGroup,
   };
 };

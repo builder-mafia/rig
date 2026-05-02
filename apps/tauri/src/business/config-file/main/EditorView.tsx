@@ -1,17 +1,13 @@
 'use client';
 
+import type { Monaco } from '@monaco-editor/react';
 import dynamic from 'next/dynamic';
-import type { ComponentProps } from 'react';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
 });
 
-type MonacoEditorBeforeMount = NonNullable<
-  ComponentProps<typeof MonacoEditor>['beforeMount']
->;
-
-const configureMonaco: MonacoEditorBeforeMount = monaco => {
+const configureMonaco = (monaco: Monaco) => {
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
     allowComments: true,
@@ -19,7 +15,7 @@ const configureMonaco: MonacoEditorBeforeMount = monaco => {
   });
 };
 
-type Props = {
+type EditorViewProps = {
   language: string;
   value: string;
   isReadOnly?: boolean;
@@ -29,9 +25,9 @@ type Props = {
 export const EditorView = ({
   language,
   value,
-  isReadOnly = false,
+  isReadOnly = true,
   onChange,
-}: Props) => {
+}: EditorViewProps) => {
   return (
     <MonacoEditor
       height='100%'

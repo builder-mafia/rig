@@ -1,10 +1,9 @@
 import { Button } from '@allin/ui';
+import { assert } from 'es-toolkit';
 import { ExternalLink } from 'lucide-react';
-import {
-  CURSOR_ICON_PATH,
-  FINDER_ICON_PATH,
-  ZED_ICON_PATH,
-} from '../configFileWorkbenchUtils';
+import { getApplicationIconUrl } from '../AppIconPresets';
+import { useSelectionContext } from '../SelectionContext';
+import { useAppOpener } from './useAppOpener';
 
 type PreviewActionButtonProps = {
   iconSrc: string;
@@ -35,46 +34,32 @@ const PreviewActionButton = ({
   );
 };
 
-type Props = {
-  isDarkMode: boolean;
-  onOpenInFinder: () => void;
-  onOpenInOpencode: () => void;
-  onOpenInCursor: () => void;
-  onOpenInZed: () => void;
-};
-
-export const PreviewActionsView = ({
-  isDarkMode,
-  onOpenInFinder,
-  onOpenInOpencode,
-  onOpenInCursor,
-  onOpenInZed,
-}: Props) => {
-  const opencodeIconSrc = isDarkMode
-    ? '/application_icon/opencode-dark.webp'
-    : '/application_icon/opencode-light.webp';
+export const PreviewActionsView = () => {
+  const { openApp } = useAppOpener();
+  const { selectedFile } = useSelectionContext();
+  assert(selectedFile?.path, 'Selected file path is required');
 
   return (
     <aside className='flex w-56 shrink-0 flex-col justify-center gap-3 border-l bg-slate-50/80 p-4'>
       <PreviewActionButton
-        iconSrc={FINDER_ICON_PATH}
+        iconSrc={getApplicationIconUrl('chrome')!}
         label='Finder'
-        onClick={onOpenInFinder}
+        onClick={() => openApp('finder', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={opencodeIconSrc}
+        iconSrc={getApplicationIconUrl('opencode')!}
         label='Opencode'
-        onClick={onOpenInOpencode}
+        onClick={() => openApp('opencode', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={CURSOR_ICON_PATH}
+        iconSrc={getApplicationIconUrl('cursor')!}
         label='Cursor'
-        onClick={onOpenInCursor}
+        onClick={() => openApp('cursor', selectedFile.path)}
       />
       <PreviewActionButton
-        iconSrc={ZED_ICON_PATH}
+        iconSrc={getApplicationIconUrl('zed')!}
         label='Zed'
-        onClick={onOpenInZed}
+        onClick={() => openApp('zed', selectedFile.path)}
       />
       <div className='rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-3 text-xs leading-5 text-slate-500'>
         Preview only. Edit this file in your preferred external app.
