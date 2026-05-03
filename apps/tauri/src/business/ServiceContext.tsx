@@ -45,10 +45,13 @@ export const createServices = (): Services => {
 
 type ServiceProviderProps = {
   children: ReactNode;
-  value?: Services;
+  /**
+   * for testing (Dependency Injection)
+   */
+  _value?: Services;
 };
 
-export const ServiceProvider = ({ children, value }: ServiceProviderProps) => {
+export const ServiceProvider = ({ children, _value }: ServiceProviderProps) => {
   const defaultServices = useMemo(() => createServices(), []);
 
   // for DEBUG
@@ -59,8 +62,12 @@ export const ServiceProvider = ({ children, value }: ServiceProviderProps) => {
     }
   }, [defaultServices]);
 
+  useEffect(() => {
+    defaultServices.channelManager.fetchChannels();
+  }, [defaultServices]);
+
   return (
-    <ServiceContext.Provider value={value ?? defaultServices}>
+    <ServiceContext.Provider value={_value ?? defaultServices}>
       {children}
     </ServiceContext.Provider>
   );

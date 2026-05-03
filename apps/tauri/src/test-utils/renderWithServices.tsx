@@ -10,7 +10,7 @@ const createWrapper = (overrides: Partial<Services> = {}) => {
   const services = { ...createServices(), ...overrides };
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <ServiceProvider value={services}>{children}</ServiceProvider>
+    <ServiceProvider _value={services}>{children}</ServiceProvider>
   );
 
   return Wrapper;
