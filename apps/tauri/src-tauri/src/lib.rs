@@ -5,6 +5,7 @@ mod chat;
 mod font;
 mod provider;
 mod storage;
+mod tools;
 
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};

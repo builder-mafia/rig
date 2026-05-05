@@ -1,7 +1,7 @@
 use aisdk::{
     core::{
-        capabilities::TextInputSupport, DynamicModel, LanguageModel, LanguageModelRequest, Message,
-        Messages,
+        capabilities::{TextInputSupport, ToolCallSupport},
+        DynamicModel, LanguageModel, LanguageModelRequest, Message, Messages,
     },
     integrations::vercel_aisdk_ui::{VercelUIMessage, VercelUIStream, VercelUIStreamOptions},
     providers::{anthropic::Anthropic, google::Google, openai::OpenAI, vercel::Vercel},
@@ -12,14 +12,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use tauri::{ipc::Channel, AppHandle};
 
-use crate::provider::Provider;
+use crate::{provider::Provider, tools};
 
 fn cancel_map() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
     static MAP: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> = OnceLock::new();
     MAP.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-async fn do_text_request<M: LanguageModel + TextInputSupport>(
+async fn do_text_request<M: LanguageModel + TextInputSupport + ToolCallSupport>(
     model: M,
     messages: Messages,
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
@@ -31,6 +31,9 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
         .model(model)
         .system("You are a helpful assistant.")
         .messages(messages)
+        .with_tool(tools::read_file::read_file())
+        .with_tool(tools::write_file::write_file())
+        .with_tool(tools::bash::bash())
         .build()
         .stream_text()
         .await
@@ -65,8 +68,8 @@ async fn do_text_request<M: LanguageModel + TextInputSupport>(
 }
 
 fn get_api_key(app: &AppHandle, provider_name: &str, provider: Provider) -> Result<String, String> {
-    let result = crate::api_key::commands::get_provider_api_key(app, provider)?
-        .ok_or_else(|| {
+    let result =
+        crate::api_key::commands::get_provider_api_key(app, provider)?.ok_or_else(|| {
             format!(
                 "API key not set. Please configure your {} API key in settings.",
                 provider_name
