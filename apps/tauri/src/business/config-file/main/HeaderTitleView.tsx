@@ -22,7 +22,9 @@ export const HeaderTitleView = ({ paneType, selectedFile }: Props) => {
           />
         </span>
         <div className='min-w-0'>
-          <p className='text-sm font-medium truncate'>{selectedFile.fileName}</p>
+          <p className='text-sm font-medium truncate'>
+            {selectedFile.fileName}
+          </p>
           <p className='text-xs text-muted-foreground truncate'>
             {selectedFile.path}
           </p>

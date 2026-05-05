@@ -26,7 +26,8 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
-        self.validate_group_id(config_file.group_id.as_deref()).await?;
+        self.validate_group_id(config_file.group_id.as_deref())
+            .await?;
 
         let mut config_files = self.get_config_files().await?;
 
@@ -43,7 +44,8 @@ impl Storage {
         config_file: &entities::ConfigFile,
     ) -> Result<(), String> {
         self.validate_existing_config_file_path(&config_file.path, config_file.is_directory)?;
-        self.validate_group_id(config_file.group_id.as_deref()).await?;
+        self.validate_group_id(config_file.group_id.as_deref())
+            .await?;
 
         let mut config_files = self.get_config_files().await?;
 
