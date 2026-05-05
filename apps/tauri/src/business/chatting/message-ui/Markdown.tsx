@@ -6,6 +6,7 @@ import rehypeExternalLinks from 'rehype-external-links';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from './shiki/CodeBlock';
+import { normalizeShikiLanguage } from './shiki/shikiLanguageSchema';
 
 const toTokens = (text: string): Array<string> =>
   marked.lexer(text).map(token => token.raw);
@@ -46,8 +47,9 @@ export const MarkdownBlock = React.memo(
           const inline = node && isInlineCode(node);
           const code = String(children).trim();
 
-          const language =
-            className?.match(/language-(\w+)/)?.[1] ?? 'plaintext';
+          const language = normalizeShikiLanguage(
+            className?.match(/language-([^\s]+)/)?.[1] ?? 'plaintext',
+          );
 
           // inline code should render as <code> inside text (often inside <p>).
           // this is `test` format in markdown.

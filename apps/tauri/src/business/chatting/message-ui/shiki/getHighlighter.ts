@@ -1,9 +1,10 @@
 import type { Highlighter } from 'shiki';
 import { createOnigurumaEngine } from 'shiki';
 import { getSingletonHighlighter } from 'shiki/bundle/full';
+import type { SupportedShikiLanguage } from './shikiLanguageSchema';
 
 export const getHighlighter = async (
-  language: string,
+  language: SupportedShikiLanguage,
 ): Promise<Highlighter> => {
   try {
     return await getSingletonHighlighter({
