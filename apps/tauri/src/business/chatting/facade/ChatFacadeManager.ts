@@ -74,12 +74,10 @@ export class ChatFacadeManager {
       return this.getChatFacade(id);
     }
 
-    const agent =
-      (await this.resolveAgent(channel)) ?? this.agentManager.agents[0];
     const messages = await messageGateway.getAll(channel.id);
     const transport = new TauriChatTransport({
-      providerName: agent.providerName as ProviderId,
-      modelId: agent.model,
+      providerName: 'openai',
+      modelId: 'gpt-5.5',
     });
 
     const facade = new ChatFacade({

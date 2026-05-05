@@ -117,6 +117,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
+
             do_text_request(model, messages, tx, cancel_flag).await?;
         }
         Provider::Google => {
