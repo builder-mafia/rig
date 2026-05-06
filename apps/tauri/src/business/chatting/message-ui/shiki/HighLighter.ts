@@ -1,9 +1,26 @@
 import { filter, Subject, take } from 'rxjs';
 import { getHighlighter } from './getHighlighter';
 import type { ShikiWorkerRequest, ShikiWorkerResponse } from './shiki-worker';
+import {
+  normalizeShikiLanguage,
+  type SupportedShikiLanguage,
+} from './shikiLanguageSchema';
 
 // pre-builded worker file path
 const WORKER_PATH = '/workers/shiki-worker.js';
+
+const escapeHtml = (value: string) => {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+const createPlainCodeHtml = (code: string) => {
+  return `<pre class="shiki github-light github-dark"><code>${escapeHtml(code)}</code></pre>`;
+};
 
 export class HighLighter {
   private useWorker: boolean;
@@ -34,7 +51,12 @@ export class HighLighter {
     return worker;
   }
 
-  public highlight(code: string, language: string): Promise<string> {
+  public highlight(
+    code: string,
+    language: SupportedShikiLanguage,
+  ): Promise<string> {
+    const shikiLanguage = normalizeShikiLanguage(language);
+
     if (this.useWorker) {
       const worker = this.getWorker();
 
@@ -43,7 +65,7 @@ export class HighLighter {
       const payload: ShikiWorkerRequest = {
         id: requestId,
         code,
-        language,
+        language: shikiLanguage,
       };
 
       worker.postMessage(payload);
@@ -57,19 +79,31 @@ export class HighLighter {
           )
           .subscribe(response => {
             if ('error' in response) {
-              reject(new Error(response.error));
+              resolve(createPlainCodeHtml(code));
               return;
             }
             resolve(response.html);
           });
       });
     } else {
-      return getHighlighter(language).then(highlighter => {
-        return highlighter.codeToHtml(code, {
-          lang: language,
-          themes: { light: 'github-light', dark: 'github-dark' },
+      return getHighlighter(shikiLanguage)
+        .then(highlighter => {
+          return highlighter.codeToHtml(code, {
+            lang: shikiLanguage,
+            themes: { light: 'github-light', dark: 'github-dark' },
+          });
+        })
+        .catch(() => {
+          return getHighlighter('plaintext').then(highlighter =>
+            highlighter.codeToHtml(code, {
+              lang: 'plaintext',
+              themes: { light: 'github-light', dark: 'github-dark' },
+            }),
+          );
+        })
+        .catch(() => {
+          return createPlainCodeHtml(code);
         });
-      });
     }
   }
 }

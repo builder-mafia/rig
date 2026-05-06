@@ -14,7 +14,7 @@ export const ContentView = () => {
   const contentType = useAtomValue(contentTypeAtom);
   const { selectedFile } = useSelectionContext();
 
-  return match(contentType)
+  const content = match(contentType)
     .when(
       type => type === 'content' && selectedFile,
       () => (
@@ -33,4 +33,6 @@ export const ContentView = () => {
       () => <FileAddFormView />,
     )
     .otherwise(() => null);
+
+  return <main className='min-h-0 min-w-0 flex-1 overflow-hidden'>{content}</main>;
 };

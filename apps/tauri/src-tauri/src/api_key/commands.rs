@@ -1,11 +1,8 @@
+use super::constants::{KEYRING_SERVICE, PROVIDER_API_KEYS_KEY_NAME};
+use crate::provider::Provider;
+use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use tauri_plugin_keyring::KeyringExt;
-
-use serde::{Deserialize, Serialize};
-
-use super::constants::{KEYRING_SERVICE, PROVIDER_API_KEYS_KEY_NAME};
-
-use crate::provider::Provider;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -60,7 +57,10 @@ fn load_provider_api_keys(app: &AppHandle) -> Result<ProviderApiKeys, String> {
     }
 }
 
-fn save_provider_api_keys(app: &AppHandle, provider_api_keys: &ProviderApiKeys) -> Result<(), String> {
+fn save_provider_api_keys(
+    app: &AppHandle,
+    provider_api_keys: &ProviderApiKeys,
+) -> Result<(), String> {
     let json = serde_json::to_string(provider_api_keys).map_err(|e| e.to_string())?;
     app.keyring()
         .set_password(KEYRING_SERVICE, PROVIDER_API_KEYS_KEY_NAME, &json)

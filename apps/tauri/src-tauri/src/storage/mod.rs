@@ -1,7 +1,7 @@
 mod agent;
 mod channel;
-mod config_file;
 pub mod commands;
+mod config_file;
 pub mod entities;
 pub mod external_file;
 mod message;
@@ -130,5 +130,4 @@ impl Storage {
 
         Ok(dirs)
     }
-
 }

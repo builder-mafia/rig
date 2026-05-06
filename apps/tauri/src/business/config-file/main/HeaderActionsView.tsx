@@ -1,6 +1,8 @@
 import { Button } from '@allin/ui';
-import { Trash2 } from 'lucide-react';
+import { useAtom, useSetAtom } from 'jotai';
+import { Sparkles } from 'lucide-react';
 import type { ContentType } from '../contentTypeAtom';
+import { isRightDockOpenAtom, rightDockPaneAtom } from '../rightDockAtom';
 import type { SelectedFile } from '../SelectionContext';
 
 type Props = {
@@ -9,25 +11,30 @@ type Props = {
 };
 
 export const HeaderActionsView = ({ paneType, selectedFile }: Props) => {
-  const isCreateEntryPane = paneType === 'create-entry';
+  const [isRightDockOpen, setIsRightDockOpen] = useAtom(isRightDockOpenAtom);
+  const [rightDockPane, setRightDockPane] = useAtom(rightDockPaneAtom);
+  const canOpenAIEdit = paneType === 'content' && selectedFile;
+
+  const onClickAIButton = () => {
+    if (rightDockPane === 'chat' && isRightDockOpen) {
+      setIsRightDockOpen(false);
+      return;
+    }
+
+    setIsRightDockOpen(true);
+    setRightDockPane('chat');
+  };
 
   return (
     <div className='flex items-center gap-2'>
-      {paneType === 'content' &&
-      selectedFile &&
-      selectedFile.updatedAt > selectedFile.createdAt ? (
-        <span className='text-xs text-amber-600 font-medium'>
-          Changes occurred
-        </span>
-      ) : null}
       <Button
-        onClick={() => {}}
+        onClick={onClickAIButton}
         size='sm'
         variant='outline'
-        disabled={isCreateEntryPane}
+        disabled={!canOpenAIEdit}
       >
-        <Trash2 className='size-4' />
-        Remove
+        <Sparkles className='size-4' />
+        AI Edit
       </Button>
     </div>
   );

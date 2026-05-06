@@ -139,7 +139,7 @@ export const FilesList = () => {
                 />
               );
             })}
-          {groupedConfigFiles
+          {/* {groupedConfigFiles
             .filter(item => item.group === null)
             .map(item => {
               return (
@@ -150,7 +150,7 @@ export const FilesList = () => {
                 //   files={item.configFiles}
                 // />
               );
-            })}
+            })} */}
         </div>
       </div>
     </DragDropProvider>

@@ -12,10 +12,11 @@ import {
 import { Subject, throttleTime } from 'rxjs';
 import styles from './codeblock.module.css';
 import { HighLighter } from './HighLighter';
+import type { SupportedShikiLanguage } from './shikiLanguageSchema';
 
 type CodeBlockProps = {
   code: string;
-  language: string;
+  language: SupportedShikiLanguage;
   ref?: React.RefObject<HTMLElement>;
   as?: React.ElementType;
 };
@@ -47,7 +48,7 @@ export const CodeBlock = ({
 }: CodeBlockProps) => {
   const [highlightedCode, setHighlightedCode] = useState<string | null>(null);
   const streamForOptimization = useMemo(
-    () => new Subject<{ code: string; language: string }>(),
+    () => new Subject<{ code: string; language: SupportedShikiLanguage }>(),
     [],
   );
   const [, startTransition] = useTransition();

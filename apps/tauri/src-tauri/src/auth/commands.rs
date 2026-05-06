@@ -23,8 +23,7 @@ pub async fn start_codex_oauth(app: AppHandle) -> Result<CodexAuthStatus, String
     // Extract account_id from JWT claims
     let account_id = oauth::extract_account_id(&tokens);
 
-    let expires_at =
-        chrono::Utc::now().timestamp() + tokens.expires_in.unwrap_or(3600);
+    let expires_at = chrono::Utc::now().timestamp() + tokens.expires_in.unwrap_or(3600);
 
     let auth = token_store::CodexAuth {
         access_token: tokens.access_token,

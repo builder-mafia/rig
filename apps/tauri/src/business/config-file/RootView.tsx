@@ -1,25 +1,31 @@
 'use client';
 
-import { ScrollArea } from '@allin/ui';
+import { useAtomValue } from 'jotai';
+import { ServiceProvider } from '../ServiceContext';
+import { AIEditProvider } from './main/ai-edit/AIEditContext';
 import { ContentView } from './main/ContentView';
 import { HeaderView } from './main/HeaderView';
+import { RightDockView } from './right-dock/RightDockView';
+import { isRightDockOpenAtom } from './rightDockAtom';
 import { SelectionProvider } from './SelectionContext';
 import { SidebarView } from './sidebar/SidebarView';
 
 export const RootView = () => {
+  const isRightDockOpen = useAtomValue(isRightDockOpenAtom);
   return (
-    <SelectionProvider>
-      <div className='flex h-dvh flex-col overflow-hidden'>
-        <HeaderView />
-        <div className='grid min-h-0 flex-1 w-full grid-cols-[360px_1fr] bg-background'>
-          <SidebarView />
-          <ScrollArea className='min-h-0 h-full'>
-            <div className='h-full min-h-full'>
+    <ServiceProvider>
+      <SelectionProvider>
+        <AIEditProvider>
+          <div className='flex h-dvh w-dvw flex-col overflow-hidden'>
+            <HeaderView />
+            <div className='flex min-h-0 min-w-0 flex-1 overflow-hidden bg-background'>
+              <SidebarView />
               <ContentView />
+              {isRightDockOpen && <RightDockView />}
             </div>
-          </ScrollArea>
-        </div>
-      </div>
-    </SelectionProvider>
+          </div>
+        </AIEditProvider>
+      </SelectionProvider>
+    </ServiceProvider>
   );
 };
