@@ -8,43 +8,41 @@ import type {
 } from 'ai';
 import { v4 } from 'uuid';
 
-// Rust aisdk crate serializes with kebab-case type tags + snake_case fields.
-// AI SDK v6 expects camelCase fields and tool-input-* instead of tool-call-*.
+// Older Rust aisdk serializes snake_case fields. The local fork emits AI SDK v6
+// camelCase chunks. Keep both shapes accepted while the fork is in use.
 type RustProviderMetadata = Record<string, Record<string, unknown>>;
+type RustMaybeProviderMetadata = {
+  provider_metadata?: RustProviderMetadata;
+  providerMetadata?: RustProviderMetadata;
+};
 
 type RustVercelUIStream =
-  | {
+  | ({
       type: 'text-start';
       id: string;
-      provider_metadata?: RustProviderMetadata;
-    }
-  | {
+    } & RustMaybeProviderMetadata)
+  | ({
       type: 'text-delta';
       id: string;
       delta: string;
-      provider_metadata?: RustProviderMetadata;
-    }
-  | {
+    } & RustMaybeProviderMetadata)
+  | ({
       type: 'text-end';
       id: string;
-      provider_metadata?: RustProviderMetadata;
-    }
-  | {
+    } & RustMaybeProviderMetadata)
+  | ({
       type: 'reasoning-start';
       id: string;
-      provider_metadata?: RustProviderMetadata;
-    }
-  | {
+    } & RustMaybeProviderMetadata)
+  | ({
       type: 'reasoning-delta';
       id: string;
       delta: string;
-      provider_metadata?: RustProviderMetadata;
-    }
-  | {
+    } & RustMaybeProviderMetadata)
+  | ({
       type: 'reasoning-end';
       id: string;
-      provider_metadata?: RustProviderMetadata;
-    }
+    } & RustMaybeProviderMetadata)
   | {
       type: 'tool-call-start';
       id: string;
@@ -66,8 +64,55 @@ type RustVercelUIStream =
       result: unknown;
       provider_metadata?: RustProviderMetadata;
     }
-  | { type: 'error'; error_text: string }
-  | { type: 'not-supported'; error_text: string };
+  | ({
+      type: 'tool-input-start';
+      toolCallId: string;
+      toolName: string;
+      providerExecuted?: boolean;
+      dynamic?: boolean;
+      title?: string;
+    } & RustMaybeProviderMetadata)
+  | {
+      type: 'tool-input-delta';
+      toolCallId: string;
+      inputTextDelta: string;
+    }
+  | ({
+      type: 'tool-input-available';
+      toolCallId: string;
+      toolName: string;
+      input: unknown;
+      providerExecuted?: boolean;
+      dynamic?: boolean;
+      title?: string;
+    } & RustMaybeProviderMetadata)
+  | ({
+      type: 'tool-input-error';
+      toolCallId: string;
+      toolName: string;
+      input: unknown;
+      providerExecuted?: boolean;
+      dynamic?: boolean;
+      errorText: string;
+      title?: string;
+    } & RustMaybeProviderMetadata)
+  | {
+      type: 'tool-output-available';
+      toolCallId: string;
+      output: unknown;
+      providerExecuted?: boolean;
+      dynamic?: boolean;
+      preliminary?: boolean;
+    }
+  | {
+      type: 'tool-output-error';
+      toolCallId: string;
+      errorText: string;
+      providerExecuted?: boolean;
+      dynamic?: boolean;
+    }
+  | { type: 'error'; error_text?: string; errorText?: string }
+  | { type: 'not-supported'; error_text?: string; errorText?: string };
 
 /**
  * Converts Rust aisdk VercelUIStream events to Vercel AI SDK v6 UIMessageChunk.
@@ -88,9 +133,7 @@ type RustVercelUIStream =
  * and message.parts array won't be built correctly.
  */
 function toUIMessageChunk(event: RustVercelUIStream): UIMessageChunk | null {
-  const metadata = (
-    'provider_metadata' in event ? event.provider_metadata : undefined
-  ) as ProviderMetadata | undefined;
+  const metadata = getProviderMetadata(event);
 
   switch (event.type) {
     case 'text-start':
@@ -147,11 +190,81 @@ function toUIMessageChunk(event: RustVercelUIStream): UIMessageChunk | null {
         input,
       };
     }
+    case 'tool-input-start':
+      return {
+        type: 'tool-input-start',
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        providerExecuted: event.providerExecuted,
+        dynamic: event.dynamic,
+        title: event.title,
+      };
+    case 'tool-input-delta':
+      return {
+        type: 'tool-input-delta',
+        toolCallId: event.toolCallId,
+        inputTextDelta: event.inputTextDelta,
+      };
+    case 'tool-input-available':
+      return {
+        type: 'tool-input-available',
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        input: event.input,
+        providerExecuted: event.providerExecuted,
+        providerMetadata: metadata,
+        dynamic: event.dynamic,
+        title: event.title,
+      };
+    case 'tool-input-error':
+      return {
+        type: 'tool-input-error',
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        input: event.input,
+        providerExecuted: event.providerExecuted,
+        providerMetadata: metadata,
+        dynamic: event.dynamic,
+        errorText: event.errorText,
+        title: event.title,
+      };
+    case 'tool-output-available':
+      return {
+        type: 'tool-output-available',
+        toolCallId: event.toolCallId,
+        output: event.output,
+        providerExecuted: event.providerExecuted,
+        dynamic: event.dynamic,
+        preliminary: event.preliminary,
+      };
+    case 'tool-output-error':
+      return {
+        type: 'tool-output-error',
+        toolCallId: event.toolCallId,
+        errorText: event.errorText,
+        providerExecuted: event.providerExecuted,
+        dynamic: event.dynamic,
+      };
     case 'error':
-      return { type: 'error', errorText: event.error_text };
+      return {
+        type: 'error',
+        errorText: event.errorText ?? event.error_text ?? 'Unknown error',
+      };
     case 'not-supported':
       return null;
   }
+}
+
+function getProviderMetadata(event: RustVercelUIStream): ProviderMetadata | undefined {
+  if ('providerMetadata' in event && event.providerMetadata) {
+    return event.providerMetadata as ProviderMetadata;
+  }
+
+  if ('provider_metadata' in event && event.provider_metadata) {
+    return event.provider_metadata as ProviderMetadata;
+  }
+
+  return undefined;
 }
 
 function safeParseJson(value: string): unknown {

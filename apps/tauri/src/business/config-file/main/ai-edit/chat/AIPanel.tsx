@@ -33,6 +33,7 @@ export const AIPanel = ({ channel }: AIPanelProps) => {
     [uiMessages],
   );
 
+  console.log('uiMessages', uiMessages);
   // TODO: implement regenerate in useChat.
   const regenerate = useCallback((_messageId: string) => {}, []);
 

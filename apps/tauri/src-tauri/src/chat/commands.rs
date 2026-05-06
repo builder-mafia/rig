@@ -1,6 +1,6 @@
 use aisdk::{
     core::{
-        capabilities::{TextInputSupport, ToolCallSupport},
+        capabilities::{StructuredOutputSupport, TextInputSupport, ToolCallSupport},
         DynamicModel, LanguageModel, LanguageModelRequest, Message, Messages,
     },
     integrations::vercel_aisdk_ui::{VercelUIMessage, VercelUIStream, VercelUIStreamOptions},
@@ -19,7 +19,10 @@ fn cancel_map() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
     MAP.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-async fn do_text_request<M: LanguageModel + TextInputSupport + ToolCallSupport>(
+async fn do_text_request<
+    M: LanguageModel + TextInputSupport + ToolCallSupport + StructuredOutputSupport,
+>(
+    app: AppHandle,
     model: M,
     messages: Messages,
     tx: tokio::sync::mpsc::Sender<VercelUIStream>,
@@ -27,12 +30,13 @@ async fn do_text_request<M: LanguageModel + TextInputSupport + ToolCallSupport>(
 ) -> Result<(), String> {
     println!("model: {}", model.name().clone());
 
+    let file_editor_tool = tools::file_editor::file_editor(model.clone(), app);
+
     let response = LanguageModelRequest::builder()
         .model(model)
-        .system("You are a helpful assistant.")
         .messages(messages)
         .with_tool(tools::read_file::read_file())
-        .with_tool(tools::write_file::write_file())
+        .with_tool(file_editor_tool)
         .with_tool(tools::bash::bash())
         .build()
         .stream_text()
@@ -104,7 +108,7 @@ async fn do_stream(
             .api_key(auth.access_token)
             .build()
             .map_err(|e| e.to_string())?;
-        do_text_request(model, messages, tx, cancel_flag).await?;
+        do_text_request(app, model, messages, tx, cancel_flag).await?;
         return Ok(());
     }
 
@@ -118,7 +122,7 @@ async fn do_stream(
                 .build()
                 .map_err(|e| e.to_string())?;
 
-            do_text_request(model, messages, tx, cancel_flag).await?;
+            do_text_request(app, model, messages, tx, cancel_flag).await?;
         }
         Provider::Google => {
             let model = Google::<DynamicModel>::builder()
@@ -126,7 +130,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx, cancel_flag).await?;
+            do_text_request(app, model, messages, tx, cancel_flag).await?;
         }
         Provider::Anthropic => {
             let model = Anthropic::<DynamicModel>::builder()
@@ -134,7 +138,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx, cancel_flag).await?;
+            do_text_request(app, model, messages, tx, cancel_flag).await?;
         }
         Provider::Vercel => {
             let model = Vercel::<DynamicModel>::builder()
@@ -142,7 +146,7 @@ async fn do_stream(
                 .api_key(api_key)
                 .build()
                 .map_err(|e| e.to_string())?;
-            do_text_request(model, messages, tx, cancel_flag).await?;
+            do_text_request(app, model, messages, tx, cancel_flag).await?;
         }
         Provider::Codex => unreachable!(),
     }
