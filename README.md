@@ -1,78 +1,36 @@
-# ALLIN
+# Rig
 
-An open-source AI all-in-one kit with chat interface and extensible features.
+Rig is a local-first desktop app for organizing scattered agent SKILL files before they become a mess.
 
-## About
+Browse every local skill from one place, edit files without jumping between folders, and track which skills are actually being used.
 
-ALLIN is a platform that bundles various AI-powered features in a single place. Currently focused on providing a ChatGPT/Gemini-like chat interface, with plans to continuously add more creative AI features.
+## Why Rig?
 
-## Project Structure
+Agent SKILL files are powerful, but they are easy to lose track of once they spread across projects, config folders, and local experiments.
 
-```
-ALLIN/
-├── apps/
-│   ├── web/              # Next.js web application
-│   └── desktop-app/      # Tauri desktop application
-├── packages/
-│   ├── allin-api/        # API definitions for extensions
-│   ├── allin-extension/  # Extension system core
-│   ├── chat/             # Chat functionality (providers, facades)
-│   ├── db-schema/        # Database schemas
-│   ├── message-metadata-schema/  # Message metadata types
-│   └── ui/               # Shared UI components (shadcn/ui)
-└── extensions/
-    └── quiz/             # Example extension (quiz feature)
-```
+Rig gives you one focused desktop workspace for finding, editing, and understanding the skills already living on your machine.
 
-## Tech Stack
+## MVP Features
 
-- **Framework**: Next.js 15, React 19
-- **Desktop**: Tauri (Rust)
-- **State Management**: Jotai + RxJS
-- **UI**: shadcn/ui, Tailwind CSS, Lucide Icons
-- **Database**: IndexedDB
-- **AI Providers**: OpenAI, Google AI, Anthropic
-- **Testing**: Vitest
-- **Monorepo**: Turbo + pnpm
+- **Browse local SKILL files**
+  Discover and inspect SKILL files from one place.
+- **Edit skills directly**
+  Update SKILL files in place without switching between folders and editors.
+- **Track skill usage**
+  See invocation counts and understand which skills are actually being used.
 
-## Getting Started
+## Status
 
-### Prerequisites
+Rig is currently in MVP development.
 
-- Node.js 18+
-- pnpm 9.6.0+
-
-### Installation
+## Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Run web app in development mode
-pnpm dev
-
-# Run desktop app
 pnpm dev:app
-
-# Build all apps
-pnpm build
-
-# Run tests
-pnpm test
 ```
 
-## Contributing
-
-Contributions are welcome in any form:
-
-- New AI feature ideas
-- UX/UI improvements
-- Performance optimizations
-- Test coverage and refactoring
-- Documentation
-
-Please open an issue to discuss your ideas or submit a pull request.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+See [LICENSE](LICENSE).
