@@ -65,14 +65,21 @@ pub fn run() {
     // load environment variables from .env file
     dotenvy::dotenv().ok();
 
-    let app = tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .on_menu_event(|app, event| {
             if event.id() == CHECK_FOR_UPDATES_MENU_ID {
                 let _ = app.emit(OPEN_APP_UPDATE_EVENT, ());
             }
         })
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_keyring::init())
+        .plugin(tauri_plugin_keyring::init());
+
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+    }
+
+    let app = builder
         .setup(|app| {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())
