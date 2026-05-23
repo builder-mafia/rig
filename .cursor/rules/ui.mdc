@@ -1,8 +1,0 @@
----
-alwaysApply: false
-description: UI guidelines and conventions
----
-
-- use src/components if possible
-- if needed, You can install shadcn Components.
-- use tailwind CSS
