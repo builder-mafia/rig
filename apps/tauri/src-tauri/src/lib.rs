@@ -1,11 +1,4 @@
-mod api_key;
 mod app_updates;
-mod auth;
-mod chat;
-mod font;
-mod provider;
-mod storage;
-mod tools;
 
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
@@ -99,49 +92,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            chat::commands::stream_text,
-            chat::commands::abort_stream,
-            api_key::commands::save_api_key,
-            api_key::commands::delete_api_key,
-            api_key::commands::has_api_key,
-            storage::commands::get_channels,
-            storage::commands::get_channel,
-            storage::commands::create_channel,
-            storage::commands::update_channel,
-            storage::commands::delete_channel,
-            storage::commands::get_messages,
-            storage::commands::append_message,
-            storage::commands::upsert_message,
-            storage::commands::save_messages,
-            storage::commands::get_all_agents,
-            storage::commands::get_agent,
-            storage::commands::create_agent,
-            storage::commands::update_agent,
-            storage::commands::delete_agent,
-            storage::commands::get_app_settings,
-            storage::commands::save_app_settings,
-            storage::commands::get_config_files,
-            storage::commands::get_groups,
-            storage::commands::create_config_file,
-            storage::commands::create_group,
-            storage::commands::check_local_path,
-            storage::commands::update_config_file,
-            storage::commands::update_group,
-            storage::commands::delete_config_file,
-            storage::commands::delete_group,
-            storage::commands::open_config_file_folder,
-            storage::commands::open_config_file_in_opencode,
-            storage::commands::open_config_file_in_cursor,
-            storage::commands::open_config_file_in_zed,
-            storage::commands::read_file,
-            storage::commands::read_directory_entries,
-            storage::commands::write_file,
-            auth::commands::start_codex_oauth,
-            auth::commands::get_codex_auth_status,
-            auth::commands::revoke_codex_auth,
             app_updates::fetch_update,
             app_updates::install_update,
-            font::commands::get_system_fonts,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
