@@ -2,6 +2,7 @@ mod app_updates;
 
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+mod skills;
 
 const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
 const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
