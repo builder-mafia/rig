@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import latestRelease from '../../tauri/latest.json';
+import latestRelease from '../../rig/latest.json';
 
 const releaseVersion = latestRelease.version;
 const updaterUrl = latestRelease.platforms['darwin-aarch64']?.url;
