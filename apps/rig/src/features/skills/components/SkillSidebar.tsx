@@ -1,10 +1,20 @@
 import { useQueries } from '@tanstack/react-query';
 import { Effect } from 'effect';
 import { listSkills } from '../api';
-import type { SkillRoot } from '../types';
+import type { Skill, SkillRoot } from '../types';
 import { SkillList } from './SkillList';
 
-export const SkillSidebar = ({ roots }: { roots: SkillRoot[] }) => {
+interface SkillSidebarProps {
+  roots: SkillRoot[];
+  selectedSkill: Skill | null;
+  onSelectSkill: (skill: Skill) => void;
+}
+
+export const SkillSidebar = ({
+  roots,
+  selectedSkill,
+  onSelectSkill,
+}: SkillSidebarProps) => {
   const skillQueries = useQueries({
     queries: roots.map(root => ({
       queryKey: ['skills', root.path],
@@ -19,10 +29,10 @@ export const SkillSidebar = ({ roots }: { roots: SkillRoot[] }) => {
   return (
     <SkillList
       skills={skills}
-      selectedSkill={null}
+      selectedSkill={selectedSkill}
       isLoading={isLoading}
       error={error ? String(error) : null}
-      onSelectSkill={() => {}}
+      onSelectSkill={onSelectSkill}
     />
   );
 };
