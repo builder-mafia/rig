@@ -10,10 +10,13 @@ export const SkillRootSchema = z.object({
 export const SkillValidationErrorCodeSchema = z.enum([
   'missingSkillFile',
   'emptySkillFile',
+  'emptyContent',
   'invalidUtf8',
   'readFailed',
   'notDirectory',
   'outsideRoot',
+  'missingFrontMatter',
+  'invalidFrontMatter',
 ]);
 
 export const SkillValidationErrorSchema = z.object({
@@ -40,16 +43,11 @@ export const SkillSchema = z.object({
   name: z.string(),
   rootPath: z.string(),
   relativePath: z.string(),
-  hasSkillFile: z.boolean(),
+  content: z.string(),
   description: z.string().nullable(),
   isValid: z.boolean(),
-  validationErrors: z.array(SkillValidationErrorSchema),
+  validationError: SkillValidationErrorSchema.nullable(),
   updatedAt: z.string().nullable(),
-});
-
-export const SkillDetailSchema = z.object({
-  skill: SkillSchema,
-  content: z.string(),
 });
 
 export type SkillRoot = z.infer<typeof SkillRootSchema>;
@@ -60,4 +58,3 @@ export type SkillValidationError = z.infer<typeof SkillValidationErrorSchema>;
 export type SkillRootErrorCode = z.infer<typeof SkillRootErrorCodeSchema>;
 export type SkillRootError = z.infer<typeof SkillRootErrorSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
-export type SkillDetail = z.infer<typeof SkillDetailSchema>;

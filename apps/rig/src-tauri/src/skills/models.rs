@@ -1,3 +1,9 @@
+pub struct SkillRootDefinition {
+    pub id: &'static str,
+    pub path: &'static str,
+    pub label: &'static str,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SkillRoot {
@@ -14,18 +20,11 @@ pub struct Skill {
     pub name: String,
     pub root_path: String,
     pub relative_path: String,
-    pub has_skill_file: bool,
+    pub content: String,
     pub description: Option<String>,
     pub is_valid: bool,
-    pub validation_errors: Vec<SkillValidationError>,
+    pub validation_error: Option<SkillValidationError>,
     pub updated_at: Option<String>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SkillDetail {
-    pub skill: Skill,
-    pub content: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -33,10 +32,13 @@ pub struct SkillDetail {
 pub enum SkillValidationErrorCode {
     MissingSkillFile,
     EmptySkillFile,
+    EmptyContent,
     InvalidUtf8,
     ReadFailed,
     NotDirectory,
     OutsideRoot,
+    MissingFrontMatter,
+    InvalidFrontMatter,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

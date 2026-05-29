@@ -1,11 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { Data, Effect } from 'effect';
-import {
-  type SkillDetail,
-  SkillDetailSchema,
-  SkillRootSchema,
-  SkillSchema,
-} from './types';
+import { SkillRootSchema, SkillSchema } from './types';
 
 export class ListSkillRootsError extends Data.TaggedError(
   'ListSkillRootsError',
@@ -47,40 +42,6 @@ export const listSkills = Effect.fn('listSkills')(function* (rootPath: string) {
       new ListSkillsError({
         kind: 'ZodParseError',
         rootPath,
-        cause: error,
-      }),
-  });
-});
-
-export class ReadSkillError extends Data.TaggedError('ReadSkillError')<{
-  kind: 'InvokeError' | 'ZodParseError';
-  rootPath: string;
-  relativePath: string;
-  cause: unknown;
-}> {}
-
-export const readSkill = Effect.fn('readSkill')(function* (input: {
-  rootPath: string;
-  relativePath: string;
-}) {
-  const result = yield* Effect.tryPromise({
-    try: () => invoke<unknown>('read_skill', input),
-    catch: error =>
-      new ReadSkillError({
-        kind: 'InvokeError',
-        rootPath: input.rootPath,
-        relativePath: input.relativePath,
-        cause: error,
-      }),
-  });
-
-  return yield* Effect.try({
-    try: () => SkillDetailSchema.parse(result),
-    catch: error =>
-      new ReadSkillError({
-        kind: 'ZodParseError',
-        rootPath: input.rootPath,
-        relativePath: input.relativePath,
         cause: error,
       }),
   });
