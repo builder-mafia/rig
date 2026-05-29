@@ -9,7 +9,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-app, var(--font-geist-mono));
+    font-family: var(--font-app, var(--font-geist-sans));
   }
 
   .prose :where(h1) {

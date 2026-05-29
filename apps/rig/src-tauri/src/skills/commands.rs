@@ -1,6 +1,7 @@
-use super::models::{Skill, SkillRoot, SkillRootDefinition};
+use super::models::{Skill, SkillListingError, SkillRoot, SkillRootDefinition};
 use super::scanner::list_skills_from_root;
 use crate::skills::fs::expand_path;
+use crate::skills::models::SkillListingErrorCode;
 
 pub const SKILL_ROOT_DEFINITIONS: &[SkillRootDefinition] = &[
     SkillRootDefinition {
@@ -38,15 +39,21 @@ pub fn list_skill_roots() -> Vec<SkillRoot> {
 }
 
 #[tauri::command]
-pub fn list_skills(root_path: String) -> Result<Vec<Skill>, String> {
+pub fn list_skills(root_path: String) -> Result<Vec<Skill>, SkillListingError> {
     let path = expand_path(root_path.as_str());
 
     if !path.exists() {
-        return Err(format!("Skill root path does not exist: {}", root_path));
+        return Err(SkillListingError {
+            code: SkillListingErrorCode::PathNotFound,
+            message: format!("Skill root path does not exist: {}", root_path),
+        });
     }
 
     if !path.is_dir() {
-        return Err(format!("Skill root path is not a directory: {}", root_path));
+        return Err(SkillListingError {
+            code: SkillListingErrorCode::NotDirectory,
+            message: format!("Skill root path is not a directory: {}", root_path),
+        });
     }
 
     return list_skills_from_root(&path);

@@ -3,12 +3,14 @@ use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
 
-use super::models::{Skill, SkillValidationError, SkillValidationErrorCode};
+use super::models::{
+    Skill, SkillListingError, SkillListingErrorCode, SkillValidationError, SkillValidationErrorCode,
+};
 use super::parser::parse_skill_file_content;
 
 const IGNORED_DIRECTORY_NAMES: &[&str] = &[".archive", ".backups", ".git", "node_modules"];
 
-pub fn list_skills_from_root(root_path: &Path) -> Result<Vec<Skill>, String> {
+pub fn list_skills_from_root(root_path: &Path) -> Result<Vec<Skill>, SkillListingError> {
     let skill_files = collect_skill_files(root_path)?;
 
     Ok(skill_files
@@ -17,14 +19,17 @@ pub fn list_skills_from_root(root_path: &Path) -> Result<Vec<Skill>, String> {
         .collect())
 }
 
-fn collect_skill_files(root_path: &Path) -> Result<Vec<PathBuf>, String> {
+fn collect_skill_files(root_path: &Path) -> Result<Vec<PathBuf>, SkillListingError> {
     WalkDir::new(root_path)
         .into_iter()
         .filter_entry(should_visit_entry)
         .filter_map(|entry| match entry {
             Ok(entry) if is_skill_file(&entry) => Some(Ok(entry.path().to_path_buf())),
             Ok(_) => None,
-            Err(error) => Some(Err(error.to_string())),
+            Err(error) => Some(Err(SkillListingError {
+                code: SkillListingErrorCode::ReadFailed,
+                message: format!("Failed to read skill file: {}", error),
+            })),
         })
         .collect()
 }

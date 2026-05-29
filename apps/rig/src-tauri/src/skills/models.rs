@@ -47,3 +47,18 @@ pub struct SkillValidationError {
     pub code: SkillValidationErrorCode,
     pub message: String,
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SkillListingErrorCode {
+    PathNotFound,
+    NotDirectory,
+    ReadFailed,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillListingError {
+    pub code: SkillListingErrorCode,
+    pub message: String,
+}

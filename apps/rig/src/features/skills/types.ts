@@ -24,18 +24,15 @@ export const SkillValidationErrorSchema = z.object({
   message: z.string(),
 });
 
-export const SkillRootErrorCodeSchema = z.enum([
-  'invalidRootPath',
-  'rootNotDirectory',
-  'permissionDenied',
+export const SkillListingErrorCodeSchema = z.enum([
+  'pathNotFound',
+  'notDirectory',
   'readFailed',
-  'pathOutsideAllowedRoots',
 ]);
 
-export const SkillRootErrorSchema = z.object({
-  code: SkillRootErrorCodeSchema,
+export const SkillListingErrorSchema = z.object({
+  code: SkillListingErrorCodeSchema,
   message: z.string(),
-  rootPath: z.string(),
 });
 
 export const SkillSchema = z.object({
@@ -55,6 +52,6 @@ export type SkillValidationErrorCode = z.infer<
   typeof SkillValidationErrorCodeSchema
 >;
 export type SkillValidationError = z.infer<typeof SkillValidationErrorSchema>;
-export type SkillRootErrorCode = z.infer<typeof SkillRootErrorCodeSchema>;
-export type SkillRootError = z.infer<typeof SkillRootErrorSchema>;
+export type SkillListingErrorCode = z.infer<typeof SkillListingErrorCodeSchema>;
+export type SkillListingError = z.infer<typeof SkillListingErrorSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
