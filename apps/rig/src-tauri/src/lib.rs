@@ -2,6 +2,7 @@ mod app_updates;
 
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+mod skills;
 
 const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
 const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
@@ -94,6 +95,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_updates::fetch_update,
             app_updates::install_update,
+            skills::commands::list_skill_roots,
+            skills::commands::list_skills,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
