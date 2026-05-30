@@ -97,6 +97,8 @@ pub fn run() {
             app_updates::install_update,
             skills::commands::list_skill_roots,
             skills::commands::list_skills,
+            skills::commands::list_skill_usages,
+            skills::commands::list_skill_usages_tendency,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

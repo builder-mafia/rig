@@ -1,7 +1,13 @@
-use super::models::{Skill, SkillListingError, SkillRoot, SkillRootDefinition};
+use super::models::{
+    BucketType, Skill, SkillListingError, SkillRoot, SkillRootDefinition, SkillUsage,
+    SkillUsageError, SkillUsageSeries, WindowType,
+};
 use super::scanner::list_skills_from_root;
+use super::usage::{list_skill_usage_tendencies_from_log, list_skill_usages_from_log};
 use crate::skills::fs::expand_path;
 use crate::skills::models::SkillListingErrorCode;
+
+const SKILL_USAGE_LOG_PATH: &str = "~/rig-usage.jsonl";
 
 pub const SKILL_ROOT_DEFINITIONS: &[SkillRootDefinition] = &[
     SkillRootDefinition {
@@ -57,4 +63,25 @@ pub fn list_skills(root_path: String) -> Result<Vec<Skill>, SkillListingError> {
     }
 
     return list_skills_from_root(&path);
+}
+
+#[tauri::command]
+pub fn list_skill_usages(window: Option<WindowType>) -> Result<Vec<SkillUsage>, SkillUsageError> {
+    let path = expand_path(SKILL_USAGE_LOG_PATH);
+
+    list_skill_usages_from_log(&path, window.unwrap_or(WindowType::Day))
+}
+
+#[tauri::command]
+pub fn list_skill_usages_tendency(
+    window: Option<WindowType>,
+    bucket_type: Option<BucketType>,
+) -> Result<Vec<SkillUsageSeries>, SkillUsageError> {
+    let path = expand_path(SKILL_USAGE_LOG_PATH);
+
+    list_skill_usage_tendencies_from_log(
+        &path,
+        window.unwrap_or(WindowType::Week),
+        bucket_type.unwrap_or(BucketType::Hour),
+    )
 }
