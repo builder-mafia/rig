@@ -1,7 +1,8 @@
 use super::models::{
-    BucketType, Skill, SkillListingError, SkillRoot, SkillRootDefinition, SkillUsage,
-    SkillUsageError, SkillUsageSeries, WindowType,
+    BucketType, Skill, SkillListingError, SkillRoot, SkillRootDefinition, SkillRootImportError,
+    SkillRootKind, SkillUsage, SkillUsageError, SkillUsageSeries, WindowType,
 };
+use super::root_store::{import_skill_root_from_path, list_imported_skill_roots};
 use super::scanner::list_skills_from_root;
 use super::usage::{list_skill_usage_tendencies_from_log, list_skill_usages_from_log};
 use crate::skills::fs::expand_path;
@@ -28,8 +29,8 @@ pub const SKILL_ROOT_DEFINITIONS: &[SkillRootDefinition] = &[
 ];
 
 #[tauri::command]
-pub fn list_skill_roots() -> Vec<SkillRoot> {
-    SKILL_ROOT_DEFINITIONS
+pub fn list_skill_roots(app: tauri::AppHandle) -> Vec<SkillRoot> {
+    let mut roots = SKILL_ROOT_DEFINITIONS
         .iter()
         .map(|definition| {
             let path = expand_path(definition.path);
@@ -39,9 +40,21 @@ pub fn list_skill_roots() -> Vec<SkillRoot> {
                 path: path.to_string_lossy().to_string(),
                 label: definition.label.to_string(),
                 exists: path.exists(),
+                kind: SkillRootKind::Default,
             }
         })
-        .collect()
+        .collect::<Vec<_>>();
+
+    roots.extend(list_imported_skill_roots(&app));
+    roots
+}
+
+#[tauri::command]
+pub fn import_skill_root(
+    app: tauri::AppHandle,
+    path: String,
+) -> Result<SkillRoot, SkillRootImportError> {
+    import_skill_root_from_path(&app, expand_path(path.as_str()))
 }
 
 #[tauri::command]

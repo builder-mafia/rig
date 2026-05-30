@@ -95,6 +95,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_updates::fetch_update,
             app_updates::install_update,
+            skills::commands::import_skill_root,
             skills::commands::list_skill_roots,
             skills::commands::list_skills,
             skills::commands::list_skill_usages,

@@ -6,11 +6,44 @@ pub struct SkillRootDefinition {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub enum SkillRootKind {
+    Default,
+    Repository,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkillRoot {
     pub id: String,
     pub path: String,
     pub label: String,
     pub exists: bool,
+    pub kind: SkillRootKind,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportedSkillRoot {
+    pub id: String,
+    pub path: String,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SkillRootImportErrorCode {
+    PathNotFound,
+    NotDirectory,
+    DuplicateId,
+    ReadFailed,
+    WriteFailed,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillRootImportError {
+    pub code: SkillRootImportErrorCode,
+    pub message: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { Data, Effect } from 'effect';
 import {
   SkillListingErrorSchema,
+  SkillRootImportErrorSchema,
   SkillRootSchema,
   SkillSchema,
   SkillUsageErrorSchema,
@@ -29,6 +30,45 @@ export const listSkillRoots = Effect.fn('listSkillRoots')(function* () {
     try: () => SkillRootSchema.array().parse(result),
     catch: error =>
       new ListSkillRootsError({ kind: 'ZodParseError', cause: error }),
+  });
+});
+
+export class ImportSkillRootError extends Data.TaggedError(
+  'ImportSkillRootError',
+)<{
+  kind: 'InvokeError' | 'SkillRootImportError' | 'ZodParseError';
+  cause: unknown;
+}> {}
+
+export const importSkillRoot = Effect.fn('importSkillRoot')(function* (
+  path: string,
+) {
+  const result = yield* Effect.tryPromise({
+    try: () => invoke<unknown>('import_skill_root', { path }),
+    catch: error => error,
+  }).pipe(
+    Effect.catchAll(error => {
+      const importError = SkillRootImportErrorSchema.safeParse(error);
+
+      if (importError.success) {
+        return Effect.fail(
+          new ImportSkillRootError({
+            kind: 'SkillRootImportError',
+            cause: importError.data,
+          }),
+        );
+      }
+
+      return Effect.fail(
+        new ImportSkillRootError({ kind: 'InvokeError', cause: error }),
+      );
+    }),
+  );
+
+  return yield* Effect.try({
+    try: () => SkillRootSchema.parse(result),
+    catch: error =>
+      new ImportSkillRootError({ kind: 'ZodParseError', cause: error }),
   });
 });
 

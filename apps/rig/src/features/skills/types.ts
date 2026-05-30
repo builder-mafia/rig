@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
+export const SkillRootKindSchema = z.enum(['default', 'repository']);
+
 export const SkillRootSchema = z.object({
   id: z.string(),
   path: z.string(),
   label: z.string(),
   exists: z.boolean(),
+  kind: SkillRootKindSchema,
 });
 
 export const SkillValidationErrorCodeSchema = z.enum([
@@ -32,6 +35,19 @@ export const SkillListingErrorCodeSchema = z.enum([
 
 export const SkillListingErrorSchema = z.object({
   code: SkillListingErrorCodeSchema,
+  message: z.string(),
+});
+
+export const SkillRootImportErrorCodeSchema = z.enum([
+  'pathNotFound',
+  'notDirectory',
+  'duplicateId',
+  'readFailed',
+  'writeFailed',
+]);
+
+export const SkillRootImportErrorSchema = z.object({
+  code: SkillRootImportErrorCodeSchema,
   message: z.string(),
 });
 
@@ -70,12 +86,17 @@ export const SkillUsageSeriesSchema = z.object({
 });
 
 export type SkillRoot = z.infer<typeof SkillRootSchema>;
+export type SkillRootKind = z.infer<typeof SkillRootKindSchema>;
 export type SkillValidationErrorCode = z.infer<
   typeof SkillValidationErrorCodeSchema
 >;
 export type SkillValidationError = z.infer<typeof SkillValidationErrorSchema>;
 export type SkillListingErrorCode = z.infer<typeof SkillListingErrorCodeSchema>;
 export type SkillListingError = z.infer<typeof SkillListingErrorSchema>;
+export type SkillRootImportErrorCode = z.infer<
+  typeof SkillRootImportErrorCodeSchema
+>;
+export type SkillRootImportError = z.infer<typeof SkillRootImportErrorSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
 export type SkillUsageErrorCode = z.infer<typeof SkillUsageErrorCodeSchema>;
 export type SkillUsageError = z.infer<typeof SkillUsageErrorSchema>;
