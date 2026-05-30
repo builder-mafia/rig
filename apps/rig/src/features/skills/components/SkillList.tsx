@@ -1,9 +1,12 @@
 import { Badge, cn, ScrollArea } from '@allin/ui';
-import type { Skill } from '../types';
+import type { Skill, SkillUsage, SkillUsageSeries } from '../types';
+import { SkillUsageSparkline } from './SkillUsageSparkline';
 
 export interface SkillListProps {
   skills: Skill[];
   selectedSkill: Skill | null;
+  skillUsages: SkillUsage[];
+  skillUsageTendencies: SkillUsageSeries[];
   isLoading: boolean;
   error: string | null;
   onSelectSkill: (skill: Skill) => void;
@@ -12,6 +15,8 @@ export interface SkillListProps {
 export const SkillList = ({
   skills,
   selectedSkill,
+  skillUsages,
+  skillUsageTendencies,
   isLoading,
   error,
   onSelectSkill,
@@ -43,11 +48,19 @@ export const SkillList = ({
     );
   }
 
+  const usageByName = new Map(skillUsages.map(usage => [usage.name, usage]));
+  const tendencyByName = new Map(
+    skillUsageTendencies.map(tendency => [tendency.name, tendency]),
+  );
+
   return (
     <ScrollArea className='h-full'>
       <div className='space-y-1 p-3'>
         {skills.map(skill => {
           const isSelected = selectedSkill?.id === skill.id;
+          const usage = usageByName.get(skill.name);
+          const tendency = tendencyByName.get(skill.name);
+          const count = usage?.count ?? 0;
 
           return (
             <button
@@ -56,7 +69,7 @@ export const SkillList = ({
               aria-current={isSelected ? 'true' : undefined}
               onClick={() => onSelectSkill(skill)}
               className={cn(
-                'flex w-full min-w-0 flex-col rounded-lg border px-3 py-2 text-left transition-colors',
+                'flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 isSelected
@@ -64,21 +77,31 @@ export const SkillList = ({
                   : 'border-transparent bg-transparent',
               )}
             >
-              <span className='flex min-w-0 items-center gap-2'>
-                <span className='truncate text-sm font-medium'>
-                  {skill.name}
+              <SkillUsageSparkline values={tendency?.series ?? []} />
+
+              <span className='min-w-0 flex-1'>
+                <span className='flex min-w-0 items-center gap-2'>
+                  <span className='truncate text-sm font-medium'>
+                    {skill.name}
+                  </span>
+                  {!skill.isValid && (
+                    <Badge
+                      variant='destructive'
+                      className='h-5 px-1.5 text-[10px]'
+                    >
+                      Invalid
+                    </Badge>
+                  )}
                 </span>
-                {!skill.isValid && (
-                  <Badge
-                    variant='destructive'
-                    className='h-5 px-1.5 text-[10px]'
-                  >
-                    Invalid
-                  </Badge>
-                )}
+
+                <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
+                  {skill.description || skill.relativePath}
+                </span>
               </span>
-              <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
-                {skill.description || skill.relativePath}
+
+              <span className='shrink-0 text-sm font-light tabular-nums'>
+                {count}
+                <span className='text-xs text-muted-foreground'>×</span>
               </span>
             </button>
           );

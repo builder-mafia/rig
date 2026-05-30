@@ -1,6 +1,6 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { Effect } from 'effect';
-import { listSkills } from '../api';
+import { listSkills, listSkillUsages, listSkillUsagesTendency } from '../api';
 import type { Skill, SkillRoot } from '../types';
 import { SkillList } from './SkillList';
 
@@ -22,6 +22,16 @@ export const SkillSidebar = ({
     })),
   });
 
+  const { data: skillUsages = [] } = useQuery({
+    queryKey: ['skill-usages', 'month'],
+    queryFn: () => Effect.runPromise(listSkillUsages('month')),
+  });
+
+  const { data: skillUsageTendencies = [] } = useQuery({
+    queryKey: ['skill-usages-tendency', 'month', 'day'],
+    queryFn: () => Effect.runPromise(listSkillUsagesTendency('month', 'day')),
+  });
+
   const skills = skillQueries.flatMap(query => query.data ?? []);
   const isLoading = skillQueries.some(query => query.isLoading);
   const error = skillQueries.find(query => query.error)?.error;
@@ -30,6 +40,8 @@ export const SkillSidebar = ({
     <SkillList
       skills={skills}
       selectedSkill={selectedSkill}
+      skillUsages={skillUsages}
+      skillUsageTendencies={skillUsageTendencies}
       isLoading={isLoading}
       error={error ? String(error) : null}
       onSelectSkill={onSelectSkill}
