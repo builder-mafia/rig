@@ -6,7 +6,8 @@ use std::path::Path;
 use chrono::{DateTime, Duration, Utc};
 
 use super::models::{
-    SkillUsage, SkillUsageError, SkillUsageErrorCode, SkillUsageLogSchema, WindowType,
+    BucketType, SkillUsage, SkillUsageError, SkillUsageErrorCode, SkillUsageLogSchema,
+    SkillUsageSeries, WindowType,
 };
 
 struct SkillUsageEvent {
@@ -21,6 +22,21 @@ pub fn list_skill_usages_from_log(
     let events = read_skill_usage_events(path)?;
 
     Ok(summarize_skill_usages(events, window, Utc::now()))
+}
+
+pub fn list_skill_usage_tendencies_from_log(
+    path: &Path,
+    window: WindowType,
+    bucket_type: BucketType,
+) -> Result<Vec<SkillUsageSeries>, SkillUsageError> {
+    let events = read_skill_usage_events(path)?;
+
+    Ok(build_skill_usage_tendencies(
+        events,
+        window,
+        bucket_type,
+        Utc::now(),
+    ))
 }
 
 fn read_skill_usage_events(path: &Path) -> Result<Vec<SkillUsageEvent>, SkillUsageError> {
@@ -113,4 +129,58 @@ fn usage_window_start(now: DateTime<Utc>, window: WindowType) -> DateTime<Utc> {
         WindowType::Month => now - Duration::days(30),
         WindowType::Year => now - Duration::days(365),
     }
+}
+
+fn build_skill_usage_tendencies(
+    events: Vec<SkillUsageEvent>,
+    window: WindowType,
+    bucket_type: BucketType,
+    now: DateTime<Utc>,
+) -> Vec<SkillUsageSeries> {
+    let start = usage_window_start(now, window);
+    let bucket_duration = bucket_duration(bucket_type);
+    let bucket_count = bucket_count(start, now, bucket_duration);
+    let mut tendencies = HashMap::<String, Vec<u32>>::new();
+
+    for event in events {
+        if event.used_at < start || event.used_at > now {
+            continue;
+        }
+
+        let bucket_index =
+            ((event.used_at - start).num_seconds() / bucket_duration.num_seconds()) as usize;
+
+        if bucket_index >= bucket_count {
+            continue;
+        }
+
+        let series = tendencies
+            .entry(event.skill_name)
+            .or_insert_with(|| vec![0; bucket_count]);
+
+        series[bucket_index] += 1;
+    }
+
+    let mut tendencies = tendencies
+        .into_iter()
+        .map(|(name, series)| SkillUsageSeries { name, series })
+        .collect::<Vec<_>>();
+
+    tendencies.sort_by(|a, b| a.name.cmp(&b.name));
+    tendencies
+}
+
+fn bucket_duration(bucket_type: BucketType) -> Duration {
+    match bucket_type {
+        BucketType::Hour => Duration::hours(1),
+        BucketType::Day => Duration::days(1),
+        BucketType::Month => Duration::days(30),
+    }
+}
+
+fn bucket_count(start: DateTime<Utc>, end: DateTime<Utc>, bucket_duration: Duration) -> usize {
+    let seconds = (end - start).num_seconds();
+    let bucket_seconds = bucket_duration.num_seconds();
+
+    ((seconds + bucket_seconds - 1) / bucket_seconds) as usize
 }

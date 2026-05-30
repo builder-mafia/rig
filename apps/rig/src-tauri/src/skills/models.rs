@@ -73,14 +73,6 @@ pub struct SkillUsageLogSchema {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SkillUsage {
-    pub name: String,
-    pub count: u32,
-    pub last_used_at: Option<String>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub enum WindowType {
     Day,
     Week,
@@ -90,8 +82,31 @@ pub enum WindowType {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub enum BucketType {
+    Hour,
+    Day,
+    Month,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum SkillUsageErrorCode {
     ReadFailed,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillUsage {
+    pub name: String,
+    pub count: u32,
+    pub last_used_at: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillUsageSeries {
+    pub name: String,
+    pub series: Vec<u32>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
