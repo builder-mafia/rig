@@ -1,9 +1,6 @@
 import { Badge, cn, ScrollArea } from '@allin/ui';
-import { useState } from 'react';
 import type { Skill, SkillUsage, SkillUsageSeries } from '../types';
 import { SkillUsageSparkline } from './SkillUsageSparkline';
-
-type SkillSortKey = 'fires' | 'name';
 
 export interface SkillListProps {
   skills: Skill[];
@@ -24,8 +21,6 @@ export const SkillList = ({
   error,
   onSelectSkill,
 }: SkillListProps) => {
-  const [sortKey, setSortKey] = useState<SkillSortKey>('fires');
-
   if (isLoading) {
     return (
       <div className='space-y-2 p-3'>
@@ -45,27 +40,15 @@ export const SkillList = ({
     );
   }
 
-  if (skills.length === 0) {
-    return (
-      <div className='p-4 text-sm text-muted-foreground'>
-        No skills found in this root.
-      </div>
-    );
-  }
-
   const usageByName = new Map(skillUsages.map(usage => [usage.name, usage]));
   const tendencyByName = new Map(
     skillUsageTendencies.map(tendency => [tendency.name, tendency]),
   );
-  const totalFires = skillUsages.reduce(
-    (total, usage) => total + usage.count,
+  const totalFires = skills.reduce(
+    (total, skill) => total + (usageByName.get(skill.name)?.count ?? 0),
     0,
   );
   const sortedSkills = skills.toSorted((a, b) => {
-    if (sortKey === 'name') {
-      return a.name.localeCompare(b.name);
-    }
-
     const aCount = usageByName.get(a.name)?.count ?? 0;
     const bCount = usageByName.get(b.name)?.count ?? 0;
 
@@ -81,20 +64,15 @@ export const SkillList = ({
             {skills.length} skills · {totalFires} fires
           </p>
         </div>
-
-        <div className='mt-4 flex items-center gap-2 text-sm'>
-          <span className='text-muted-foreground'>Sorted by</span>
-          <button
-            type='button'
-            onClick={() => setSortKey(sortKey === 'fires' ? 'name' : 'fires')}
-            className='font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-          >
-            {sortKey === 'fires' ? 'fires ↓' : 'name ↑'}
-          </button>
-        </div>
       </div>
       <ScrollArea className='min-h-0 flex-1'>
-        <div className='space-y-1 p-3'>
+        <div className='space-y-1'>
+          {sortedSkills.length === 0 && (
+            <div className='p-1 text-sm text-muted-foreground'>
+              No skills found in this root.
+            </div>
+          )}
+
           {sortedSkills.map(skill => {
             const isSelected = selectedSkill?.id === skill.id;
             const usage = usageByName.get(skill.name);
@@ -138,7 +116,14 @@ export const SkillList = ({
                   </span>
                 </span>
 
-                <span className='shrink-0 text-sm font-light tabular-nums'>
+                <span
+                  className={cn(
+                    'shrink-0 text-xs font-light tabular-nums',
+                    isSelected
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground',
+                  )}
+                >
                   {count}
                   <span className='text-xs text-muted-foreground'>×</span>
                 </span>
