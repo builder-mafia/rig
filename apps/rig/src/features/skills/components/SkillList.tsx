@@ -1,6 +1,9 @@
 import { Badge, cn, ScrollArea } from '@allin/ui';
+import { useState } from 'react';
 import type { Skill, SkillUsage, SkillUsageSeries } from '../types';
 import { SkillUsageSparkline } from './SkillUsageSparkline';
+
+type SkillSortKey = 'fires' | 'name';
 
 export interface SkillListProps {
   skills: Skill[];
@@ -21,6 +24,8 @@ export const SkillList = ({
   error,
   onSelectSkill,
 }: SkillListProps) => {
+  const [sortKey, setSortKey] = useState<SkillSortKey>('fires');
+
   if (isLoading) {
     return (
       <div className='space-y-2 p-3'>
@@ -52,61 +57,96 @@ export const SkillList = ({
   const tendencyByName = new Map(
     skillUsageTendencies.map(tendency => [tendency.name, tendency]),
   );
+  const totalFires = skillUsages.reduce(
+    (total, usage) => total + usage.count,
+    0,
+  );
+  const sortedSkills = skills.toSorted((a, b) => {
+    if (sortKey === 'name') {
+      return a.name.localeCompare(b.name);
+    }
+
+    const aCount = usageByName.get(a.name)?.count ?? 0;
+    const bCount = usageByName.get(b.name)?.count ?? 0;
+
+    return bCount - aCount || a.name.localeCompare(b.name);
+  });
 
   return (
-    <ScrollArea className='h-full'>
-      <div className='space-y-1 p-3'>
-        {skills.map(skill => {
-          const isSelected = selectedSkill?.id === skill.id;
-          const usage = usageByName.get(skill.name);
-          const tendency = tendencyByName.get(skill.name);
-          const count = usage?.count ?? 0;
+    <div className='flex h-full min-h-0 flex-col'>
+      <div className='shrink-0 border-b px-5 py-4'>
+        <div className='flex items-baseline gap-2'>
+          <h2 className='text-xl font-semibold tracking-tight'>Skills</h2>
+          <p className='text-sm text-muted-foreground'>
+            {skills.length} skills · {totalFires} fires
+          </p>
+        </div>
 
-          return (
-            <button
-              key={skill.id}
-              type='button'
-              aria-current={isSelected ? 'true' : undefined}
-              onClick={() => onSelectSkill(skill)}
-              className={cn(
-                'flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
-                'hover:bg-accent hover:text-accent-foreground',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                isSelected
-                  ? 'border-primary bg-accent text-accent-foreground'
-                  : 'border-transparent bg-transparent',
-              )}
-            >
-              <SkillUsageSparkline values={tendency?.series ?? []} />
-
-              <span className='min-w-0 flex-1'>
-                <span className='flex min-w-0 items-center gap-2'>
-                  <span className='truncate text-sm font-medium'>
-                    {skill.name}
-                  </span>
-                  {!skill.isValid && (
-                    <Badge
-                      variant='destructive'
-                      className='h-5 px-1.5 text-[10px]'
-                    >
-                      Invalid
-                    </Badge>
-                  )}
-                </span>
-
-                <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
-                  {skill.description || skill.relativePath}
-                </span>
-              </span>
-
-              <span className='shrink-0 text-sm font-light tabular-nums'>
-                {count}
-                <span className='text-xs text-muted-foreground'>×</span>
-              </span>
-            </button>
-          );
-        })}
+        <div className='mt-4 flex items-center gap-2 text-sm'>
+          <span className='text-muted-foreground'>Sorted by</span>
+          <button
+            type='button'
+            onClick={() => setSortKey(sortKey === 'fires' ? 'name' : 'fires')}
+            className='font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+          >
+            {sortKey === 'fires' ? 'fires ↓' : 'name ↑'}
+          </button>
+        </div>
       </div>
-    </ScrollArea>
+      <ScrollArea className='min-h-0 flex-1'>
+        <div className='space-y-1 p-3'>
+          {sortedSkills.map(skill => {
+            const isSelected = selectedSkill?.id === skill.id;
+            const usage = usageByName.get(skill.name);
+            const tendency = tendencyByName.get(skill.name);
+            const count = usage?.count ?? 0;
+
+            return (
+              <button
+                key={skill.id}
+                type='button'
+                aria-current={isSelected ? 'true' : undefined}
+                onClick={() => onSelectSkill(skill)}
+                className={cn(
+                  'flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
+                  'hover:bg-accent hover:text-accent-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isSelected
+                    ? 'border-primary bg-accent text-accent-foreground'
+                    : 'border-transparent bg-transparent',
+                )}
+              >
+                <SkillUsageSparkline values={tendency?.series ?? []} />
+
+                <span className='min-w-0 flex-1'>
+                  <span className='flex min-w-0 items-center gap-2'>
+                    <span className='truncate text-sm font-medium'>
+                      {skill.name}
+                    </span>
+                    {!skill.isValid && (
+                      <Badge
+                        variant='destructive'
+                        className='h-5 px-1.5 text-[10px]'
+                      >
+                        Invalid
+                      </Badge>
+                    )}
+                  </span>
+
+                  <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
+                    {skill.description || skill.relativePath}
+                  </span>
+                </span>
+
+                <span className='shrink-0 text-sm font-light tabular-nums'>
+                  {count}
+                  <span className='text-xs text-muted-foreground'>×</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
   );
 };
