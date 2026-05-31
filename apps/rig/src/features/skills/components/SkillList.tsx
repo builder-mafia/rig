@@ -86,7 +86,7 @@ export const SkillList = ({
                 aria-current={isSelected ? 'true' : undefined}
                 onClick={() => onSelectSkill(skill)}
                 className={cn(
-                  'flex w-full min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
+                  'flex w-full max-w-76 mx-auto min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
                   'hover:bg-accent hover:text-accent-foreground',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   isSelected
