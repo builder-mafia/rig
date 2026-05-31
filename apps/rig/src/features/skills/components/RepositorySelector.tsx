@@ -45,7 +45,10 @@ export const RepositorySelector = ({
             </span>
           </span>
 
-          <ChevronsUpDown size={16} className='shrink-0 text-muted-foreground' />
+          <ChevronsUpDown
+            size={16}
+            className='shrink-0 text-muted-foreground'
+          />
         </button>
       </PopoverTrigger>
 

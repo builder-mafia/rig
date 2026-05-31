@@ -127,7 +127,9 @@ fn usage_window_start(now: DateTime<Utc>, window: WindowType) -> DateTime<Utc> {
         WindowType::Day => now - Duration::hours(24),
         WindowType::Week => now - Duration::days(7),
         WindowType::Month => now - Duration::days(30),
+        WindowType::ThreeMonths => now - Duration::days(90),
         WindowType::Year => now - Duration::days(365),
+        WindowType::All => DateTime::<Utc>::from(std::time::UNIX_EPOCH),
     }
 }
 
@@ -137,8 +139,8 @@ fn build_skill_usage_tendencies(
     bucket_type: BucketType,
     now: DateTime<Utc>,
 ) -> Vec<SkillUsageSeries> {
-    let start = usage_window_start(now, window);
     let bucket_duration = bucket_duration(bucket_type);
+    let start = usage_window_start(now, window);
     let bucket_count = bucket_count(start, now, bucket_duration);
     let mut tendencies = HashMap::<String, Vec<u32>>::new();
 
@@ -182,5 +184,5 @@ fn bucket_count(start: DateTime<Utc>, end: DateTime<Utc>, bucket_duration: Durat
     let seconds = (end - start).num_seconds();
     let bucket_seconds = bucket_duration.num_seconds();
 
-    ((seconds + bucket_seconds - 1) / bucket_seconds) as usize
+    (((seconds + bucket_seconds - 1) / bucket_seconds) as usize).max(1)
 }
