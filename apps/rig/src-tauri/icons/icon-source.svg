@@ -1,0 +1,109 @@
+<svg width="2048" height="2048" viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="waveGradient" x1="180" y1="0" x2="1868" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00B7FF"/>
+      <stop offset="26%" stop-color="#0A7CFF"/>
+      <stop offset="50%" stop-color="#8C4DFF"/>
+      <stop offset="72%" stop-color="#00B7FF"/>
+      <stop offset="100%" stop-color="#008CFF"/>
+    </linearGradient>
+
+    <filter id="outerGlow" x="-50%" y="-80%" width="200%" height="260%">
+      <feGaussianBlur stdDeviation="42" result="blur1"/>
+      <feColorMatrix in="blur1" type="matrix"
+        values="0 0 0 0 0.0
+                0 0 0 0 0.55
+                0 0 0 0 1.0
+                0 0 0 0.9 0" result="blueGlow"/>
+      <feGaussianBlur stdDeviation="18" in="SourceGraphic" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blueGlow"/>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softShadow" x="-20%" y="-40%" width="140%" height="180%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <path d="M180 1024
+           C330 1024 430 1024 505 1024
+           C535 1024 548 1012 558 985
+           L600 865
+           C611 834 654 834 665 865
+           L735 1115
+           C746 1154 799 1157 814 1120
+           L935 770
+           C950 727 1010 727 1025 770
+           L1138 1110
+           C1152 1152 1210 1152 1224 1110
+           L1276 960
+           C1286 930 1327 927 1342 955
+           L1372 1010
+           C1384 1032 1417 1032 1430 1010
+           L1490 910
+           C1507 882 1548 884 1562 915
+           L1614 1024
+           C1630 1024 1750 1024 1868 1024"
+        fill="none"
+        stroke="url(#waveGradient)"
+        stroke-width="150"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.22"
+        filter="url(#outerGlow)"/>
+
+  <path d="M180 1024
+           C330 1024 430 1024 505 1024
+           C535 1024 548 1012 558 985
+           L600 865
+           C611 834 654 834 665 865
+           L735 1115
+           C746 1154 799 1157 814 1120
+           L935 770
+           C950 727 1010 727 1025 770
+           L1138 1110
+           C1152 1152 1210 1152 1224 1110
+           L1276 960
+           C1286 930 1327 927 1342 955
+           L1372 1010
+           C1384 1032 1417 1032 1430 1010
+           L1490 910
+           C1507 882 1548 884 1562 915
+           L1614 1024
+           C1630 1024 1750 1024 1868 1024"
+        fill="none"
+        stroke="url(#waveGradient)"
+        stroke-width="72"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        filter="url(#softShadow)"/>
+
+  <path d="M180 1024
+           C330 1024 430 1024 505 1024
+           C535 1024 548 1012 558 985
+           L600 865
+           C611 834 654 834 665 865
+           L735 1115
+           C746 1154 799 1157 814 1120
+           L935 770
+           C950 727 1010 727 1025 770
+           L1138 1110
+           C1152 1152 1210 1152 1224 1110
+           L1276 960
+           C1286 930 1327 927 1342 955
+           L1372 1010
+           C1384 1032 1417 1032 1430 1010
+           L1490 910
+           C1507 882 1548 884 1562 915
+           L1614 1024
+           C1630 1024 1750 1024 1868 1024"
+        fill="none"
+        stroke="#9ADFFF"
+        stroke-width="22"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.55"/>
+</svg>
