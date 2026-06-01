@@ -22,6 +22,8 @@ const filterDuplicate = (skills: Skill[]) => {
   const names = new Set<string>();
 
   return skills.filter(skill => {
+    // Users may sync the same skill into multiple coding-service roots,
+    // such as .claude/skills and .agents/skills. Keep the first one shown.
     if (names.has(skill.name)) {
       return false;
     }
