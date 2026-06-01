@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { Effect } from 'effect';
-import { listSkillsFromRoots, listSkillUsages } from '@/features/skills/api';
+import { listSkills, listSkillUsages } from '@/features/skills/api';
 import type { SkillRoot, WindowType } from '@/features/skills/types';
 
 const dashboardWindows: Array<{
@@ -53,11 +53,12 @@ export const SkillUsageDashboard = ({ roots }: SkillUsageDashboardProps) => {
     dashboardWindows[1];
   const repositoryRoot =
     roots.length === 1 && roots[0]?.kind === 'repository' ? roots[0] : null;
-  const rootPaths = roots.map(root => root.path);
 
-  const { data: skills = [], isLoading: isSkillsLoading } = useQuery({
-    queryKey: ['skills', rootPaths],
-    queryFn: () => Effect.runPromise(listSkillsFromRoots(rootPaths)),
+  const skillQueries = useQueries({
+    queries: roots.map(root => ({
+      queryKey: ['skills', root.path],
+      queryFn: () => Effect.runPromise(listSkills(root.path)),
+    })),
   });
 
   const { data: skillUsages = [], isLoading: isUsageLoading } = useQuery({
@@ -65,6 +66,8 @@ export const SkillUsageDashboard = ({ roots }: SkillUsageDashboardProps) => {
     queryFn: () => Effect.runPromise(listSkillUsages(selectedWindow)),
   });
 
+  const skills = skillQueries.flatMap(query => query.data ?? []);
+  const isSkillsLoading = skillQueries.some(query => query.isLoading);
   const usageByName = new Map(skillUsages.map(usage => [usage.name, usage]));
   const skillNames = new Set(skills.map(skill => skill.name));
   const visibleUsages = skillUsages

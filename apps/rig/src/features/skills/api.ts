@@ -160,47 +160,6 @@ export const listSkills = Effect.fn('listSkills')(function* (rootPath: string) {
   });
 });
 
-export const listSkillsFromRoots = Effect.fn('listSkillsFromRoots')(function* (
-  rootPaths: string[],
-) {
-  const result = yield* Effect.tryPromise({
-    try: () => invoke<unknown>('list_skills_from_roots', { rootPaths }),
-    catch: error => error,
-  }).pipe(
-    Effect.catchAll(error => {
-      const listingError = SkillListingErrorSchema.safeParse(error);
-
-      if (listingError.success) {
-        return Effect.fail(
-          new ListSkillsError({
-            kind: 'SkillListingError',
-            rootPath: rootPaths.join(', '),
-            cause: listingError.data,
-          }),
-        );
-      }
-
-      return Effect.fail(
-        new ListSkillsError({
-          kind: 'InvokeError',
-          rootPath: rootPaths.join(', '),
-          cause: error,
-        }),
-      );
-    }),
-  );
-
-  return yield* Effect.try({
-    try: () => SkillSchema.array().parse(result),
-    catch: error =>
-      new ListSkillsError({
-        kind: 'ZodParseError',
-        rootPath: rootPaths.join(', '),
-        cause: error,
-      }),
-  });
-});
-
 export class ListSkillUsagesError extends Data.TaggedError(
   'ListSkillUsagesError',
 )<{

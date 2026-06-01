@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use super::models::{
     BucketType, Skill, SkillListingError, SkillRoot, SkillRootDefinition, SkillRootImportError,
     SkillRootKind, SkillUsage, SkillUsageError, SkillUsageSeries, WindowType,
@@ -91,35 +89,6 @@ pub fn list_skills(root_path: String) -> Result<Vec<Skill>, SkillListingError> {
 }
 
 #[tauri::command]
-pub fn list_skills_from_roots(root_paths: Vec<String>) -> Result<Vec<Skill>, SkillListingError> {
-    let mut seen_skill_names = HashSet::new();
-    let mut skills = Vec::new();
-
-    for root_path in root_paths {
-        let root_skills = match list_skills(root_path) {
-            Ok(root_skills) => root_skills,
-            Err(error)
-                if matches!(
-                    error.code,
-                    SkillListingErrorCode::PathNotFound | SkillListingErrorCode::NotDirectory
-                ) =>
-            {
-                continue;
-            }
-            Err(error) => return Err(error),
-        };
-
-        for skill in root_skills {
-            if seen_skill_names.insert(skill.name.clone()) {
-                skills.push(skill);
-            }
-        }
-    }
-
-    Ok(skills)
-}
-
-#[tauri::command]
 pub fn list_skill_usages(window: Option<WindowType>) -> Result<Vec<SkillUsage>, SkillUsageError> {
     let path = expand_path(SKILL_USAGE_LOG_PATH);
 
@@ -138,64 +107,4 @@ pub fn list_skill_usages_tendency(
         window.unwrap_or(WindowType::Week),
         bucket_type.unwrap_or(BucketType::Hour),
     )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    #[test]
-    fn list_skills_from_roots_keeps_first_duplicate_skill_name() {
-        let temp_root = std::env::temp_dir().join(format!(
-            "rig-skills-test-{}",
-            SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        let first_root = temp_root.join("first");
-        let second_root = temp_root.join("second");
-
-        write_skill(&first_root, "shared", "Shared Skill");
-        write_skill(&second_root, "shared", "Shared Skill");
-        write_skill(&second_root, "unique", "Unique Skill");
-
-        let skills = list_skills_from_roots(vec![
-            first_root.to_string_lossy().to_string(),
-            second_root.to_string_lossy().to_string(),
-        ])
-        .unwrap();
-
-        let skill_names = skills
-            .iter()
-            .map(|skill| skill.name.as_str())
-            .collect::<Vec<_>>();
-        let shared_skill = skills
-            .iter()
-            .find(|skill| skill.name == "Shared Skill")
-            .unwrap();
-
-        assert_eq!(skill_names.len(), 2);
-        assert!(skill_names.contains(&"Shared Skill"));
-        assert!(skill_names.contains(&"Unique Skill"));
-        assert_eq!(shared_skill.root_path, first_root.to_string_lossy());
-
-        fs::remove_dir_all(temp_root).ok();
-    }
-
-    fn write_skill(root: &std::path::Path, relative_path: &str, name: &str) {
-        let skill_dir = root.join(relative_path);
-
-        fs::create_dir_all(&skill_dir).unwrap();
-        fs::write(
-            skill_dir.join("SKILL.md"),
-            format!(
-                "---\nname: {}\ndescription: Test skill\n---\nUse this skill for testing.",
-                name
-            ),
-        )
-        .unwrap();
-    }
 }
