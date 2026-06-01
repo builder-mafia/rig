@@ -1,7 +1,8 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Effect } from 'effect';
-import { listSkills, listSkillUsages, listSkillUsagesTendency } from '../api';
+import { listSkillUsages, listSkillUsagesTendency } from '../api';
 import type { Skill, SkillRoot } from '../types';
+import { useFetchSkills } from '../useFetchSkills';
 import { SkillList } from './SkillList';
 
 interface SkillSidebarProps {
@@ -15,12 +16,7 @@ export const SkillSidebar = ({
   selectedSkill,
   onSelectSkill,
 }: SkillSidebarProps) => {
-  const skillQueries = useQueries({
-    queries: roots.map(root => ({
-      queryKey: ['skills', root.path],
-      queryFn: () => Effect.runPromise(listSkills(root.path)),
-    })),
-  });
+  const { skills, isLoading, error } = useFetchSkills(roots);
 
   const { data: skillUsages = [] } = useQuery({
     queryKey: ['skill-usages', 'month'],
@@ -31,10 +27,6 @@ export const SkillSidebar = ({
     queryKey: ['skill-usages-tendency', 'month', 'day'],
     queryFn: () => Effect.runPromise(listSkillUsagesTendency('month', 'day')),
   });
-
-  const skills = skillQueries.flatMap(query => query.data ?? []);
-  const isLoading = skillQueries.some(query => query.isLoading);
-  const error = skillQueries.find(query => query.error)?.error;
 
   return (
     <SkillList
