@@ -1,17 +1,8 @@
-use std::sync::Mutex;
-
-use serde::Serialize;
 use tauri::{AppHandle, State};
-use tauri_plugin_updater::{Update, UpdaterExt};
+use tauri_plugin_updater::UpdaterExt;
 
-pub struct PendingUpdate(pub Mutex<Option<Update>>);
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateMetadata {
-    version: String,
-    current_version: String,
-}
+use super::models::UpdateMetadata;
+use super::state::PendingUpdate;
 
 #[tauri::command]
 pub async fn fetch_update(
@@ -41,7 +32,10 @@ pub async fn fetch_update(
 }
 
 #[tauri::command]
-pub async fn install_update(pending_update: State<'_, PendingUpdate>) -> Result<(), String> {
+pub async fn install_update(
+    app: AppHandle,
+    pending_update: State<'_, PendingUpdate>,
+) -> Result<(), String> {
     let update = {
         let mut guard = pending_update
             .0
@@ -57,5 +51,5 @@ pub async fn install_update(pending_update: State<'_, PendingUpdate>) -> Result<
         .await
         .map_err(|e| e.to_string())?;
 
-    Ok(())
+    app.restart();
 }
