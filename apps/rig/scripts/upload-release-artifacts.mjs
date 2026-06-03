@@ -71,7 +71,7 @@ const main = async () => {
     'release',
     'bundle',
     'dmg',
-    `ALLIN_${version}_aarch64.dmg`,
+    `Rig_${version}_aarch64.dmg`,
   );
   const updaterPath = path.join(
     appDir,
@@ -80,7 +80,7 @@ const main = async () => {
     'release',
     'bundle',
     'macos',
-    'ALLIN.app.tar.gz',
+    'Rig.app.tar.gz',
   );
   const signaturePath = `${updaterPath}.sig`;
 

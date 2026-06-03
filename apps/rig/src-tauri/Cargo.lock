@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "ALLIN"
+name = "Rig"
 version = "26.4.7"
 dependencies = [
  "aisdk",

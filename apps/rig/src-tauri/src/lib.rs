@@ -10,7 +10,7 @@ const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
 fn setup_macos_menu(app: &tauri::App) -> tauri::Result<()> {
     use tauri::menu::{AboutMetadata, MenuBuilder, SubmenuBuilder};
 
-    let app_menu = SubmenuBuilder::new(app, "ALLIN")
+    let app_menu = SubmenuBuilder::new(app, "Rig")
         .about(Some(AboutMetadata::default()))
         .separator()
         .text(CHECK_FOR_UPDATES_MENU_ID, "Check for Updates...")

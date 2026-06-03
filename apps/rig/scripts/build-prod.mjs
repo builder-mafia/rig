@@ -111,7 +111,7 @@ const buildReleaseDownloadUrl = (version, artifactPath, currentLatestJson) => {
     return currentUrl.replace(/\/download\/v[^/]+\//, `/download/v${version}/`);
   }
 
-  return `https://github.com/gaki2/ALLIN/releases/download/v${version}/${artifactName}`;
+  return `https://github.com/builder-mafia/rig/releases/download/v${version}/${artifactName}`;
 };
 
 const updateLatestJson = async (version, artifactPath) => {

@@ -4,5 +4,3 @@
 fn main() {
     app_lib::run();
 }
-
-// sqlite3 Library/Application\ Support/com.tauri.dev/ALLIN.sqlite
