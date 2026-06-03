@@ -1,8 +1,7 @@
-mod app_updates;
-
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 mod skills;
+mod update;
 
 const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
 const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
@@ -78,7 +77,7 @@ pub fn run() {
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())
                 .map_err(|e| e.to_string())?;
-            app.manage(app_updates::PendingUpdate(Mutex::new(None)));
+            app.manage(update::state::PendingUpdate(Mutex::new(None)));
 
             #[cfg(target_os = "macos")]
             setup_macos_menu(app)?;
@@ -93,8 +92,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            app_updates::fetch_update,
-            app_updates::install_update,
+            update::commands::fetch_update,
+            update::commands::install_update,
             skills::commands::import_skill_root,
             skills::commands::list_skill_roots,
             skills::commands::list_skills,

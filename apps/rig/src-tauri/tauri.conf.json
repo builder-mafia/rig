@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "ALLIN",
+  "productName": "Rig",
   "version": "26.4.7",
-  "identifier": "sh.allin.app",
+  "identifier": "sh.rig.app",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://raw.githubusercontent.com/gaki2/ALLIN/main/apps/tauri/latest.json"
+        "https://raw.githubusercontent.com/builder-mafia/rig/main/apps/rig/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE1N0U2MkNEQ0Q1QzQwODkKUldTSlFGek56V0orcFdlV3kxMlNCZmQ3YjN2Uktzc2ZleGRkSVIyb1ZNcVBCSUNwaDloREY4aTQK"
     }
@@ -21,7 +21,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "ALLIN",
+        "title": "Rig",
         "width": 1600,
         "height": 1000,
         "resizable": true,
