@@ -23,6 +23,50 @@ Rig gives you one focused desktop workspace for finding, editing, and understand
 
 Rig is currently in MVP development.
 
+## Usage
+
+### 1. Install Rig
+
+1. Download the latest macOS app from the [Rig releases page](https://github.com/builder-mafia/rig/releases).
+2. Open the downloaded `.dmg` file.
+3. Drag Rig into Applications.
+4. Launch Rig.
+
+### 2. Install Plugins
+
+Rig tracks skill usage when OpenCode or Claude Code writes usage events to:
+
+```text
+~/.rig/usage.jsonl
+```
+
+The desktop app reads this file automatically.
+
+#### OpenCode
+
+Add `rig-opencode` to your OpenCode config. The config file is usually at `~/.config/opencode/opencode.json`.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["rig-opencode"]
+}
+```
+
+Restart OpenCode after saving the config. OpenCode installs npm plugins automatically at startup.
+
+#### Claude Code
+
+Use the [Rig Claude Code plugin folder](https://github.com/builder-mafia/rig/tree/main/packages/claude-code-plugin).
+
+Put the contents of that folder into your local Claude Code plugin setup folder, for example:
+
+```text
+~/.claude/skills/rig-claude-code
+```
+
+Restart Claude Code after copying the plugin.
+
 ## Development
 
 ```bash

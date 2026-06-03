@@ -101,15 +101,8 @@ const ensureUpdaterSignature = async artifactPath => {
   }
 };
 
-const buildReleaseDownloadUrl = (version, artifactPath, currentLatestJson) => {
+const buildReleaseDownloadUrl = (version, artifactPath) => {
   const artifactName = path.basename(artifactPath);
-  const currentUrl =
-    currentLatestJson?.platforms?.['darwin-aarch64']?.url ??
-    currentLatestJson?.platforms?.['darwin-x86_64']?.url;
-
-  if (typeof currentUrl === 'string' && currentUrl.length > 0) {
-    return currentUrl.replace(/\/download\/v[^/]+\//, `/download/v${version}/`);
-  }
 
   return `https://github.com/builder-mafia/rig/releases/download/v${version}/${artifactName}`;
 };
@@ -127,7 +120,7 @@ const updateLatestJson = async (version, artifactPath) => {
     ...(latestJson.platforms ?? {}),
     [platformKey]: {
       signature,
-      url: buildReleaseDownloadUrl(version, artifactPath, latestJson),
+      url: buildReleaseDownloadUrl(version, artifactPath),
     },
   };
 
