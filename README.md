@@ -23,15 +23,18 @@ Rig gives you one focused desktop workspace for finding, editing, and understand
 
 Rig is currently in MVP development.
 
-## Install Rig
+## Usage
 
-Download the latest macOS app from the [Rig releases page](https://github.com/builder-mafia/rig/releases).
+### 1. Install Rig
 
-Open the downloaded `.dmg`, drag Rig into Applications, then launch Rig.
+1. Download the latest macOS app from the [Rig releases page](https://github.com/builder-mafia/rig/releases).
+2. Open the downloaded `.dmg` file.
+3. Drag Rig into Applications.
+4. Launch Rig.
 
-## Set Up Usage Tracking
+### 2. Install Plugins
 
-Rig can show skill usage when OpenCode or Claude Code writes usage events to the local Rig log file:
+Rig tracks skill usage when OpenCode or Claude Code writes usage events to:
 
 ```text
 ~/.rig/usage.jsonl
@@ -39,9 +42,9 @@ Rig can show skill usage when OpenCode or Claude Code writes usage events to the
 
 The desktop app reads this file automatically.
 
-## OpenCode Plugin
+#### OpenCode
 
-Add the `rig-opencode` plugin to your OpenCode config. The config file is usually at `~/.config/opencode/opencode.json`.
+Add `rig-opencode` to your OpenCode config. The config file is usually at `~/.config/opencode/opencode.json`.
 
 ```json
 {
@@ -52,25 +55,17 @@ Add the `rig-opencode` plugin to your OpenCode config. The config file is usuall
 
 Restart OpenCode after saving the config. OpenCode installs npm plugins automatically at startup.
 
-## Claude Code Plugin
+#### Claude Code
 
-Install the Rig Claude Code plugin into your Claude Code skills directory:
+Use the [Rig Claude Code plugin folder](https://github.com/builder-mafia/rig/tree/main/packages/claude-code-plugin).
 
-```bash
-tmpdir=$(mktemp -d)
-git clone --depth 1 https://github.com/builder-mafia/rig.git "$tmpdir/rig"
-mkdir -p ~/.claude/skills
-rm -rf ~/.claude/skills/rig-claude-code
-cp -R "$tmpdir/rig/packages/claude-code-plugin" ~/.claude/skills/rig-claude-code
+Put the contents of that folder into your local Claude Code plugin setup folder, for example:
+
+```text
+~/.claude/skills/rig-claude-code
 ```
 
-Restart Claude Code after installing the plugin:
-
-```bash
-claude
-```
-
-After setup, use skills normally in OpenCode or Claude Code. Rig will pick up new usage events from `~/.rig/usage.jsonl`.
+Restart Claude Code after copying the plugin.
 
 ## Development
 
