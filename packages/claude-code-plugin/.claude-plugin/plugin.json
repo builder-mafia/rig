@@ -8,6 +8,5 @@
   },
   "repository": "https://github.com/builder-mafia/rig",
   "license": "MIT",
-  "keywords": ["claude-code", "rig", "skills", "usage-tracking"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["claude-code", "rig", "skills", "usage-tracking"]
 }
