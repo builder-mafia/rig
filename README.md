@@ -4,7 +4,7 @@ Rig is a local-first desktop app for organizing scattered agent SKILL files befo
 
 Browse every local skill from one place, edit files without jumping between folders, and track which skills are actually being used.
 
-<img src="apps/docs/public/rig.png" alt="Rig app landing page" width="720" />
+<img src="apps/docs/public/rig.png" alt="Rig app landing page" height="400" />
 
 ## Why Rig?
 
