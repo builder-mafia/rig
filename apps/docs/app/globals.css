@@ -2,7 +2,7 @@
 
 @variant dark (&:where(.dark *));
 
-@keyframes allin-float-slow {
+@keyframes rig-float-slow {
   0% {
     transform: translate3d(-50%, 0, 0) scale(1);
   }
@@ -20,7 +20,7 @@
   }
 }
 
-@keyframes allin-float-soft {
+@keyframes rig-float-soft {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
@@ -41,17 +41,17 @@
   }
 }
 
-.allin-float-slow {
-  animation: allin-float-slow 26s ease-in-out infinite;
+.rig-float-slow {
+  animation: rig-float-slow 26s ease-in-out infinite;
 }
 
-.allin-float-soft {
-  animation: allin-float-soft 30s ease-in-out infinite;
+.rig-float-soft {
+  animation: rig-float-soft 30s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .allin-float-slow,
-  .allin-float-soft {
+  .rig-float-slow,
+  .rig-float-soft {
     animation: none;
   }
 }

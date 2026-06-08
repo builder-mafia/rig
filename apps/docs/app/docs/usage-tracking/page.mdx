@@ -1,0 +1,46 @@
+# Usage Tracking
+
+Rig tracks how often each agent skill fires by reading local JSONL events.
+
+## Log Location
+
+By default, Rig reads usage events from:
+
+```txt
+~/.rig/usage.jsonl
+```
+
+Each line should be one JSON object:
+
+```json
+{"source":"opencode","skillName":"typescript-fix-null-safety","usedAt":"2026-05-30T01:12:00.000Z"}
+```
+
+Rig ignores empty lines and malformed events.
+
+## Dashboard Metrics
+
+The `Dashboard` view shows usage for the selected repository context.
+
+- **Total fires**: Sum of all matching usage events in the selected window
+- **Active skills**: Skills with at least one usage event in the selected window
+- **Tracked skills**: Skills discovered from the current roots
+- **Unused**: Skills with no usage in the selected window
+- **Most used skills**: Highest-count skills for the selected window
+- **Least used skills**: Skills with five fires or fewer, useful for cleanup reviews
+
+## Time Windows
+
+Use the dashboard filters to switch between:
+
+- 7 days
+- 30 days
+- 3 months
+- 1 year
+- All time
+
+The Skills sidebar also shows per-skill counts and a small usage trend so you can see activity without leaving the skill browser.
+
+## How Events Are Matched
+
+Rig matches usage events by `skillName`. If a usage event name matches a discovered skill name, it is included in repository-specific dashboard summaries. If no skills are discovered for a context, Rig can still show raw usage events from the log.
