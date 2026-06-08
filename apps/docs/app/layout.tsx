@@ -78,6 +78,7 @@ export default async function RootLayout({
           docsRepositoryBase='https://github.com/builder-mafia/rig/tree/main/apps/docs'
           footer={footer}
           darkMode={false}
+          nextThemes={{ defaultTheme: 'light' }}
           search={false}
         >
           {children}
