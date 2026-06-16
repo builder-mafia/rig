@@ -11,6 +11,7 @@ import {
   Spinner,
 } from '@allin/ui';
 import { RefreshCw } from 'lucide-react';
+import posthog from 'posthog-js';
 import { useAppUpdate } from '../useAppUpdate';
 
 export const AppUpdateDialog = () => {
@@ -29,11 +30,15 @@ export const AppUpdateDialog = () => {
           <div className='rounded-lg border bg-muted/40 p-3 text-sm'>
             <div className='flex items-center justify-between gap-3'>
               <span className='text-muted-foreground'>Current version</span>
-              <span className='font-mono'>{appUpdate.update.currentVersion}</span>
+              <span className='font-mono'>
+                {appUpdate.update.currentVersion}
+              </span>
             </div>
             <div className='mt-2 flex items-center justify-between gap-3'>
               <span className='text-muted-foreground'>New version</span>
-              <span className='font-mono font-medium'>{appUpdate.update.version}</span>
+              <span className='font-mono font-medium'>
+                {appUpdate.update.version}
+              </span>
             </div>
           </div>
         ) : null}
@@ -58,7 +63,13 @@ export const AppUpdateDialog = () => {
               <Button
                 type='button'
                 disabled={isBusy}
-                onClick={() => appUpdate.installUpdate()}
+                onClick={() => {
+                  posthog.capture('update_installed', {
+                    current_version: appUpdate.update?.currentVersion,
+                    new_version: appUpdate.update?.version,
+                  });
+                  appUpdate.installUpdate();
+                }}
               >
                 {appUpdate.isInstalling ? <Spinner /> : null}
                 Update now

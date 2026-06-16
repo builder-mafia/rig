@@ -54,3 +54,4 @@ docs/
 !/scripts/sync-tauri-version.mjs
 !/scripts/build-prod.mjs
 !/scripts/upload-release-artifacts.mjs
+.env.local

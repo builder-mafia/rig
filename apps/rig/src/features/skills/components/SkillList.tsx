@@ -1,4 +1,5 @@
 import { Badge, cn, ScrollArea } from '@allin/ui';
+import posthog from 'posthog-js';
 import type { Skill, SkillUsage, SkillUsageSeries } from '../types';
 import { SkillUsageSparkline } from './SkillUsageSparkline';
 
@@ -84,7 +85,15 @@ export const SkillList = ({
                 key={skill.id}
                 type='button'
                 aria-current={isSelected ? 'true' : undefined}
-                onClick={() => onSelectSkill(skill)}
+                onClick={() => {
+                  onSelectSkill(skill);
+                  posthog.capture('skill_selected', {
+                    skill_name: skill.name,
+                    skill_description: skill.description,
+                    skill_is_valid: skill.isValid,
+                    skill_usage_count: usageByName.get(skill.name)?.count ?? 0,
+                  });
+                }}
                 className={cn(
                   'flex w-full max-w-76 mx-auto min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
                   'hover:bg-accent hover:text-accent-foreground',

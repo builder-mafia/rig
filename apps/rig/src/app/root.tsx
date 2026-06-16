@@ -1,3 +1,4 @@
+import posthog from 'posthog-js';
 import { appPaths, useAppNavigation } from '@/app/navigation';
 import { DashboardRoot } from '@/features/dashboard/components/DashboardRoot';
 import { RepositorySelector } from '@/features/skills/components/RepositorySelector';
@@ -51,12 +52,18 @@ export const Root = () => {
             <ViewToggleButton
               label='Skills'
               isSelected={navigation.isCurrentPath(appPaths.skills)}
-              onClick={() => navigation.navigate(appPaths.skills)}
+              onClick={() => {
+                navigation.navigate(appPaths.skills);
+                posthog.capture('view_switched', { view: 'skills' });
+              }}
             />
             <ViewToggleButton
               label='Dashboard'
               isSelected={navigation.isCurrentPath(appPaths.dashboard)}
-              onClick={() => navigation.navigate(appPaths.dashboard)}
+              onClick={() => {
+                navigation.navigate(appPaths.dashboard);
+                posthog.capture('view_switched', { view: 'dashboard' });
+              }}
             />
           </div>
         </div>
