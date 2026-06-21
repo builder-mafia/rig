@@ -1,11 +1,11 @@
 {
-  "version": "26.6.4",
-  "notes": "Release 26.6.4",
-  "pub_date": "2026-06-03T16:54:35.816Z",
+  "version": "26.6.22",
+  "notes": "Release 26.6.22",
+  "pub_date": "2026-06-21T18:00:24.024Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTSlFGek56V0orcGFFVk9HeFo3QnVtbGFJVzFaTGtMZldPTDBsbC9qMmIybWxoOWxpbEkwYmlROGxHTDFMY3pnWWxpeWxVMlZ3dGpFVkJpWklaNEQ5NFdkRmN4bjFDcUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgwNTA1Njc1CWZpbGU6UmlnLmFwcC50YXIuZ3oKVXJhbHd0MGJ2YUZmd0c3SG5JYUVTTWlyb2VScWFjSEYvb2Fub2w4ZkpiZ016TTRxYm0zUk51a0tHdmhGT29QUHBsNmpsdVZ3VGtUN2tONkxRYm9RQnc9PQo=",
-      "url": "https://github.com/builder-mafia/rig/releases/download/v26.6.4/Rig.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTSlFGek56V0orcGN2ZEVtOFBzT3VlMW9QYmU3c2RqVm5pVVpqQ3lTdDJEODlKZXI0cERhNWJwM3ZxTUZtT1BHaUNDYWZKVGpOejN0dFBYMW5KeDFncjNEU0tnUGdjZ3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMDY0ODI0CWZpbGU6UmlnLmFwcC50YXIuZ3oKbm9SaElDRGxwUmIvZTRMYStZVWdZRTFobXRUbjRZZkMvREtpODJyZDhuZGdycmJVQllEMHBWeldjMEtGM0t0K3o3enV0RWk2SS8wUjVaaThyUEVuQnc9PQo=",
+      "url": "https://github.com/builder-mafia/rig/releases/download/v26.6.22/Rig.app.tar.gz"
     }
   }
 }
