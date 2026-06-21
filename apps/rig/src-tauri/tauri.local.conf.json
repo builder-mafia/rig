@@ -1,7 +1,4 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Rig DEV",
-  "bundle": {
-    "icon": ["icons/dev_icon.png", "icons/dev_icon.icns"]
-  }
+  "productName": "Rig DEV"
 }
