@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Effect } from 'effect';
+import posthog from 'posthog-js';
 import { importSkillRoot } from './api';
 import type { SkillRoot } from './types';
 import { skillRootsQueryKey } from './useSkillRoots';
@@ -17,6 +18,11 @@ export const useImportSkillRoot = ({
     onSuccess: importedRoot => {
       onImported(importedRoot);
       void queryClient.invalidateQueries({ queryKey: skillRootsQueryKey });
+      posthog.capture('repository_imported', {
+        repository_id: importedRoot.id,
+        repository_label: importedRoot.label,
+        repository_kind: importedRoot.kind,
+      });
     },
   });
 

@@ -1,5 +1,6 @@
 import { cn, Popover, PopoverContent, PopoverTrigger, toast } from '@allin/ui';
 import { Check, ChevronsUpDown, Folder, Home, Plus } from 'lucide-react';
+import posthog from 'posthog-js';
 import { useEffect } from 'react';
 import type { SkillRoot } from '../types';
 import { useRemoveSkillRoot } from '../useRemoveSkillRoot';
@@ -89,7 +90,13 @@ export const RepositorySelector = ({
           label='Global'
           path='Default skill roots'
           isSelected={selectedRepositoryId === GLOBAL_REPOSITORY_ID}
-          onClick={() => onSelectRepository(GLOBAL_REPOSITORY_ID)}
+          onClick={() => {
+            onSelectRepository(GLOBAL_REPOSITORY_ID);
+            posthog.capture('repository_selected', {
+              repository_id: GLOBAL_REPOSITORY_ID,
+              repository_label: 'Global',
+            });
+          }}
         />
 
         {repositoryRoots.map(root => (
@@ -99,7 +106,13 @@ export const RepositorySelector = ({
             label={root.label}
             path={root.path}
             isSelected={selectedRepositoryId === root.id}
-            onClick={() => onSelectRepository(root.id)}
+            onClick={() => {
+              onSelectRepository(root.id);
+              posthog.capture('repository_selected', {
+                repository_id: root.id,
+                repository_label: root.label,
+              });
+            }}
           />
         ))}
 

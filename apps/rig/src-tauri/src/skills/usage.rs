@@ -6,12 +6,13 @@ use std::path::Path;
 use chrono::{DateTime, Duration, Utc};
 
 use super::models::{
-    BucketType, SkillUsage, SkillUsageError, SkillUsageErrorCode, SkillUsageLogSchema,
-    SkillUsageSeries, WindowType,
+    BucketType, SkillUsage, SkillUsageError, SkillUsageErrorCode, SkillUsageEvent,
+    SkillUsageLogSchema, SkillUsageSeries, WindowType,
 };
 
-struct SkillUsageEvent {
-    skill_name: String,
+struct ParsedSkillUsageEvent {
+    name: String,
+    source: String,
     used_at: DateTime<Utc>,
 }
 
@@ -39,7 +40,32 @@ pub fn list_skill_usage_tendencies_from_log(
     ))
 }
 
-fn read_skill_usage_events(path: &Path) -> Result<Vec<SkillUsageEvent>, SkillUsageError> {
+pub fn list_skill_usage_events_from_log(
+    path: &Path,
+    skill_name: &str,
+    limit: usize,
+) -> Result<Vec<SkillUsageEvent>, SkillUsageError> {
+    let mut events = read_skill_usage_events(path)?
+        .into_iter()
+        .filter(|event| event.name == skill_name)
+        .collect::<Vec<_>>();
+
+    events.sort_by(|a, b| b.used_at.cmp(&a.used_at));
+
+    Ok(events
+        .into_iter()
+        .take(limit)
+        .map(|event| SkillUsageEvent {
+            name: event.name,
+            source: event.source,
+            used_at: event
+                .used_at
+                .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+        })
+        .collect())
+}
+
+fn read_skill_usage_events(path: &Path) -> Result<Vec<ParsedSkillUsageEvent>, SkillUsageError> {
     if !path.exists() {
         return Ok(vec![]);
     }
@@ -58,7 +84,7 @@ fn read_skill_usage_events(path: &Path) -> Result<Vec<SkillUsageEvent>, SkillUsa
         .collect())
 }
 
-fn parse_skill_usage_event(line: &str) -> Option<SkillUsageEvent> {
+fn parse_skill_usage_event(line: &str) -> Option<ParsedSkillUsageEvent> {
     let line = line.trim();
 
     if line.is_empty() {
@@ -70,14 +96,15 @@ fn parse_skill_usage_event(line: &str) -> Option<SkillUsageEvent> {
         .ok()?
         .with_timezone(&Utc);
 
-    Some(SkillUsageEvent {
-        skill_name: log.skill_name,
+    Some(ParsedSkillUsageEvent {
+        name: log.skill_name,
+        source: log.source,
         used_at,
     })
 }
 
 fn summarize_skill_usages(
-    events: Vec<SkillUsageEvent>,
+    events: Vec<ParsedSkillUsageEvent>,
     window: WindowType,
     now: DateTime<Utc>,
 ) -> Vec<SkillUsage> {
@@ -97,18 +124,16 @@ fn summarize_skill_usages(
     usages
 }
 
-fn update_skill_usage(usages: &mut HashMap<String, SkillUsage>, event: SkillUsageEvent) {
+fn update_skill_usage(usages: &mut HashMap<String, SkillUsage>, event: ParsedSkillUsageEvent) {
     let used_at = event
         .used_at
         .to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
 
-    let usage = usages
-        .entry(event.skill_name.clone())
-        .or_insert(SkillUsage {
-            name: event.skill_name,
-            count: 0,
-            last_used_at: None,
-        });
+    let usage = usages.entry(event.name.clone()).or_insert(SkillUsage {
+        name: event.name,
+        count: 0,
+        last_used_at: None,
+    });
 
     usage.count += 1;
 
@@ -134,7 +159,7 @@ fn usage_window_start(now: DateTime<Utc>, window: WindowType) -> DateTime<Utc> {
 }
 
 fn build_skill_usage_tendencies(
-    events: Vec<SkillUsageEvent>,
+    events: Vec<ParsedSkillUsageEvent>,
     window: WindowType,
     bucket_type: BucketType,
     now: DateTime<Utc>,
@@ -157,7 +182,7 @@ fn build_skill_usage_tendencies(
         }
 
         let series = tendencies
-            .entry(event.skill_name)
+            .entry(event.name)
             .or_insert_with(|| vec![0; bucket_count]);
 
         series[bucket_index] += 1;

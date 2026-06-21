@@ -1,3 +1,6 @@
+import { Button } from '@allin/ui';
+import { PlugZap } from 'lucide-react';
+import posthog from 'posthog-js';
 import { appPaths, useAppNavigation } from '@/app/navigation';
 import { DashboardRoot } from '@/features/dashboard/components/DashboardRoot';
 import { PluginSetupDialog } from '@/features/plugins/components/PluginSetupDialog';
@@ -8,8 +11,6 @@ import { useImportSkillRoot } from '@/features/skills/useImportSkillRoot';
 import { useSkillRepositorySelection } from '@/features/skills/useSkillRepositorySelection';
 import { useSkillRoots } from '@/features/skills/useSkillRoots';
 import { HeaderLayout } from '@/layouts/HeaderLayout';
-import { Button } from '@allin/ui';
-import { PlugZap } from 'lucide-react';
 
 export const Root = () => {
   const navigation = useAppNavigation();
@@ -51,7 +52,6 @@ export const Root = () => {
             onSelectRepository={repositorySelection.selectRepository}
             onImportRepository={importSkillRoot.importFromFolder}
           />
-
           <div className='flex items-center gap-2'>
             <Button
               type='button'

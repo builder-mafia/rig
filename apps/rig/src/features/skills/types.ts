@@ -38,6 +38,19 @@ export const SkillListingErrorSchema = z.object({
   message: z.string(),
 });
 
+export const SkillDeletionErrorCodeSchema = z.enum([
+  'pathNotFound',
+  'notDirectory',
+  'outsideRoot',
+  'missingSkillFile',
+  'deleteFailed',
+]);
+
+export const SkillDeletionErrorSchema = z.object({
+  code: SkillDeletionErrorCodeSchema,
+  message: z.string(),
+});
+
 export const SkillRootImportErrorCodeSchema = z.enum([
   'pathNotFound',
   'notDirectory',
@@ -88,6 +101,12 @@ export const SkillUsageSchema = z.object({
   lastUsedAt: z.string().nullable(),
 });
 
+export const SkillUsageEventSchema = z.object({
+  name: z.string(),
+  source: z.string(),
+  usedAt: z.string(),
+});
+
 export const SkillUsageSeriesSchema = z.object({
   name: z.string(),
   series: z.number().array(),
@@ -101,6 +120,10 @@ export type SkillValidationErrorCode = z.infer<
 export type SkillValidationError = z.infer<typeof SkillValidationErrorSchema>;
 export type SkillListingErrorCode = z.infer<typeof SkillListingErrorCodeSchema>;
 export type SkillListingError = z.infer<typeof SkillListingErrorSchema>;
+export type SkillDeletionErrorCode = z.infer<
+  typeof SkillDeletionErrorCodeSchema
+>;
+export type SkillDeletionError = z.infer<typeof SkillDeletionErrorSchema>;
 export type SkillRootImportErrorCode = z.infer<
   typeof SkillRootImportErrorCodeSchema
 >;
@@ -111,4 +134,5 @@ export type SkillUsageError = z.infer<typeof SkillUsageErrorSchema>;
 export type WindowType = z.infer<typeof WindowTypeSchema>;
 export type BucketType = z.infer<typeof BucketTypeSchema>;
 export type SkillUsage = z.infer<typeof SkillUsageSchema>;
+export type SkillUsageEvent = z.infer<typeof SkillUsageEventSchema>;
 export type SkillUsageSeries = z.infer<typeof SkillUsageSeriesSchema>;
