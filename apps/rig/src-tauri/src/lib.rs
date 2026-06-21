@@ -100,8 +100,10 @@ pub fn run() {
             skills::commands::import_skill_root,
             skills::commands::list_skill_roots,
             skills::commands::list_skills,
+            skills::commands::list_skill_usage_events,
             skills::commands::list_skill_usages,
             skills::commands::list_skill_usages_tendency,
+            skills::commands::remove_skill,
             skills::commands::remove_skill_root,
         ])
         .build(tauri::generate_context!())

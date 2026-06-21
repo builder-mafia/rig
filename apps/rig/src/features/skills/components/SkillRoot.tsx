@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { ContentLayout } from '@/layouts/ContentLayout';
 import { SidebarLayout } from '@/layouts/SidebarLayout';
+import type { Skill, SkillRoot as SkillRootModel } from '../types';
+import { getSkillIdentity, useRemoveSkill } from '../useRemoveSkill';
 import { SkillContentViewer } from './SkillContentViewer';
 import { SkillSidebar } from './SkillSidebar';
-import type { Skill, SkillRoot as SkillRootModel } from '../types';
 
 interface SkillRootProps {
   roots: SkillRootModel[];
@@ -11,6 +12,16 @@ interface SkillRootProps {
 
 export const SkillRoot = ({ roots }: SkillRootProps) => {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const { removeSkill, removingSkillId } = useRemoveSkill({
+    onRemoved: removedSkill => {
+      setSelectedSkill(currentSkill =>
+        currentSkill &&
+        getSkillIdentity(currentSkill) === getSkillIdentity(removedSkill)
+          ? null
+          : currentSkill,
+      );
+    },
+  });
 
   return (
     <div className='flex min-h-0 flex-1'>
@@ -19,6 +30,8 @@ export const SkillRoot = ({ roots }: SkillRootProps) => {
           roots={roots}
           selectedSkill={selectedSkill}
           onSelectSkill={setSelectedSkill}
+          onRemoveSkill={removeSkill}
+          removingSkillId={removingSkillId}
         />
       </SidebarLayout>
 

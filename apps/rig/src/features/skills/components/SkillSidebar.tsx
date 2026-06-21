@@ -9,12 +9,16 @@ interface SkillSidebarProps {
   roots: SkillRoot[];
   selectedSkill: Skill | null;
   onSelectSkill: (skill: Skill) => void;
+  onRemoveSkill: (skill: Skill) => void;
+  removingSkillId: string | null;
 }
 
 export const SkillSidebar = ({
   roots,
   selectedSkill,
   onSelectSkill,
+  onRemoveSkill,
+  removingSkillId,
 }: SkillSidebarProps) => {
   const { skills, isLoading, error } = useFetchSkills(roots);
 
@@ -37,6 +41,8 @@ export const SkillSidebar = ({
       isLoading={isLoading}
       error={error ? String(error) : null}
       onSelectSkill={onSelectSkill}
+      onRemoveSkill={onRemoveSkill}
+      removingSkillId={removingSkillId}
     />
   );
 };

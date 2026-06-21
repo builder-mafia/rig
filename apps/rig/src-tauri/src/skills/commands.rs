@@ -1,12 +1,19 @@
+use std::fs;
+use std::path::{Component, Path};
+
 use super::models::{
-    BucketType, Skill, SkillListingError, SkillRoot, SkillRootDefinition, SkillRootImportError,
-    SkillRootKind, SkillUsage, SkillUsageError, SkillUsageSeries, WindowType,
+    BucketType, Skill, SkillDeletionError, SkillDeletionErrorCode, SkillListingError, SkillRoot,
+    SkillRootDefinition, SkillRootImportError, SkillRootKind, SkillUsage, SkillUsageError,
+    SkillUsageEvent, SkillUsageSeries, WindowType,
 };
 use super::root_store::{
     import_skill_root_from_path, list_imported_skill_roots, remove_imported_skill_root,
 };
 use super::scanner::list_skills_from_root;
-use super::usage::{list_skill_usage_tendencies_from_log, list_skill_usages_from_log};
+use super::usage::{
+    list_skill_usage_events_from_log, list_skill_usage_tendencies_from_log,
+    list_skill_usages_from_log,
+};
 use crate::skills::fs::expand_path;
 use crate::skills::models::SkillListingErrorCode;
 
@@ -89,10 +96,93 @@ pub fn list_skills(root_path: String) -> Result<Vec<Skill>, SkillListingError> {
 }
 
 #[tauri::command]
+pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), SkillDeletionError> {
+    let root_path = expand_path(root_path.as_str());
+
+    if relative_path.is_empty() {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::OutsideRoot,
+            message: "Refusing to remove the skill root itself.".to_string(),
+        });
+    }
+
+    let relative_path = Path::new(relative_path.as_str());
+
+    if relative_path.is_absolute()
+        || relative_path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)))
+    {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::OutsideRoot,
+            message: "Skill path must stay inside the selected root.".to_string(),
+        });
+    }
+
+    let root_path = root_path
+        .canonicalize()
+        .map_err(|error| SkillDeletionError {
+            code: SkillDeletionErrorCode::PathNotFound,
+            message: format!("Skill root path does not exist: {}", error),
+        })?;
+
+    if !root_path.is_dir() {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::NotDirectory,
+            message: "Skill root path is not a directory.".to_string(),
+        });
+    }
+
+    let skill_dir = root_path
+        .join(relative_path)
+        .canonicalize()
+        .map_err(|error| SkillDeletionError {
+            code: SkillDeletionErrorCode::PathNotFound,
+            message: format!("Skill path does not exist: {}", error),
+        })?;
+
+    if !skill_dir.starts_with(&root_path) || skill_dir == root_path {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::OutsideRoot,
+            message: "Skill path must stay inside the selected root.".to_string(),
+        });
+    }
+
+    if !skill_dir.is_dir() {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::NotDirectory,
+            message: "Skill path is not a directory.".to_string(),
+        });
+    }
+
+    if !skill_dir.join("SKILL.md").is_file() {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::MissingSkillFile,
+            message: "Skill directory does not contain SKILL.md.".to_string(),
+        });
+    }
+
+    fs::remove_dir_all(&skill_dir).map_err(|error| SkillDeletionError {
+        code: SkillDeletionErrorCode::DeleteFailed,
+        message: format!("Failed to remove skill: {}", error),
+    })
+}
+
+#[tauri::command]
 pub fn list_skill_usages(window: Option<WindowType>) -> Result<Vec<SkillUsage>, SkillUsageError> {
     let path = expand_path(SKILL_USAGE_LOG_PATH);
 
     list_skill_usages_from_log(&path, window.unwrap_or(WindowType::Day))
+}
+
+#[tauri::command]
+pub fn list_skill_usage_events(
+    skill_name: String,
+    limit: Option<usize>,
+) -> Result<Vec<SkillUsageEvent>, SkillUsageError> {
+    let path = expand_path(SKILL_USAGE_LOG_PATH);
+
+    list_skill_usage_events_from_log(&path, skill_name.as_str(), limit.unwrap_or(20))
 }
 
 #[tauri::command]

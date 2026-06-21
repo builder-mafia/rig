@@ -1,7 +1,31 @@
-import { Badge, cn, ScrollArea } from '@allin/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  cn,
+  ScrollArea,
+} from '@allin/ui';
+import { Trash2 } from 'lucide-react';
 import posthog from 'posthog-js';
+import { useState } from 'react';
 import type { Skill, SkillUsage, SkillUsageSeries } from '../types';
+import { getSkillIdentity } from '../useRemoveSkill';
 import { SkillUsageSparkline } from './SkillUsageSparkline';
+
+const loadingSkeletonIds = Array.from(
+  { length: 6 },
+  (_, index) => `skill-loading-${index}`,
+);
 
 export interface SkillListProps {
   skills: Skill[];
@@ -11,6 +35,8 @@ export interface SkillListProps {
   isLoading: boolean;
   error: string | null;
   onSelectSkill: (skill: Skill) => void;
+  onRemoveSkill: (skill: Skill) => void;
+  removingSkillId: string | null;
 }
 
 export const SkillList = ({
@@ -21,12 +47,21 @@ export const SkillList = ({
   isLoading,
   error,
   onSelectSkill,
+  onRemoveSkill,
+  removingSkillId,
 }: SkillListProps) => {
+  const [skillPendingRemoval, setSkillPendingRemoval] = useState<Skill | null>(
+    null,
+  );
+
   if (isLoading) {
     return (
       <div className='space-y-2 p-3'>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className='h-16 animate-pulse rounded-lg bg-muted' />
+        {loadingSkeletonIds.map(skeletonId => (
+          <div
+            key={skeletonId}
+            className='h-16 animate-pulse rounded-lg bg-muted'
+          />
         ))}
       </div>
     );
@@ -75,72 +110,127 @@ export const SkillList = ({
           )}
 
           {sortedSkills.map(skill => {
-            const isSelected = selectedSkill?.id === skill.id;
+            const skillIdentity = getSkillIdentity(skill);
+            const isSelected = selectedSkill
+              ? getSkillIdentity(selectedSkill) === skillIdentity
+              : false;
             const usage = usageByName.get(skill.name);
             const tendency = tendencyByName.get(skill.name);
             const count = usage?.count ?? 0;
+            const isRemovingSkill = removingSkillId === skillIdentity;
 
             return (
-              <button
-                key={skill.id}
-                type='button'
-                aria-current={isSelected ? 'true' : undefined}
-                onClick={() => {
-                  onSelectSkill(skill);
-                  posthog.capture('skill_selected', {
-                    skill_name: skill.name,
-                    skill_description: skill.description,
-                    skill_is_valid: skill.isValid,
-                    skill_usage_count: usageByName.get(skill.name)?.count ?? 0,
-                  });
-                }}
-                className={cn(
-                  'flex w-full max-w-76 mx-auto min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isSelected
-                    ? 'border-primary bg-accent text-accent-foreground'
-                    : 'border-transparent bg-transparent',
-                )}
-              >
-                <SkillUsageSparkline values={tendency?.series ?? []} />
-
-                <span className='min-w-0 flex-1'>
-                  <span className='flex min-w-0 items-center gap-2'>
-                    <span className='truncate text-sm font-medium'>
-                      {skill.name}
-                    </span>
-                    {!skill.isValid && (
-                      <Badge
-                        variant='destructive'
-                        className='h-5 px-1.5 text-[10px]'
-                      >
-                        Invalid
-                      </Badge>
+              <ContextMenu key={skillIdentity}>
+                <ContextMenuTrigger asChild>
+                  <button
+                    type='button'
+                    aria-current={isSelected ? 'true' : undefined}
+                    onClick={() => {
+                      onSelectSkill(skill);
+                      posthog.capture('skill_selected', {
+                        skill_name: skill.name,
+                        skill_description: skill.description,
+                        skill_is_valid: skill.isValid,
+                        skill_usage_count:
+                          usageByName.get(skill.name)?.count ?? 0,
+                      });
+                    }}
+                    className={cn(
+                      'flex w-full max-w-76 mx-auto min-w-0 items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
+                      'hover:bg-accent hover:text-accent-foreground',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isSelected
+                        ? 'border-primary bg-accent text-accent-foreground'
+                        : 'border-transparent bg-transparent',
+                      isRemovingSkill && 'pointer-events-none opacity-60',
                     )}
-                  </span>
+                  >
+                    <SkillUsageSparkline values={tendency?.series ?? []} />
 
-                  <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
-                    {skill.description || skill.relativePath}
-                  </span>
-                </span>
+                    <span className='min-w-0 flex-1'>
+                      <span className='flex min-w-0 items-center gap-2'>
+                        <span className='truncate text-sm font-medium'>
+                          {skill.name}
+                        </span>
+                        {!skill.isValid && (
+                          <Badge
+                            variant='destructive'
+                            className='h-5 px-1.5 text-[10px]'
+                          >
+                            Invalid
+                          </Badge>
+                        )}
+                      </span>
 
-                <span
-                  className={cn(
-                    'shrink-0 text-xs font-light tabular-nums',
-                    isSelected
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {count}
-                  <span className='text-xs text-muted-foreground'>×</span>
-                </span>
-              </button>
+                      <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
+                        {skill.description || skill.relativePath}
+                      </span>
+                    </span>
+
+                    <span
+                      className={cn(
+                        'shrink-0 text-xs font-light tabular-nums',
+                        isSelected
+                          ? 'text-primary font-medium'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {count}
+                      <span className='text-xs text-muted-foreground'>×</span>
+                    </span>
+                  </button>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent alignOffset={4} className='w-40'>
+                  <ContextMenuItem
+                    variant='destructive'
+                    disabled={isRemovingSkill}
+                    onSelect={() => setSkillPendingRemoval(skill)}
+                  >
+                    <Trash2 />
+                    Delete skill
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             );
           })}
         </div>
       </ScrollArea>
+
+      <AlertDialog
+        open={skillPendingRemoval !== null}
+        onOpenChange={isOpen => {
+          if (!isOpen) {
+            setSkillPendingRemoval(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete skill?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{' '}
+              <span className='font-medium text-foreground'>
+                {skillPendingRemoval?.name}
+              </span>{' '}
+              from disk. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20'
+              onClick={() => {
+                if (skillPendingRemoval) {
+                  onRemoveSkill(skillPendingRemoval);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

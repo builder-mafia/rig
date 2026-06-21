@@ -99,9 +99,34 @@ pub struct SkillListingError {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub enum SkillDeletionErrorCode {
+    PathNotFound,
+    NotDirectory,
+    OutsideRoot,
+    MissingSkillFile,
+    DeleteFailed,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillDeletionError {
+    pub code: SkillDeletionErrorCode,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkillUsageLogSchema {
     pub source: String,
     pub skill_name: String,
+    pub used_at: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillUsageEvent {
+    pub name: String,
+    pub source: String,
     pub used_at: String,
 }
 
