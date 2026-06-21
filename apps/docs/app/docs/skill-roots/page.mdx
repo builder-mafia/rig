@@ -1,0 +1,48 @@
+# Skill Roots
+
+Rig discovers skills by scanning skill roots for files named `SKILL.md`.
+
+## Default Roots
+
+The `Global` repository view combines these default roots:
+
+| Label | Path |
+| --- | --- |
+| Agents Global Skills | `~/.agents/skills` |
+| OpenCode Global Skills | `~/.config/opencode/skills` |
+| Claude Global Skills | `~/.claude/skills` |
+
+Missing default folders are ignored so you can use only the agent tools you have installed.
+
+## Imported Roots
+
+Use `Import repository...` to add any local directory as a repository-specific skill root. Rig stores imported roots in the app data directory and checks whether each path still exists when the app opens.
+
+If an imported folder is deleted or moved, Rig removes it from the selector and returns you to `Global`.
+
+## Skill File Requirements
+
+Rig treats a skill as valid when:
+
+- The file is named `SKILL.md`
+- The file is not empty
+- YAML frontmatter exists
+- Frontmatter includes non-empty `name` and `description` fields
+- The markdown body is not empty
+
+Example:
+
+```md
+---
+name: accessibility-audit
+description: Audit and improve web accessibility following WCAG guidelines.
+---
+
+Use this skill when asked to improve accessibility, keyboard support, or screen reader behavior.
+```
+
+## Validation States
+
+Invalid skills still appear in the list with an `Invalid` badge. Select the skill to see the validation message and fix the underlying `SKILL.md` file.
+
+Common validation issues include missing frontmatter, invalid YAML, missing `name`, missing `description`, and empty content.

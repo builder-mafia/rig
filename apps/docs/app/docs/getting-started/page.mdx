@@ -1,58 +1,55 @@
-# Getting Started
+# Quick Start
 
-This guide will help you install ALLIN and start organizing your local settings files.
-
-## Prerequisites
-
-- macOS on Apple silicon
+This guide helps you install Rig, browse your local agent skills, and connect usage tracking.
 
 ## Install the App
 
-1. Download the latest macOS build from the home page.
+1. <a href="https://github.com/builder-mafia/rig/releases/download/v26.6.4/Rig_26.6.4_aarch64.dmg">Download the latest macOS build</a>.
 
 2. Open the downloaded `.dmg`.
 
-3. Drag `ALLIN` into your `Applications` folder.
+3. Drag `Rig` into your `Applications` folder.
 
-4. Launch ALLIN and start adding the files or folders you want to keep close.
+4. Launch Rig.
 
-## Add Your First Files
+## Browse Your First Skills
 
-1. Open ALLIN.
+Rig automatically checks these default skill roots:
 
-2. Add a settings file or folder.
+- `~/.agents/skills`
+- `~/.config/opencode/skills`
+- `~/.claude/skills`
 
-3. Keep related config together so you can get back to it quickly.
+Open the `Skills` view, choose `Global`, and select a skill from the sidebar to inspect its metadata and content.
 
-## Run from Source
+## Install Plugins
 
-If you want to work on the app locally, you can run it from source:
+Plugins let Rig track which agent skills are actually being used.
 
-1. Clone the repository:
+### OpenCode
 
-```bash
-git clone https://github.com/gaki2/ALLIN.git
-cd allin
+Add `rig-opencode` to your OpenCode config. The config file is usually at `~/.config/opencode/opencode.json`.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["rig-opencode"]
+}
 ```
 
-2. Install dependencies:
+Restart OpenCode after saving the config. OpenCode installs npm plugins automatically at startup.
 
-```bash
-pnpm install
-```
+### Claude Code
 
-3. Run the Tauri desktop app:
+Add the Rig Claude Code marketplace and install the plugin:
 
-```bash
-pnpm dev:app
-```
-
-## Building for Production
-
-```bash
-pnpm build
+```text
+/plugin marketplace add builder-mafia/rig
+/plugin install rig-claude-code@rig
+/reload-plugins
 ```
 
 ## Next Steps
 
-- Learn how to structure your [Settings Library](/docs/extensions)
+- Learn how [Skill Roots](/docs/skill-roots) work
+- Learn how [Usage Tracking](/docs/usage-tracking) works

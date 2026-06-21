@@ -1,9 +1,11 @@
 export default {
   index: 'Introduction',
-  'getting-started': 'Getting Started',
+  'getting-started': 'Quick Start',
   '---': {
     type: 'separator',
     title: 'Guides',
   },
-  extensions: 'Settings Library',
+  'skill-roots': 'Skill Roots',
+  'usage-tracking': 'Usage Tracking',
+  plugins: 'Plugins',
 };

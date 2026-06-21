@@ -10,8 +10,7 @@ export default {
     },
   },
   docs: {
-    title: 'Documentation',
+    title: 'Docs',
     type: 'page',
-    display: 'hidden',
   },
 };

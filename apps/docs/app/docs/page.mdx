@@ -1,45 +1,33 @@
-# ALLIN Documentation
+# Rig Documentation
 
-Welcome to the official ALLIN documentation.
+Rig is a local-first desktop app for organizing scattered agent `SKILL.md` files before they become a mess.
 
-## What is ALLIN?
+It gives you one place to browse local skills, inspect their content, import project-specific skill roots, and understand which skills are actually being used by your agent tools.
 
-**ALLIN** is a desktop app for keeping local settings files and folders together in one place. It helps you organize the configuration you reach for every day, so your setup stays easy to browse and easy to maintain.
+## What Rig Tracks
+
+Rig focuses on agent skills stored as `SKILL.md` files. A valid skill should include YAML frontmatter with a `name` and `description`, followed by non-empty markdown content.
+
+```md
+---
+name: example-skill
+description: Use this skill when you need a concrete example.
+---
+
+Skill instructions live here.
+```
 
 ## Features
 
-- **One Place for Config**: Keep the files and folders that shape your local setup together
-- **Desktop App**: Native macOS desktop app powered by Tauri
-- **Fast Navigation**: Browse folders, inspect files, and get to the right config quickly
-- **Modern Stack**: React 19, Next.js 15, TypeScript
+- **Global skill discovery**: Browse skills from `~/.agents/skills`, `~/.config/opencode/skills`, and `~/.claude/skills`
+- **Repository imports**: Add any local folder as a project-specific skill root
+- **Skill inspection**: Read skill names, descriptions, validation state, paths, and markdown content
+- **Usage analytics**: Review total fires, active skills, least-used skills, and usage trends from local logs
+- **Agent integrations**: Record usage from OpenCode and Claude Code with Rig plugins
 
 ## Quick Links
 
-- [Getting Started](/docs/getting-started) - Install ALLIN and open the workspace
-- [Settings Library](/docs/extensions) - Organize files and folders inside ALLIN
- 
-## Project Structure
-
-```
-ALLIN/
-├── apps/
-│   ├── docs/             # Marketing site and docs
-│   └── tauri/            # Tauri desktop application
-├── packages/
-│   ├── ai/               # Shared AI utilities
-│   ├── db-schema/        # Database schema
-│   ├── ui/               # Shared UI components
-│   └── utils/            # Shared utilities
-└── ...
-```
-
-## Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 15, React 19 |
-| Desktop | Tauri (Rust) |
-| State | Jotai + RxJS |
-| UI | shadcn/ui, Tailwind CSS |
-| Database | IndexedDB |
-| Platform | macOS desktop |
+- [Quick Start](/docs/getting-started) - Install Rig and learn the basic workflow
+- [Skill Roots](/docs/skill-roots) - Understand default and imported roots
+- [Usage Tracking](/docs/usage-tracking) - Learn how usage data is recorded and displayed
+- [Plugins](/docs/plugins) - Connect OpenCode and Claude Code
