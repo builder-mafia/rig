@@ -88,9 +88,9 @@ fn install_config(
     if jsonc_path.exists() && !json_path.exists() {
         return Err(PluginInstallError::new(
             PluginInstallErrorCode::ConfigJsoncUnsupported,
-            "OpenCode JSONC config is not supported yet.",
+            "OpenCode uses opencode.jsonc, which Rig cannot edit automatically.",
             Some(format!(
-                "Rig found `{}`. Add `rig-opencode` manually or convert the config to JSON.",
+                "Rig found `{}`. Add `rig-opencode` to the `plugin` array manually, or convert the config to `opencode.json`.",
                 jsonc_path.display()
             )),
         ));
@@ -276,6 +276,7 @@ mod tests {
             error.code,
             PluginInstallErrorCode::ConfigJsoncUnsupported
         ));
+        assert!(error.message.contains("opencode.jsonc"));
         assert!(!json_path.exists());
 
         let _ = fs::remove_dir_all(config_dir.parent().unwrap());

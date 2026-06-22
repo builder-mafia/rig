@@ -132,5 +132,13 @@ const getErrorMessage = (error: unknown) => {
     return error.message;
   }
 
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
+
   return String(error);
 };

@@ -1,11 +1,12 @@
 use super::models::{PluginInstallError, PluginInstallErrorCode, PluginTarget};
-use super::process::{command_exists, run_shell};
+use super::process::{command_exists, run_command};
 
 pub const TARGET_ID: &str = "claude-code";
 
 const PLUGIN_ID: &str = "rig-claude-code@rig";
-const MARKETPLACE_ADD_COMMAND: &str = "claude plugin marketplace add builder-mafia/rig";
-const PLUGIN_INSTALL_COMMAND: &str = "claude plugin install rig-claude-code@rig";
+const MARKETPLACE_ADD_ARGS: &[&str] = &["plugin", "marketplace", "add", "builder-mafia/rig"];
+const PLUGIN_INSTALL_ARGS: &[&str] = &["plugin", "install", PLUGIN_ID];
+const PLUGIN_LIST_ARGS: &[&str] = &["plugin", "list"];
 
 pub async fn target() -> PluginTarget {
     let is_detected = command_exists("claude").await;
@@ -31,7 +32,7 @@ pub async fn install() -> Result<PluginTarget, PluginInstallError> {
         ));
     }
 
-    let marketplace_output = run_shell(MARKETPLACE_ADD_COMMAND).await?;
+    let marketplace_output = run_command("claude", MARKETPLACE_ADD_ARGS).await?;
     if !marketplace_output.is_success()
         && !is_already_added_output(&marketplace_output.combined_output())
     {
@@ -42,7 +43,7 @@ pub async fn install() -> Result<PluginTarget, PluginInstallError> {
         ));
     }
 
-    let install_output = run_shell(PLUGIN_INSTALL_COMMAND).await?;
+    let install_output = run_command("claude", PLUGIN_INSTALL_ARGS).await?;
     if !install_output.is_success()
         && !is_already_installed_output(&install_output.combined_output())
     {
@@ -65,7 +66,7 @@ pub async fn install() -> Result<PluginTarget, PluginInstallError> {
 }
 
 async fn is_plugin_installed() -> Result<bool, PluginInstallError> {
-    let output = run_shell("claude plugin list").await?;
+    let output = run_command("claude", PLUGIN_LIST_ARGS).await?;
 
     if !output.is_success() {
         return Ok(false);

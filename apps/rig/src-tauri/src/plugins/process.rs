@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{env, time::Duration};
 
 use tokio::{process::Command, time::timeout};
 
@@ -21,13 +21,13 @@ const FALLBACK_PATHS: &[&str] = &[
 ];
 
 #[derive(Debug)]
-pub struct ShellOutput {
+pub struct ProcessOutput {
     pub code: Option<i32>,
     pub stdout: String,
     pub stderr: String,
 }
 
-impl ShellOutput {
+impl ProcessOutput {
     pub fn is_success(&self) -> bool {
         self.code == Some(0)
     }
@@ -41,34 +41,35 @@ impl ShellOutput {
     }
 }
 
-pub async fn run_shell(command: &str) -> Result<ShellOutput, PluginInstallError> {
-    let command = format!(
-        "export PATH={}:$PATH; {}",
-        shell_quote(&fallback_path_prefix()),
-        command
-    );
-
+pub async fn run_command(
+    program: &str,
+    args: &[&str],
+) -> Result<ProcessOutput, PluginInstallError> {
+    let display_command = display_command(program, args);
     let output = timeout(
         COMMAND_TIMEOUT,
-        Command::new("zsh").arg("-lc").arg(&command).output(),
+        Command::new(program)
+            .args(args)
+            .env("PATH", command_path())
+            .output(),
     )
     .await
     .map_err(|_| {
         PluginInstallError::new(
             PluginInstallErrorCode::CommandTimedOut,
-            format!("Command timed out: {command}"),
+            format!("Command timed out: {display_command}"),
             None,
         )
     })?
     .map_err(|error| {
         PluginInstallError::new(
             PluginInstallErrorCode::CommandFailed,
-            format!("Failed to run command: {command}"),
+            format!("Failed to run command: {display_command}"),
             Some(error.to_string()),
         )
     })?;
 
-    Ok(ShellOutput {
+    Ok(ProcessOutput {
         code: output.status.code(),
         stdout: String::from_utf8_lossy(&output.stdout).to_string(),
         stderr: String::from_utf8_lossy(&output.stderr).to_string(),
@@ -76,16 +77,17 @@ pub async fn run_shell(command: &str) -> Result<ShellOutput, PluginInstallError>
 }
 
 pub async fn command_exists(command: &str) -> bool {
-    run_shell(format!("command -v {command}").as_str())
+    run_command(command, &["--version"])
         .await
         .map(|output| output.is_success())
         .unwrap_or(false)
 }
 
-fn fallback_path_prefix() -> String {
-    let home = std::env::var("HOME").unwrap_or_default();
+fn command_path() -> String {
+    let home = env::var("HOME").unwrap_or_default();
+    let current_path = env::var("PATH").unwrap_or_default();
 
-    FALLBACK_PATHS
+    let mut paths = FALLBACK_PATHS
         .iter()
         .map(|path| {
             if let Some(rest) = path.strip_prefix("~/") {
@@ -94,10 +96,18 @@ fn fallback_path_prefix() -> String {
                 path.to_string()
             }
         })
-        .collect::<Vec<_>>()
-        .join(":")
+        .collect::<Vec<_>>();
+
+    if !current_path.is_empty() {
+        paths.push(current_path);
+    }
+
+    paths.join(":")
 }
 
-fn shell_quote(value: &str) -> String {
-    format!("'{}'", value.replace('\'', "'\\''"))
+fn display_command(program: &str, args: &[&str]) -> String {
+    std::iter::once(program)
+        .chain(args.iter().copied())
+        .collect::<Vec<_>>()
+        .join(" ")
 }
