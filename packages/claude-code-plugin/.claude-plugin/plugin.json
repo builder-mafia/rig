@@ -1,6 +1,5 @@
 {
   "name": "rig-claude-code",
-  "displayName": "Rig Claude Code",
   "version": "0.1.0",
   "description": "Claude Code plugin for tracking Rig skill usage locally",
   "author": {
