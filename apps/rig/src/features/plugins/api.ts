@@ -42,13 +42,13 @@ export const installPluginTarget = Effect.fn('installPluginTarget')(function* (
     catch: error => error,
   }).pipe(
     Effect.catchAll(error => {
-      const pluginInstallError = PluginInstallErrorSchema.safeParse(error);
+      const pluginInstallError = parsePluginInstallError(error);
 
-      if (pluginInstallError.success) {
+      if (pluginInstallError) {
         return Effect.fail(
           new InstallPluginTargetError({
             kind: 'PluginInstallError',
-            cause: pluginInstallError.data,
+            cause: pluginInstallError,
           }),
         );
       }
@@ -65,3 +65,21 @@ export const installPluginTarget = Effect.fn('installPluginTarget')(function* (
       new InstallPluginTargetError({ kind: 'ZodParseError', cause: error }),
   });
 });
+
+const parsePluginInstallError = (error: unknown) => {
+  const result = PluginInstallErrorSchema.safeParse(error);
+
+  if (result.success) {
+    return result.data;
+  }
+
+  if (typeof error === 'string') {
+    try {
+      return parsePluginInstallError(JSON.parse(error));
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
