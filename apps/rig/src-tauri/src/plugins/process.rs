@@ -4,7 +4,21 @@ use tokio::{process::Command, time::timeout};
 
 use super::models::{PluginInstallError, PluginInstallErrorCode};
 
-const COMMAND_TIMEOUT: Duration = Duration::from_secs(30);
+const COMMAND_TIMEOUT: Duration = Duration::from_secs(180);
+
+const FALLBACK_PATHS: &[&str] = &[
+    "~/.local/bin",
+    "~/.claude/local",
+    "~/.claude/local/bin",
+    "~/.npm-global/bin",
+    "~/.bun/bin",
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+    "/usr/sbin",
+    "/sbin",
+];
 
 #[derive(Debug)]
 pub struct ShellOutput {
@@ -28,9 +42,15 @@ impl ShellOutput {
 }
 
 pub async fn run_shell(command: &str) -> Result<ShellOutput, PluginInstallError> {
+    let command = format!(
+        "export PATH={}:$PATH; {}",
+        shell_quote(&fallback_path_prefix()),
+        command
+    );
+
     let output = timeout(
         COMMAND_TIMEOUT,
-        Command::new("zsh").arg("-lc").arg(command).output(),
+        Command::new("zsh").arg("-lc").arg(&command).output(),
     )
     .await
     .map_err(|_| {
@@ -60,4 +80,24 @@ pub async fn command_exists(command: &str) -> bool {
         .await
         .map(|output| output.is_success())
         .unwrap_or(false)
+}
+
+fn fallback_path_prefix() -> String {
+    let home = std::env::var("HOME").unwrap_or_default();
+
+    FALLBACK_PATHS
+        .iter()
+        .map(|path| {
+            if let Some(rest) = path.strip_prefix("~/") {
+                format!("{home}/{rest}")
+            } else {
+                path.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(":")
+}
+
+fn shell_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
 }

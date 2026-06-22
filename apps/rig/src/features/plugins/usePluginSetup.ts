@@ -7,7 +7,12 @@ import {
   installPluginTarget,
   listPluginTargets,
 } from './api';
-import type { PluginInstallError, PluginTarget, PluginToolId } from './types';
+import {
+  PluginInstallErrorSchema,
+  type PluginInstallError,
+  type PluginTarget,
+  type PluginToolId,
+} from './types';
 
 const pluginTargetsQueryKey = ['plugin-targets'] as const;
 
@@ -76,11 +81,47 @@ export const usePluginSetup = () => {
 };
 
 const getPluginInstallError = (error: unknown) => {
+  const installError = getInstallPluginTargetError(error);
+
+  if (installError) {
+    return parsePluginInstallError(installError.cause);
+  }
+
+  return parsePluginInstallError(error);
+};
+
+const getInstallPluginTargetError = (error: unknown) => {
+  if (error instanceof InstallPluginTargetError) {
+    return error;
+  }
+
   if (
-    error instanceof InstallPluginTargetError &&
-    error.kind === 'PluginInstallError'
+    typeof error === 'object' &&
+    error !== null &&
+    '_tag' in error &&
+    error._tag === 'InstallPluginTargetError' &&
+    'kind' in error &&
+    'cause' in error
   ) {
-    return error.cause as PluginInstallError;
+    return error as Pick<InstallPluginTargetError, 'kind' | 'cause'>;
+  }
+
+  return null;
+};
+
+const parsePluginInstallError = (error: unknown): PluginInstallError | null => {
+  const result = PluginInstallErrorSchema.safeParse(error);
+
+  if (result.success) {
+    return result.data;
+  }
+
+  if (typeof error === 'string') {
+    try {
+      return parsePluginInstallError(JSON.parse(error));
+    } catch {
+      return null;
+    }
   }
 
   return null;
