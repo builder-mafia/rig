@@ -7,7 +7,6 @@
   "plugins": [
     {
       "name": "rig-claude-code",
-      "displayName": "Rig Claude Code",
       "source": "./packages/claude-code-plugin",
       "description": "Track Claude Code skill usage locally for Rig",
       "author": {
