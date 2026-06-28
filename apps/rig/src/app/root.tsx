@@ -1,16 +1,17 @@
 import { Button } from '@allin/ui';
 import { PlugZap } from 'lucide-react';
-import posthog from 'posthog-js';
 import { appPaths, useAppNavigation } from '@/app/navigation';
 import { DashboardRoot } from '@/features/dashboard/components/DashboardRoot';
 import { PluginSetupDialog } from '@/features/plugins/components/PluginSetupDialog';
 import { usePluginSetup } from '@/features/plugins/usePluginSetup';
+import { ResourceRoot } from '@/features/resources/components/ResourceRoot';
 import { RepositorySelector } from '@/features/skills/components/RepositorySelector';
 import { SkillRoot } from '@/features/skills/components/SkillRoot';
 import { useImportSkillRoot } from '@/features/skills/useImportSkillRoot';
 import { useSkillRepositorySelection } from '@/features/skills/useSkillRepositorySelection';
 import { useSkillRoots } from '@/features/skills/useSkillRoots';
 import { HeaderLayout } from '@/layouts/HeaderLayout';
+import { NavigationRail } from './NavigationRail';
 
 export const Root = () => {
   const navigation = useAppNavigation();
@@ -32,6 +33,22 @@ export const Root = () => {
           <SkillRoot
             key={repositorySelection.selectedRepositoryId}
             roots={repositorySelection.visibleRoots}
+          />
+        );
+      case appPaths.agents:
+        return (
+          <ResourceRoot
+            section={appPaths.agents}
+            pluginTargets={pluginSetup.pluginTargets}
+            onOpenPluginSetup={pluginSetup.openPluginSetup}
+          />
+        );
+      case appPaths.apps:
+        return (
+          <ResourceRoot
+            section={appPaths.apps}
+            pluginTargets={pluginSetup.pluginTargets}
+            onOpenPluginSetup={pluginSetup.openPluginSetup}
           />
         );
       case appPaths.dashboard:
@@ -65,23 +82,16 @@ export const Root = () => {
                 <span className='ml-1 size-2 rounded-full bg-blue-500' />
               )}
             </Button>
-
-            <div className='flex rounded-xl border bg-muted/40 p-1'>
-              <ViewToggleButton
-                label='Skills'
-                isSelected={navigation.isCurrentPath(appPaths.skills)}
-                onClick={() => navigation.navigate(appPaths.skills)}
-              />
-              <ViewToggleButton
-                label='Dashboard'
-                isSelected={navigation.isCurrentPath(appPaths.dashboard)}
-                onClick={() => navigation.navigate(appPaths.dashboard)}
-              />
-            </div>
           </div>
         </div>
       </HeaderLayout>
-      {renderCurrentPath()}
+      <div className='flex min-h-0 flex-1'>
+        <NavigationRail
+          currentPath={navigation.currentPath}
+          onNavigate={navigation.navigate}
+        />
+        {renderCurrentPath()}
+      </div>
       <PluginSetupDialog
         open={pluginSetup.isOpen}
         pluginTargets={pluginSetup.pluginTargets}
@@ -94,32 +104,5 @@ export const Root = () => {
         errorMessage={pluginSetup.errorMessage}
       />
     </main>
-  );
-};
-
-interface ViewToggleButtonProps {
-  label: string;
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const ViewToggleButton = ({
-  label,
-  isSelected,
-  onClick,
-}: ViewToggleButtonProps) => {
-  return (
-    <button
-      type='button'
-      aria-pressed={isSelected}
-      onClick={onClick}
-      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-        isSelected
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground'
-      }`}
-    >
-      {label}
-    </button>
   );
 };
