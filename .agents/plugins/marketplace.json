@@ -1,5 +1,5 @@
 {
-  "name": "rig",
+  "name": "Rig",
   "interface": {
     "displayName": "Rig"
   },
@@ -8,7 +8,7 @@
       "name": "rig-codex",
       "source": {
         "source": "local",
-        "path": "./plugins/rig-codex"
+        "path": "./plugins/codex"
       },
       "policy": {
         "installation": "AVAILABLE",

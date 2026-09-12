@@ -6,7 +6,7 @@ an integration for an agent.
 
 ## How tracking works
 
-1. An agent integration observes a supported skill invocation.
+1. An agent integration observes a supported skill invocation, request, or file read.
 2. It appends the skill name, agent source, and timestamp to
    `~/.rig/usage.jsonl`.
 3. Rig matches that name to discovered skills and shows the event in the
@@ -32,22 +32,34 @@ Run these commands inside Claude Code:
 Confirm the Rig plugin appears in `/plugin list`. Claude Code skill calls can
 then appear in Rig Activity.
 
-### Codex — explicit tracking beta
+### Codex — skill tracking beta
 
 Run these commands in a terminal:
 
 ```sh
 codex plugin marketplace add builder-mafia/rig
-codex plugin add rig-codex@rig
+codex plugin add rig-codex@Rig
 ```
 
-Start a new Codex session, run `/hooks`, then review and trust Rig's
-`UserPromptSubmit` hook. Do not bypass the hook trust prompt.
+The hook command requires Node.js to be available on `PATH`.
 
-Codex currently records only explicit mentions such as `$skill-creator`. It
-cannot reliably detect implicit skill activation. When installed skills share
-the same name, Codex does not expose the selected file path to this hook, so Rig
-can attribute the event only by name.
+Start a new Codex session, run `/hooks`, then review and trust Rig's
+`UserPromptSubmit` and `PostToolUse` hooks. Do not bypass the hook trust prompt.
+
+Codex records explicit mentions such as `$skill-creator` and detected reads of
+`SKILL.md`. Supported reads include `cat`, `head`, `tail`, read-only `sed`, and
+file-read tools with structured path arguments. File listings, edits, and explicit
+failure results are excluded. Raw output without an exit status cannot reliably
+identify every failed read. Custom scripts, PowerShell `Get-Content`, and reads
+through unresolved shell variables may not be detected.
+
+Rig counts each recorded event. The plugin filters repeated skill names or read
+paths within one hook input; separate hook calls count separately, including a
+request followed by a read of the same skill. Activity is grouped by skill name,
+so same-name skills share activity.
+
+Use these counts to see which skills come up in your work. Reading a skill for
+inspection can count too, and counts alone do not measure how well it worked.
 
 ### OpenCode
 
@@ -67,8 +79,10 @@ installs npm plugins automatically at startup.
 ## Verify tracking
 
 1. Restart or reload the agent after installation.
-2. Invoke a known skill. For Codex, mention it explicitly with `$skill-name`.
-3. Open Rig, choose that skill, and open **Activity**.
+2. Invoke a known skill. For Codex, mention it with `$skill-name` or ask Codex to
+   read its `SKILL.md`.
+3. Open Rig, choose that skill, and open **Activity**. If Rig was already open,
+   reload its window to refresh cached usage counts.
 4. If no event appears, inspect the last lines of `~/.rig/usage.jsonl` and
    confirm that the recorded `skillName` matches the discovered skill name.
 
@@ -78,7 +92,9 @@ Each line is one JSON event:
 {"source":"opencode","skillName":"typescript-fix-null-safety","usedAt":"2026-05-30T01:12:00.000Z"}
 ```
 
-Rig ignores empty lines and malformed events.
+Rig ignores empty lines and malformed events. Each valid record is included in
+counts, trends, and Activity, even when the same skill appears several times
+in a turn.
 
 ## What Rig stores
 
@@ -88,9 +104,10 @@ Rig ignores empty lines and malformed events.
 | `skillName` | Matches an event to discovered skills. |
 | `usedAt` | Records when the invocation happened as an RFC 3339 timestamp. |
 
-Codex explicit events can also include `trackingMode`, `sessionId`, and `cwd`
-for local attribution and diagnostics. They do not include prompt text or skill
-contents.
+Codex events also include `trackingMode` (`explicit` or `read`), `sessionId`,
+`turnId`, and `cwd`. Read events include `skillPath` and `toolUseId`. These fields
+support local attribution and diagnostics. Events do not include prompt text,
+commands, tool output, or skill contents.
 
 ## OpenCode options
 

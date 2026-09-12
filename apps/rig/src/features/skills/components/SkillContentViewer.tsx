@@ -808,8 +808,7 @@ const ActivityPanel = ({
       </p>
       {hasDuplicateNames ? (
         <p className='mt-1 text-xs text-amber-700'>
-          Same-name skills share activity because agents do not report the
-          selected file path.
+          Activity is grouped by skill name, so same-name skills share activity.
         </p>
       ) : null}
     </div>
@@ -856,7 +855,7 @@ const UsageEventRow = ({ event }: { event: SkillUsageEvent }) => (
 );
 
 const formatUsageSource = (source: string) => {
-  if (source === 'codex') return 'Codex · Explicit';
+  if (source === 'codex') return 'Codex';
   if (source === 'claude-code') return 'Claude Code';
   if (source === 'opencode') return 'OpenCode';
   return source;

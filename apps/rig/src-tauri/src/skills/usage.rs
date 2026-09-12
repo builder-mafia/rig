@@ -214,7 +214,7 @@ fn bucket_count(start: DateTime<Utc>, end: DateTime<Utc>, bucket_duration: Durat
 
 #[cfg(test)]
 mod tests {
-    use super::parse_skill_usage_event;
+    use super::*;
 
     #[test]
     fn reads_codex_explicit_tracking_records_with_metadata() {
@@ -226,5 +226,55 @@ mod tests {
         assert_eq!(event.name, "caveman-commit");
         assert_eq!(event.source, "codex");
         assert_eq!(event.used_at.to_rfc3339(), "2026-08-02T06:27:47.858+00:00");
+    }
+
+    struct TestLog(std::path::PathBuf);
+
+    impl TestLog {
+        fn new(records: Vec<serde_json::Value>) -> Self {
+            let path =
+                std::env::temp_dir().join(format!("rig-usage-{}.jsonl", uuid::Uuid::new_v4()));
+            let lines = records
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(&path, format!("{}\nnot-json\n", lines)).unwrap();
+            Self(path)
+        }
+    }
+
+    impl Drop for TestLog {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_file(&self.0);
+        }
+    }
+
+    fn observation(mode: &str, session: &str, turn: &str) -> serde_json::Value {
+        serde_json::json!({
+            "source": "codex", "skillName": "review", "usedAt": Utc::now().to_rfc3339(),
+            "trackingMode": mode, "sessionId": session, "turnId": turn,
+        })
+    }
+
+    #[test]
+    fn counts_each_record_in_all_activity_views_including_same_turn_reads() {
+        let log = TestLog::new(vec![
+            observation("explicit", "session-1", "turn-1"),
+            observation("read", "session-1", "turn-1"),
+            observation("read", "session-1", "turn-1"),
+            observation("read", "session-1", "turn-2"),
+            observation("read", "session-2", "turn-3"),
+        ]);
+
+        let usages = list_skill_usages_from_log(&log.0, WindowType::Day).unwrap();
+        assert_eq!(usages.len(), 1);
+        assert_eq!(usages[0].count, 5);
+        let events = list_skill_usage_events_from_log(&log.0, "review", 20).unwrap();
+        assert_eq!(events.len(), 5);
+        let trends =
+            list_skill_usage_tendencies_from_log(&log.0, WindowType::Day, BucketType::Hour)
+                .unwrap();
+        assert_eq!(trends[0].series.iter().sum::<u32>(), 5);
     }
 }

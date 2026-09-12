@@ -46,6 +46,9 @@ jobs:
       - name: Test release tooling
         run: node --test apps/rig/scripts/publish-updater-manifest.node-test.mjs
 
+      - name: Test Codex skill tracking
+        run: node --test plugins/codex/scripts/log-skill-usage.test.mjs
+
       - name: Lint desktop app
         run: pnpm --filter desktop-app lint
 

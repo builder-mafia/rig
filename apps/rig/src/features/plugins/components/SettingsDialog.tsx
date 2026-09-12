@@ -66,18 +66,18 @@ Preserve my existing Claude Code settings. If anything fails, explain the exact 
     name: 'Codex',
     sourceId: 'agents',
     description:
-      'Installs Rig’s local hook to record explicit $skill mentions. Prompt text and skill files are not stored.',
+      'Installs Rig’s local hooks to track requested and read skills. Prompt text and skill contents are not stored.',
     buttonLabel: 'Copy beta setup',
-    badge: 'Explicit tracking · Beta',
-    prompt: `Set up Rig explicit skill tracking for Codex on this Mac.
+    badge: 'Skill tracking · Beta',
+    prompt: `Set up Rig skill usage tracking for Codex on this Mac.
 
 1. Run codex plugin marketplace add builder-mafia/rig
-2. Run codex plugin add rig-codex@rig
+2. Run codex plugin add rig-codex@Rig
 3. Start a new Codex session and run /hooks.
-4. Review and trust the Rig UserPromptSubmit hook. Do not bypass hook trust.
-5. Invoke a skill explicitly with $skill-name and confirm Rig shows a Codex activity event.
+4. Review and trust the Rig UserPromptSubmit and PostToolUse hooks. Do not bypass hook trust.
+5. Request an installed skill with $skill-name or let Codex read its SKILL.md, then confirm Rig shows a Codex activity event.
 
-This beta records only explicit $skill mentions. It never stores prompt text or skill contents. If multiple installed skills have the same name, explain that Codex does not yet expose the selected skill file path, so Rig can only attribute the call by name. Preserve all existing Codex settings and hooks.`,
+This beta records explicit skill mentions and detected skill file reads. Rig counts each recorded event, including separate request and read events for the same skill. Prompt text and skill contents are never stored. Activity is grouped by skill name, so same-name skills share activity. Preserve all existing Codex settings and hooks.`,
   },
   {
     id: 'opencode',

@@ -1,0 +1,21 @@
+{
+  "name": "rig-codex",
+  "version": "0.1.0+codex.20260911124506",
+  "description": "Track Codex skill mentions and detected skill reads locally for Rig",
+  "author": {
+    "name": "Yu"
+  },
+  "homepage": "https://github.com/builder-mafia/rig/tree/main/plugins/codex",
+  "repository": "https://github.com/builder-mafia/rig",
+  "license": "MIT",
+  "keywords": ["codex", "rig", "skills", "usage-tracking"],
+  "interface": {
+    "displayName": "Rig for Codex",
+    "shortDescription": "Track requested and read skills locally.",
+    "longDescription": "Records explicit skill mentions and detected SKILL.md reads in Rig's local activity log to help you understand which skills you use. Prompt text and skill contents are never stored.",
+    "developerName": "Rig",
+    "category": "Productivity",
+    "capabilities": ["Local activity tracking"],
+    "defaultPrompt": ["Use a relevant installed skill for this task."]
+  }
+}
