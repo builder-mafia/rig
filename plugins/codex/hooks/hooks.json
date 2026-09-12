@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/log-skill-usage.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Recording Rig skill activity"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|(?i:read)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/scripts/log-skill-usage.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Recording Rig skill activity"
+          }
+        ]
+      }
+    ]
+  }
+}

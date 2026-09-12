@@ -104,9 +104,9 @@ const providerRows = [
   {
     name: 'Codex',
     source: 'codex',
-    description: 'Track explicit $skill mentions with a local hook.',
+    description: 'Track requested and read skills with local hooks.',
     action: 'Copy Codex setup',
-    badge: 'Explicit tracking · Beta',
+    badge: 'Skill tracking · Beta',
   },
   {
     name: 'OpenCode',
@@ -399,7 +399,7 @@ const ProductWindow = () => (
           </svg>
           <div className='mt-3 overflow-hidden rounded-xl border border-black/[0.08] dark:border-white/[0.09]'>
             {[
-              ['Codex', 'Explicit mention', 'Today, 14:32', 'codex'],
+              ['Codex', 'Skill activity', 'Today, 14:32', 'codex'],
               ['Claude Code', 'Skill call', 'Yesterday, 16:08', 'claude'],
               ['OpenCode', 'Skill call', 'Aug 1, 09:41', 'opencode'],
             ].map(([provider, event, time, source]) => (
@@ -1114,7 +1114,7 @@ const HomePage = async () => {
               ],
               [
                 'What does Codex tracking support?',
-                'The Codex integration is a beta that records explicit $skill-name mentions. It cannot reliably detect implicit skill activation yet.',
+                'The Codex integration records explicit skill mentions and detected skill file reads through local hooks. Rig counts each recorded event to help you see which skills you use regularly.',
               ],
               [
                 'What does version history include?',

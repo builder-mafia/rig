@@ -1,7 +1,8 @@
-import { appendFile, mkdir } from 'node:fs/promises';
+import { appendFile, mkdir, readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { getReadSkillPaths, getSkillName } from './skill-reads.mjs';
 
 const DEFAULT_LOG_PATH = '~/.rig/usage.jsonl';
 const DEFAULT_SOURCE = 'codex';
@@ -27,20 +28,60 @@ export const getExplicitSkillNames = input => {
 };
 
 export const createUsageEntries = (input, usedAt = new Date().toISOString()) =>
-  getExplicitSkillNames(input).map(skillName => ({
+  [
+    ...new Set(
+      getExplicitSkillNames(input).map(name => name.split(':').at(-1)),
+    ),
+  ].map(skillName => ({
     source: process.env.RIG_USAGE_SOURCE || DEFAULT_SOURCE,
     skillName,
     usedAt,
     trackingMode: 'explicit',
     sessionId: getStringProperty(input, 'session_id'),
+    turnId: getStringProperty(input, 'turn_id'),
     cwd: getStringProperty(input, 'cwd'),
   }));
+
+export const createReadUsageEntries = async (
+  input,
+  usedAt = new Date().toISOString(),
+) => {
+  const entries = [];
+
+  for (const skillPath of getReadSkillPaths(input)) {
+    try {
+      const skillName = getSkillName(
+        await readFile(skillPath, 'utf8'),
+        skillPath,
+      );
+      entries.push({
+        source: process.env.RIG_USAGE_SOURCE || DEFAULT_SOURCE,
+        skillName,
+        skillPath,
+        usedAt,
+        trackingMode: 'read',
+        sessionId: getStringProperty(input, 'session_id'),
+        turnId: getStringProperty(input, 'turn_id'),
+        toolUseId: getStringProperty(input, 'tool_use_id'),
+        cwd: getStringProperty(input, 'cwd'),
+      });
+    } catch {
+      // A missing or unreadable file must not interfere with the agent's turn.
+    }
+  }
+
+  return entries;
+};
 
 const main = async () => {
   if (isDisabled()) return;
 
   const input = await readJsonFromStdin();
-  const entries = createUsageEntries(input);
+  const usedAt = new Date().toISOString();
+  const entries = [
+    ...createUsageEntries(input, usedAt),
+    ...(await createReadUsageEntries(input, usedAt)),
+  ];
 
   if (entries.length === 0) return;
 

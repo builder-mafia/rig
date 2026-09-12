@@ -97,14 +97,16 @@ calls made through the Claude Code plugin.
 
 ```sh
 codex plugin marketplace add builder-mafia/rig
-codex plugin add rig-codex@rig
+codex plugin add rig-codex@Rig
 ```
 
-Start a new Codex session, run `/hooks`, review the Rig `UserPromptSubmit`
-hook, and trust it. Codex tracking is currently **Explicit tracking · Beta**:
-it records explicit mentions such as `$skill-creator`, but does not infer
-implicit skill activation. When multiple installed skills share a name, Codex
-does not yet expose the selected file path, so activity is attributed by name.
+Start a new Codex session, run `/hooks`, and review and trust the Rig
+`UserPromptSubmit` and `PostToolUse` hooks. Codex tracking records explicit
+mentions such as `$skill-creator` and detected `SKILL.md` reads as usage signals.
+Rig counts each recorded event, including separate request and read events
+for the same skill. Activity is grouped by
+skill name, so same-name skills share activity. See the
+[Codex plugin guide](plugins/codex/README.md) for supported read operations.
 
 #### OpenCode
 
