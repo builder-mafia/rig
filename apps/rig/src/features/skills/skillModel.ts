@@ -55,7 +55,7 @@ export const getDefaultProviderSkill = (skill: Skill) => {
 };
 
 export const providerLabels: Record<SkillProvider, string> = {
-  agents: 'Agents',
+  agents: 'Codex',
   claude: 'Claude',
   openCode: 'OpenCode',
   hermes: 'Hermes',

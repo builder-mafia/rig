@@ -7,4 +7,3 @@ pub mod parser;
 pub mod root_store;
 pub mod scanner;
 pub mod updates;
-pub mod usage;

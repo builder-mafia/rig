@@ -9,7 +9,18 @@ use super::models::{
 };
 use super::parser::parse_skill_file_content;
 
-const IGNORED_DIRECTORY_NAMES: &[&str] = &[".archive", ".backups", ".git", "node_modules"];
+pub(super) const IGNORED_DIRECTORY_NAMES: &[&str] = &[
+    ".archive",
+    ".backups",
+    ".git",
+    "node_modules",
+    ".next",
+    ".turbo",
+    "target",
+    "dist",
+    "build",
+    ".venv",
+];
 
 pub fn list_skills_from_root(root: &SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
     let root_path = Path::new(root.path.as_str());

@@ -5,11 +5,46 @@ use super::models::{
     Skill, SkillArchiveError, SkillArchiveErrorCode, SkillListingError, SkillProvider, SkillRoot,
     SkillRootKind, SkillScopeKind,
 };
-use super::scanner::list_skills_from_root;
+use super::scanner::{list_skills_from_root, IGNORED_DIRECTORY_NAMES};
+use walkdir::WalkDir;
 
 const ARCHIVE_DIRECTORY_NAME: &str = ".archive";
 
 pub fn list_archived_skills_from_root(root_path: &Path) -> Result<Vec<Skill>, SkillListingError> {
+    let mut skills = Vec::new();
+    // Older versions archived inside provider roots. Keep those files recoverable
+    // when a project is now scanned from its top-level directory.
+    for entry in WalkDir::new(root_path).into_iter().filter_entry(|entry| {
+        if entry.depth() == 0 {
+            return true;
+        }
+        let name = entry.file_name().to_string_lossy();
+        let inside_archive = entry
+            .path()
+            .parent()
+            .and_then(|parent| parent.strip_prefix(root_path).ok())
+            .is_some_and(|parent| {
+                parent
+                    .components()
+                    .any(|part| part.as_os_str() == ARCHIVE_DIRECTORY_NAME)
+            });
+        !inside_archive
+            && (name == ARCHIVE_DIRECTORY_NAME || !IGNORED_DIRECTORY_NAMES.contains(&name.as_ref()))
+    }) {
+        let entry = entry.map_err(|error| SkillListingError {
+            code: super::models::SkillListingErrorCode::ReadFailed,
+            message: format!("Failed to read archived skills: {}", error),
+        })?;
+        if entry.file_type().is_dir() && entry.file_name() == ARCHIVE_DIRECTORY_NAME {
+            if let Some(parent) = entry.path().parent() {
+                skills.extend(list_archive_at_root(parent)?);
+            }
+        }
+    }
+    Ok(skills)
+}
+
+fn list_archive_at_root(root_path: &Path) -> Result<Vec<Skill>, SkillListingError> {
     let archive_path = root_path.join(ARCHIVE_DIRECTORY_NAME);
 
     if !archive_path.exists() {
@@ -41,10 +76,8 @@ pub fn list_archived_skills_from_root(root_path: &Path) -> Result<Vec<Skill>, Sk
     Ok(skills)
 }
 
-pub fn archive_skill_at_path(
-    root_path: &Path,
-    relative_path: &Path,
-) -> Result<(), SkillArchiveError> {
+#[cfg(test)]
+fn archive_skill_at_path(root_path: &Path, relative_path: &Path) -> Result<(), SkillArchiveError> {
     let root_path = canonical_skill_root(root_path)?;
     let relative_path = validate_relative_skill_path(relative_path)?;
     let source = canonical_skill_directory(&root_path, &relative_path)?;
@@ -284,6 +317,24 @@ mod tests {
             .path
             .join(".archive/group/test-skill/SKILL.md")
             .exists());
+    }
+
+    #[test]
+    fn finds_legacy_archives_inside_project_provider_folders() {
+        let root = TestRoot::new();
+        root.add_skill("packages/web/.agents/skills/nested");
+        let provider = root.path.join("packages/web/.agents/skills");
+        archive_skill_at_path(&provider, Path::new("nested")).unwrap();
+        let archived = list_archived_skills_from_root(&root.path).unwrap();
+        assert_eq!(archived.len(), 1);
+        assert_eq!(archived[0].root_path, provider.to_string_lossy());
+        assert_eq!(archived[0].relative_path, "nested");
+        restore_skill_at_path(
+            Path::new(&archived[0].root_path),
+            Path::new(&archived[0].relative_path),
+        )
+        .unwrap();
+        assert!(provider.join("nested/SKILL.md").is_file());
     }
 
     #[test]

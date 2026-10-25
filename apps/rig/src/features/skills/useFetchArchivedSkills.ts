@@ -12,7 +12,17 @@ export const useFetchArchivedSkills = (roots: SkillRoot[]) => {
   });
 
   return {
-    archivedSkills: skillQueries.flatMap(query => query.data ?? []),
+    archivedSkills: skillQueries.flatMap((query, index) =>
+      (query.data ?? []).map(skill => ({
+        ...skill,
+        scopeId: roots[index].scopeId,
+        scopeLabel: roots[index].scopeLabel,
+        scopeKind: roots[index].scopeKind,
+        rootId: roots[index].id,
+        rootLabel: roots[index].label,
+        provider: roots[index].provider,
+      })),
+    ),
     isLoading: skillQueries.some(query => query.isLoading),
     error: skillQueries.find(query => query.error)?.error ?? null,
   };

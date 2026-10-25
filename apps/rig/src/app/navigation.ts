@@ -4,7 +4,6 @@ export const appPaths = {
   skills: 'skills',
   agents: 'agents',
   apps: 'apps',
-  dashboard: 'dashboard',
 } as const;
 
 export type AppPath = (typeof appPaths)[keyof typeof appPaths];

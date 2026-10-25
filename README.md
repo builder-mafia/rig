@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>Know which agent skills actually get used.</strong><br />
-  A local-first macOS workspace for discovering, tracking, updating, sharing,
+  <strong>Your agent skills, in one place.</strong><br />
+  A local-first macOS workspace for browsing, organizing, sharing,
   and restoring Agent Skills across Claude Code, Codex, and OpenCode.
 </p>
 
@@ -20,48 +20,32 @@
 
 ## Why Rig
 
-Skills quickly spread across agent folders and repositories. Duplicate names
-become hard to distinguish, unused skills waste context, and remote skills can
-drift without anyone noticing.
-
-Rig turns those scattered `SKILL.md` files into one focused control plane. It
-keeps the files where they already live and gives you the context needed to
-decide what to keep, update, share, disable, or remove.
+Skills spread across agent folders and repositories. Rig brings those
+`SKILL.md` files into a compact library while keeping them in their original
+locations.
 
 ## What you can do
 
-- **See every skill in context** — browse global and project skills, inspect the
-  full instructions and file path, search their contents, and spot duplicate
-  names without opening multiple folders.
-- **Track real usage** — record which skill was called, when it was called, and
-  which connected agent called it. Recent activity stays compact until you
-  need the details.
-- **Work across providers** — view Claude Code, Codex, and OpenCode skills
-  together, or hide provider folders that would otherwise duplicate the list.
-- **Update safely** — detect updates for globally installed GitHub skills and
-  update them through the Skills CLI. Rig restores the previous files if an
-  update fails validation.
-- **Compare and restore versions** — Rig snapshots skills it updates or
-  restores, shows readable diffs, and lets you return to a known-good version.
-- **Share without zip files** — copy an `npx skills` install command when a
-  remote source is known, or copy an AI-ready installation prompt containing
-  the current skill content.
-- **Manage in batches** — use Command/Ctrl-click or Shift-click to select
-  multiple skills, then share, disable, or remove them together.
-- **Switch projects directly** — add repository scopes beside **All skills**
-  and show only the skills belonging to the selected project.
+- **Browse by folder** — global skills appear first, followed by project
+  accordions that include nested packages and custom skill folders.
+- **Search instructions** — find skills by name, description, content, or path.
+  Matching folders open automatically while searching.
+- **Hide only in Rig** — hide individual skills or provider sources without
+  moving files or changing agent discovery. Open **Hidden** to show them again.
+- **Read and share** — inspect rendered instructions, source, and file details;
+  right-click to copy instructions or share an installation prompt.
+- **Manage in batches** — Command/Ctrl-click or Shift-click to select multiple
+  skills, then share, hide, or delete them together.
+- **Restore existing versions** — inspect saved snapshots and readable diffs.
+- **Switch projects** — add folders beside **All skills** to browse a project.
 
 ## Local by default
 
-Rig reads skill files and usage events on your Mac. Usage integrations append
-small JSONL events to:
-
-```text
-~/.rig/usage.jsonl
-```
-
-The tracking plugins do not store prompt text or skill contents. Disabling a
-skill also keeps its files on disk so it can be restored later.
+Rig reads skill files on your Mac. Hidden skills are stored as a local Rig
+preference; their files and availability to agents do not change. Files moved
+into `.archive` by older versions remain recoverable from **Hidden** using
+**Restore file**. Restoring those legacy files moves them back to their original
+folders; new hide/show actions never move files.
 
 ## Get started
 
@@ -75,51 +59,10 @@ skill also keeps its files on disk so it can be restored later.
 
 Rig checks GitHub Releases for signed application updates.
 
-### 2. Connect the agents you use
+### 2. Choose skill sources
 
-Open **Settings → Agents**, copy the setup prompt for an agent, and paste it
-into a new conversation with that agent. The prompt asks the agent to make the
-minimum required configuration change and preserve the rest of your setup.
-
-Manual setup is also available below.
-
-#### Claude Code
-
-```text
-/plugin marketplace add builder-mafia/rig
-/plugin install rig-claude-code@rig
-```
-
-Start a new Claude Code session after installation. Rig records native skill
-calls made through the Claude Code plugin.
-
-#### Codex
-
-```sh
-codex plugin marketplace add builder-mafia/rig
-codex plugin add rig-codex@rig
-```
-
-Start a new Codex session, run `/hooks`, review the Rig `UserPromptSubmit`
-hook, and trust it. Codex tracking is currently **Explicit tracking · Beta**:
-it records explicit mentions such as `$skill-creator`, but does not infer
-implicit skill activation. When multiple installed skills share a name, Codex
-does not yet expose the selected file path, so activity is attributed by name.
-
-#### OpenCode
-
-Add `rig-opencode` to the existing plugin array in
-`~/.config/opencode/opencode.json` without replacing your other settings:
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": ["rig-opencode"]
-}
-```
-
-OpenCode installs the npm plugin at startup and Rig records native `skill` tool
-calls.
+Open **Settings → Skill sources** to choose which providers appear in Rig.
+No usage-tracking integration is needed.
 
 ## Skill locations
 
@@ -127,14 +70,15 @@ Rig discovers these global locations automatically:
 
 | Provider | Global skill directory |
 | --- | --- |
-| Codex / Agent Skills | `~/.agents/skills` |
+| Codex | `~/.codex/skills`, `~/.agents/skills` |
 | Claude Code | `~/.claude/skills` |
 | OpenCode | `~/.config/opencode/skills` |
 | Hermes | `~/.hermes/skills` |
 | Cursor | `~/.cursor/skills` |
 
-Imported repositories are scanned for the corresponding provider-local skill
-folders, such as `.agents/skills`, `.claude/skills`, and `.opencode/skills`.
+Imported repositories are scanned recursively for `SKILL.md`, including nested
+packages and custom skill folders. Dependency, build, Git, and archive folders
+are excluded from the active library.
 Removing a repository from Rig removes only the saved scope; it does not delete
 the repository or its skill files.
 

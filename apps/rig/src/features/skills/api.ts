@@ -1,25 +1,19 @@
 import { invoke } from '@tauri-apps/api/core';
 import { Data, Effect } from 'effect';
 import {
-  type BucketType,
   SkillArchiveErrorSchema,
   SkillCopyErrorSchema,
   SkillDeletionErrorSchema,
   SkillHistoryErrorSchema,
   SkillListingErrorSchema,
+  type SkillRoot,
   SkillRootImportErrorSchema,
   SkillRootSchema,
   SkillSchema,
   SkillUpdateResultSchema,
   SkillUpdateStatusSchema,
-  SkillUsageErrorSchema,
-  SkillUsageEventSchema,
-  SkillUsageSchema,
-  SkillUsageSeriesSchema,
   SkillVersionDetailSchema,
   SkillVersionSummarySchema,
-  type SkillRoot,
-  type WindowType,
 } from './types';
 
 export class ManageSkillVersionError extends Data.TaggedError(
@@ -367,7 +361,7 @@ export class ChangeSkillArchiveError extends Data.TaggedError(
   cause: unknown;
 }> {}
 
-const changeSkillArchive = (command: 'archive_skill' | 'restore_skill') =>
+const changeSkillArchive = (command: 'restore_skill') =>
   Effect.fn(command)(function* ({
     rootPath,
     relativePath,
@@ -401,7 +395,6 @@ const changeSkillArchive = (command: 'archive_skill' | 'restore_skill') =>
     );
   });
 
-export const archiveSkill = changeSkillArchive('archive_skill');
 export const restoreSkill = changeSkillArchive('restore_skill');
 
 export class CopySkillError extends Data.TaggedError('CopySkillError')<{
@@ -442,7 +435,9 @@ export const copySkill = Effect.fn('copySkill')(function* ({
         );
       }
 
-      return Effect.fail(new CopySkillError({ kind: 'InvokeError', cause: error }));
+      return Effect.fail(
+        new CopySkillError({ kind: 'InvokeError', cause: error }),
+      );
     }),
   );
 });
@@ -481,131 +476,3 @@ export const removeSkill = Effect.fn('removeSkill')(function* ({
     }),
   );
 });
-
-export class ListSkillUsagesError extends Data.TaggedError(
-  'ListSkillUsagesError',
-)<{
-  kind: 'InvokeError' | 'SkillUsageError' | 'ZodParseError';
-  cause: unknown;
-}> {}
-
-export const listSkillUsages = Effect.fn('listSkillUsages')(function* (
-  window?: WindowType,
-) {
-  const result = yield* Effect.tryPromise({
-    try: () => invoke<unknown>('list_skill_usages', { window }),
-    catch: error => error,
-  }).pipe(
-    Effect.catchAll(error => {
-      const usageError = SkillUsageErrorSchema.safeParse(error);
-
-      if (usageError.success) {
-        return Effect.fail(
-          new ListSkillUsagesError({
-            kind: 'SkillUsageError',
-            cause: usageError.data,
-          }),
-        );
-      }
-
-      return Effect.fail(
-        new ListSkillUsagesError({ kind: 'InvokeError', cause: error }),
-      );
-    }),
-  );
-
-  return yield* Effect.try({
-    try: () => SkillUsageSchema.array().parse(result),
-    catch: error =>
-      new ListSkillUsagesError({ kind: 'ZodParseError', cause: error }),
-  });
-});
-
-export class ListSkillUsageEventsError extends Data.TaggedError(
-  'ListSkillUsageEventsError',
-)<{
-  kind: 'InvokeError' | 'SkillUsageError' | 'ZodParseError';
-  cause: unknown;
-}> {}
-
-export const listSkillUsageEvents = Effect.fn('listSkillUsageEvents')(
-  function* (skillName: string, limit?: number) {
-    const result = yield* Effect.tryPromise({
-      try: () =>
-        invoke<unknown>('list_skill_usage_events', { skillName, limit }),
-      catch: error => error,
-    }).pipe(
-      Effect.catchAll(error => {
-        const usageError = SkillUsageErrorSchema.safeParse(error);
-
-        if (usageError.success) {
-          return Effect.fail(
-            new ListSkillUsageEventsError({
-              kind: 'SkillUsageError',
-              cause: usageError.data,
-            }),
-          );
-        }
-
-        return Effect.fail(
-          new ListSkillUsageEventsError({
-            kind: 'InvokeError',
-            cause: error,
-          }),
-        );
-      }),
-    );
-
-    return yield* Effect.try({
-      try: () => SkillUsageEventSchema.array().parse(result),
-      catch: error =>
-        new ListSkillUsageEventsError({ kind: 'ZodParseError', cause: error }),
-    });
-  },
-);
-
-export class ListSkillUsagesTendencyError extends Data.TaggedError(
-  'ListSkillUsagesTendencyError',
-)<{
-  kind: 'InvokeError' | 'SkillUsageError' | 'ZodParseError';
-  cause: unknown;
-}> {}
-
-export const listSkillUsagesTendency = Effect.fn('listSkillUsagesTendency')(
-  function* (window?: WindowType, bucketType?: BucketType) {
-    const result = yield* Effect.tryPromise({
-      try: () =>
-        invoke<unknown>('list_skill_usages_tendency', { window, bucketType }),
-      catch: error => error,
-    }).pipe(
-      Effect.catchAll(error => {
-        const usageError = SkillUsageErrorSchema.safeParse(error);
-
-        if (usageError.success) {
-          return Effect.fail(
-            new ListSkillUsagesTendencyError({
-              kind: 'SkillUsageError',
-              cause: usageError.data,
-            }),
-          );
-        }
-
-        return Effect.fail(
-          new ListSkillUsagesTendencyError({
-            kind: 'InvokeError',
-            cause: error,
-          }),
-        );
-      }),
-    );
-
-    return yield* Effect.try({
-      try: () => SkillUsageSeriesSchema.array().parse(result),
-      catch: error =>
-        new ListSkillUsagesTendencyError({
-          kind: 'ZodParseError',
-          cause: error,
-        }),
-    });
-  },
-);

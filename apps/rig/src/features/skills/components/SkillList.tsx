@@ -7,7 +7,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Badge,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
@@ -15,111 +14,68 @@ import {
   ContextMenuTrigger,
   cn,
   ScrollArea,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
+  toast,
 } from '@allin/ui';
 import {
-  ChevronLeft,
-  Power,
-  PowerOff,
-  RefreshCw,
+  ArrowLeft,
+  ChevronRight,
+  Clipboard,
+  Eye,
+  EyeOff,
+  Folder,
   Search,
   Share2,
   Trash2,
-  TriangleAlert,
 } from 'lucide-react';
-import posthog from 'posthog-js';
 import {
-  type MouseEvent as ReactMouseEvent,
+  type MouseEvent,
+  type ReactNode,
   useDeferredValue,
+  useId,
   useMemo,
   useState,
 } from 'react';
-import {
-  estimateSkillTokens,
-  getDuplicateSkillNames,
-  getLibraryHealth,
-  getSkillFilePath,
-  getSkillNameCounts,
-  getSkillReviewReasons,
-  getSkillSourceLabel,
-  matchesSkillSearch,
-} from '../insights';
+import { getSkillFilePath, matchesSkillSearch } from '../insights';
 import { getNextSkillSelection } from '../selection';
-import { getSkillSourceId } from '../skillSources';
-import type {
-  Skill,
-  SkillManagementView,
-  SkillUpdateStatus,
-  SkillUsage,
-  SkillUsageSeries,
-} from '../types';
+import {
+  buildSkillTree,
+  getExpandedSkills,
+  type SkillFolder,
+} from '../skillTree';
+import type { Skill } from '../types';
 import { getSkillIdentity } from '../useRemoveSkill';
 import { ShareSkillsDialog } from './ShareSkillDialog';
-import { SkillProviderIcon } from './SkillProviderIcon';
-import { SkillUsageSparkline } from './SkillUsageSparkline';
-
-const loadingSkeletonIds = Array.from(
-  { length: 6 },
-  (_, index) => `skill-loading-${index}`,
-);
-
-const normalizeFilePath = (value: string) =>
-  value.replaceAll('\\', '/').replace(/\/+$/, '');
-
-type SkillFilter = 'all' | 'used';
-const skillFilters: Array<{ value: SkillFilter; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'used', label: 'Recent · 7d' },
-];
 
 export interface SkillListProps {
   skills: Skill[];
-  archivedSkills: Skill[];
-  selectedSkill: Skill | null;
+  hiddenSkills: Skill[];
   selectedSkillIds: ReadonlySet<string>;
-  skillUsages: SkillUsage[];
-  skillUsageTendencies: SkillUsageSeries[];
-  skillUpdates: SkillUpdateStatus[];
-  skillUpdatesError: unknown;
-  isCheckingUpdates: boolean;
-  onCheckUpdates: () => void;
   isLoading: boolean;
   error: string | null;
   onSelectionChange: (skills: Skill[], focusedSkill: Skill | null) => void;
   onClearSelection: () => void;
   onRemoveSkills: (skills: Skill[]) => void;
   removingSkillIds: ReadonlySet<string>;
-  onArchiveSkills: (skills: Skill[]) => void;
-  onRestoreSkills: (skills: Skill[]) => void;
-  changingSkillIds: ReadonlySet<string>;
-  managementView: SkillManagementView | null;
-  onManagementViewChange: (view: SkillManagementView | null) => void;
+  onHideSkills: (skills: Skill[]) => void;
+  onShowSkills: (skills: Skill[]) => void;
+  showingHidden: boolean;
+  onShowingHiddenChange: (hidden: boolean) => void;
 }
 
 export const SkillList = ({
   skills,
-  archivedSkills,
-  selectedSkill,
+  hiddenSkills,
   selectedSkillIds,
-  skillUsages,
-  skillUsageTendencies,
-  skillUpdates,
-  skillUpdatesError,
-  isCheckingUpdates,
-  onCheckUpdates,
   isLoading,
   error,
   onSelectionChange,
   onClearSelection,
   onRemoveSkills,
   removingSkillIds,
-  onArchiveSkills,
-  onRestoreSkills,
-  changingSkillIds,
-  managementView,
-  onManagementViewChange,
+  onHideSkills,
+  onShowSkills,
+  showingHidden,
+  onShowingHiddenChange,
 }: SkillListProps) => {
   const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
   const [skillsPendingShare, setSkillsPendingShare] = useState<Skill[]>([]);
@@ -127,625 +83,290 @@ export const SkillList = ({
     null,
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<SkillFilter>('all');
-  const deferredSearchQuery = useDeferredValue(
-    searchQuery.trim().toLowerCase(),
+  const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(
+    new Set(),
   );
-  const usageByName = useMemo(
-    () => new Map(skillUsages.map(usage => [usage.name, usage])),
-    [skillUsages],
-  );
-  const tendencyByName = useMemo(
+  const [searchCollapsed, setSearchCollapsed] = useState<{
+    query: string;
+    ids: ReadonlySet<string>;
+  }>({ query: '', ids: new Set() });
+  const query = useDeferredValue(searchQuery.trim().toLowerCase());
+  const folders = useMemo(
     () =>
-      new Map(skillUsageTendencies.map(tendency => [tendency.name, tendency])),
-    [skillUsageTendencies],
-  );
-  const updateByPath = useMemo(
-    () =>
-      new Map(
-        skillUpdates.map(update => [
-          normalizeFilePath(update.installPath),
-          update,
-        ]),
+      buildSkillTree(
+        (showingHidden ? hiddenSkills : skills).filter(skill =>
+          matchesSkillSearch(skill, query),
+        ),
       ),
-    [skillUpdates],
+    [hiddenSkills, query, showingHidden, skills],
   );
-  const updateCount = useMemo(
+  const effectiveCollapsedIds = useMemo(
     () =>
-      skillUpdates.filter(update => update.state === 'updateAvailable').length,
-    [skillUpdates],
+      query
+        ? searchCollapsed.query === query
+          ? searchCollapsed.ids
+          : new Set<string>()
+        : collapsedIds,
+    [query, collapsedIds, searchCollapsed],
   );
-  const unavailableUpdateCount = useMemo(
-    () =>
-      skillUpdates.filter(update => update.state === 'checkUnavailable').length,
-    [skillUpdates],
+  const visibleSkills = useMemo(
+    () => getExpandedSkills(folders, effectiveCollapsedIds),
+    [folders, effectiveCollapsedIds],
   );
-  const updateCountLabel =
-    updateCount > 0 ? updateCount : unavailableUpdateCount > 0 ? '?' : 0;
-  const libraryHealth = useMemo(() => getLibraryHealth(skills), [skills]);
-  const activeSkillNameCounts = useMemo(
-    () => getSkillNameCounts(skills),
-    [skills],
-  );
-  const archivedSkillNameCounts = useMemo(
-    () => getSkillNameCounts(archivedSkills),
-    [archivedSkills],
-  );
-  const duplicateSkillNames = useMemo(
-    () => getDuplicateSkillNames(skills),
-    [skills],
-  );
-  const visibleFilters: Array<{
-    value: SkillFilter | SkillManagementView;
-    label: string;
-  }> = managementView
-    ? [
-        {
-          value: 'review',
-          label: `Needs review · ${libraryHealth.reviewCount}`,
-        },
-        {
-          value: 'updates',
-          label: `Updates · ${updateCountLabel}`,
-        },
-        {
-          value: 'archived',
-          label: `Disabled · ${archivedSkills.length}`,
-        },
-      ]
-    : skillFilters;
-  const visibleSkills = useMemo(() => {
-    const sourceSkills =
-      managementView === 'archived' ? archivedSkills : skills;
-    const matchingSkills = sourceSkills.filter(skill => {
-      const usage = usageByName.get(skill.name);
-      const matchesQuery = matchesSkillSearch(skill, deferredSearchQuery);
-      const matchesFilter =
-        managementView === 'review'
-          ? getSkillReviewReasons({
-              skill,
-              duplicateNames: duplicateSkillNames,
-            }).length > 0
-          : managementView === 'updates'
-            ? updateByPath.get(normalizeFilePath(getSkillFilePath(skill)))
-                ?.state === 'updateAvailable'
-            : managementView === 'archived' ||
-              filter === 'all' ||
-              (filter === 'used' && (usage?.count ?? 0) > 0);
-
-      return matchesQuery && matchesFilter;
-    });
-
-    return matchingSkills.toSorted((a, b) => {
-      const aCount = usageByName.get(a.name)?.count ?? 0;
-      const bCount = usageByName.get(b.name)?.count ?? 0;
-
-      return bCount - aCount || a.name.localeCompare(b.name);
-    });
-  }, [
-    archivedSkills,
-    deferredSearchQuery,
-    duplicateSkillNames,
-    filter,
-    managementView,
-    skills,
-    updateByPath,
-    usageByName,
-  ]);
-  const selectedVisibleSkills = useMemo(
-    () =>
-      visibleSkills.filter(skill =>
-        selectedSkillIds.has(getSkillIdentity(skill)),
-      ),
-    [selectedSkillIds, visibleSkills],
+  const selectedVisibleSkills = visibleSkills.filter(skill =>
+    selectedSkillIds.has(getSkillIdentity(skill)),
   );
 
   const handleSkillClick = (
-    event: ReactMouseEvent<HTMLButtonElement>,
+    event: MouseEvent<HTMLButtonElement>,
     skill: Skill,
   ) => {
     const clickedId = getSkillIdentity(skill);
     const orderedIds = visibleSkills.map(getSkillIdentity);
-    const toggle = event.metaKey || event.ctrlKey;
-    const hasVisibleAnchor = selectionAnchorId
-      ? orderedIds.includes(selectionAnchorId)
-      : false;
-    const nextIds = getNextSkillSelection({
-      orderedIds,
-      selectedIds: selectedSkillIds,
-      clickedId,
-      anchorId: selectionAnchorId,
-      modifiers: { toggle, range: event.shiftKey },
-    });
-    const nextIdSet = new Set(nextIds);
-    const nextSkills = visibleSkills.filter(visibleSkill =>
-      nextIdSet.has(getSkillIdentity(visibleSkill)),
+    const nextIds = new Set(
+      getNextSkillSelection({
+        orderedIds,
+        selectedIds: selectedSkillIds,
+        clickedId,
+        anchorId: selectionAnchorId,
+        modifiers: {
+          toggle: event.metaKey || event.ctrlKey,
+          range: event.shiftKey,
+        },
+      }),
     );
-    const focusedSkill = nextIdSet.has(clickedId)
-      ? skill
-      : (nextSkills.at(-1) ?? null);
-
-    if (!event.shiftKey || !hasVisibleAnchor) {
+    const nextSkills = visibleSkills.filter(candidate =>
+      nextIds.has(getSkillIdentity(candidate)),
+    );
+    if (
+      !event.shiftKey ||
+      !selectionAnchorId ||
+      !orderedIds.includes(selectionAnchorId)
+    )
       setSelectionAnchorId(clickedId);
-    }
-    onSelectionChange(nextSkills, focusedSkill);
+    onSelectionChange(
+      nextSkills,
+      nextIds.has(clickedId) ? skill : (nextSkills.at(-1) ?? null),
+    );
+  };
+  const toggleFolder = (folder: SkillFolder) => {
+    const toggle = (current: ReadonlySet<string>) => {
+      const next = new Set(current);
+      if (next.has(folder.id)) next.delete(folder.id);
+      else next.add(folder.id);
+      return next;
+    };
+    if (query)
+      setSearchCollapsed({ query, ids: toggle(effectiveCollapsedIds) });
+    else setCollapsedIds(toggle);
+    setSelectionAnchorId(null);
+    onClearSelection();
+  };
+  const switchView = () => {
+    onShowingHiddenChange(!showingHidden);
+    setSelectionAnchorId(null);
+    onClearSelection();
+  };
 
-    if (focusedSkill === skill) {
-      posthog.capture('skill_selected', {
-        skill_name: skill.name,
-        skill_description: skill.description,
-        skill_is_valid: skill.isValid,
-        skill_usage_count: usageByName.get(skill.name)?.count ?? 0,
-        skill_root_path: skill.rootPath,
-        selected_count: nextSkills.length,
-      });
+  const copyInstructions = async (skill: Skill) => {
+    try {
+      await navigator.clipboard.writeText(skill.content);
+      toast.success('Instructions copied');
+    } catch {
+      toast.error('Couldn’t copy skill instructions. Try again.');
     }
   };
 
-  if (isLoading) {
-    return (
-      <output className='block space-y-2 p-3' aria-label='Loading skills'>
-        {loadingSkeletonIds.map(skeletonId => (
-          <div
-            key={skeletonId}
-            className='h-16 animate-pulse rounded-xl bg-muted'
-          />
-        ))}
-      </output>
+  const renderSkill = (skill: Skill) => {
+    const id = getSkillIdentity(skill);
+    const isSelected = selectedSkillIds.has(id);
+    const actionSkills =
+      isSelected && selectedVisibleSkills.length
+        ? selectedVisibleSkills
+        : [skill];
+    const isRemoving = actionSkills.some(candidate =>
+      removingSkillIds.has(getSkillIdentity(candidate)),
     );
-  }
+    return (
+      <ContextMenu key={id}>
+        <ContextMenuTrigger asChild>
+          <button
+            type='button'
+            aria-pressed={isSelected}
+            title={getSkillFilePath(skill)}
+            disabled={isRemoving}
+            onClick={event => handleSkillClick(event, skill)}
+            onContextMenu={() => {
+              if (!isSelected) {
+                setSelectionAnchorId(id);
+                onSelectionChange([skill], skill);
+              }
+            }}
+            className={cn(
+              'group flex w-full min-w-0 items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:opacity-50',
+              isSelected
+                ? 'bg-foreground/[0.07] text-foreground'
+                : 'hover:bg-foreground/[0.035]',
+            )}
+          >
+            <span className='min-w-0 flex-1'>
+              <span className='flex items-center gap-2'>
+                <span className='truncate text-[13px] font-medium leading-5'>
+                  {skill.name}
+                </span>
+                {!skill.isValid ? (
+                  <span className='shrink-0 text-[10px] text-destructive'>
+                    Invalid
+                  </span>
+                ) : null}
+                {skill.isArchived ? (
+                  <span className='shrink-0 text-[10px] text-muted-foreground'>
+                    Archived file
+                  </span>
+                ) : null}
+              </span>
+              <span className='block truncate text-xs leading-4 text-muted-foreground'>
+                {skill.description || skill.relativePath || 'SKILL.md'}
+              </span>
+            </span>
+          </button>
+        </ContextMenuTrigger>
+        <ContextMenuContent className='w-52'>
+          <ContextMenuItem onSelect={() => void copyInstructions(skill)}>
+            <Clipboard />
+            Copy instructions
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={() => setSkillsPendingShare(actionSkills)}>
+            <Share2 />
+            {actionSkills.length === 1
+              ? 'Share skill'
+              : `Share ${actionSkills.length} skills`}
+          </ContextMenuItem>
+          {!actionSkills.some(candidate => candidate.isArchived) ? (
+            <>
+              <ContextMenuItem
+                onSelect={() =>
+                  showingHidden
+                    ? onShowSkills(actionSkills)
+                    : onHideSkills(actionSkills)
+                }
+              >
+                {showingHidden ? <Eye /> : <EyeOff />}
+                {showingHidden ? 'Show in Rig' : 'Hide from Rig'}
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                disabled={isRemoving}
+                variant='destructive'
+                onSelect={() => setSkillsPendingRemoval(actionSkills)}
+              >
+                <Trash2 />
+                {actionSkills.length === 1
+                  ? 'Delete skill…'
+                  : `Delete ${actionSkills.length} skills…`}
+              </ContextMenuItem>
+            </>
+          ) : null}
+        </ContextMenuContent>
+      </ContextMenu>
+    );
+  };
 
   return (
     <div className='flex h-full min-h-0 flex-col'>
-      <div className='shrink-0 space-y-3 border-b px-4 pb-3 pt-4'>
-        {managementView ? (
-          <div>
+      <div className='shrink-0 space-y-2 border-b border-border/60 p-3'>
+        {showingHidden ? (
+          <div className='flex items-center gap-2 px-1 pb-1'>
             <button
               type='button'
-              onClick={() => {
-                onManagementViewChange(null);
-                onClearSelection();
-              }}
-              className='rig-pressable -ml-2 inline-flex h-7 items-center gap-1 rounded-lg px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              onClick={switchView}
+              aria-label='Back to skills'
+              className='rounded p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
-              <ChevronLeft size={14} />
-              Library
+              <ArrowLeft size={14} />
             </button>
-            <div className='mt-1 flex items-end justify-between gap-3'>
-              <div>
-                <h1 className='text-lg font-semibold tracking-[-0.02em]'>
-                  {managementView === 'archived'
-                    ? 'Disabled'
-                    : managementView === 'updates'
-                      ? 'Updates'
-                      : 'Needs review'}
-                </h1>
-                <p className='text-xs text-muted-foreground'>
-                  {managementView === 'archived'
-                    ? 'Kept on disk and excluded from agent discovery'
-                    : managementView === 'updates'
-                      ? unavailableUpdateCount > 0 && updateCount === 0
-                        ? 'Update availability could not be verified'
-                        : 'Newer remote files detected without changing local skills'
-                      : 'Issues that may affect discovery or instruction size'}
-                </p>
-              </div>
-              {managementView === 'updates' ? (
-                <Tooltip delayDuration={300}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type='button'
-                      onClick={onCheckUpdates}
-                      disabled={isCheckingUpdates}
-                      aria-label='Check skill updates again'
-                      className='rig-pressable inline-flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-50'
-                    >
-                      <RefreshCw
-                        size={14}
-                        className={cn(isCheckingUpdates && 'animate-spin')}
-                      />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side='bottom' sideOffset={6}>
-                    Check GitHub again. This does not change local files.
-                  </TooltipContent>
-                </Tooltip>
-              ) : null}
-            </div>
+            <h1 className='text-sm font-medium'>Hidden</h1>
+            <span className='ml-auto text-xs tabular-nums text-muted-foreground'>
+              {hiddenSkills.length}
+            </span>
           </div>
-        ) : (
-          <div>
-            <h1 className='text-lg font-semibold tracking-[-0.02em]'>
-              Library
-            </h1>
-            <div className='mt-0.5 flex min-w-0 items-baseline gap-3'>
-              <p className='min-w-0 flex-1 truncate text-xs leading-4 text-muted-foreground'>
-                {skills.length} discoverable skills
-              </p>
-              <nav
-                aria-label='Library status'
-                className='-mr-1 ml-auto flex min-w-0 max-w-[68%] items-baseline gap-0 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-              >
-                <ManagementShortcut
-                  label='Review'
-                  count={libraryHealth.reviewCount}
-                  tooltip='Skills with duplicate names, invalid files, or unusually large instructions.'
-                  onClick={() => {
-                    onManagementViewChange('review');
-                    onClearSelection();
-                  }}
-                />
-                <span
-                  aria-hidden='true'
-                  className='shrink-0 px-0.5 text-[11px] leading-4 text-muted-foreground/40'
-                >
-                  ·
-                </span>
-                <ManagementShortcut
-                  label='Updates'
-                  count={updateCountLabel}
-                  tooltip={
-                    isCheckingUpdates
-                      ? 'Checking tracked GitHub sources. Local files will not be changed.'
-                      : skillUpdatesError
-                        ? 'The update check could not be completed. Open this view to try again.'
-                        : skillUpdates.length === 0
-                          ? 'No skills tracked by the skills CLI were found.'
-                          : unavailableUpdateCount > 0
-                            ? `${unavailableUpdateCount} tracked source${unavailableUpdateCount === 1 ? '' : 's'} could not be checked.`
-                            : updateCount > 0
-                              ? 'Newer remote files are available. Detection is read-only.'
-                              : 'All tracked GitHub skills are current.'
-                  }
-                  onClick={() => {
-                    onManagementViewChange('updates');
-                    onClearSelection();
-                  }}
-                />
-                <span
-                  aria-hidden='true'
-                  className='shrink-0 px-0.5 text-[11px] leading-4 text-muted-foreground/40'
-                >
-                  ·
-                </span>
-                <ManagementShortcut
-                  label='Disabled'
-                  count={archivedSkills.length}
-                  tooltip='Skills kept on disk but excluded from agent discovery.'
-                  onClick={() => {
-                    onManagementViewChange('archived');
-                    onClearSelection();
-                  }}
-                />
-              </nav>
-            </div>
-          </div>
-        )}
-
-        <label className='relative block'>
-          <Search
-            size={15}
-            className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'
-          />
-          <span className='sr-only'>Search skills</span>
-          <input
-            type='search'
-            value={searchQuery}
-            onChange={event => {
-              setSearchQuery(event.target.value);
-              onClearSelection();
-              setSelectionAnchorId(null);
-            }}
-            placeholder='Search names, instructions, paths…'
-            className='h-9 w-full rounded-xl border bg-background pl-9 pr-3 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20'
-          />
-        </label>
-
-        <fieldset className='flex min-w-0 gap-1 overflow-x-auto'>
-          <legend className='sr-only'>Filter skills</legend>
-          {visibleFilters.map(option => (
-            <button
-              key={option.value}
-              type='button'
-              aria-pressed={
-                managementView
-                  ? managementView === option.value
-                  : filter === option.value
-              }
-              onClick={() => {
-                if (
-                  option.value === 'review' ||
-                  option.value === 'updates' ||
-                  option.value === 'archived'
-                ) {
-                  onManagementViewChange(option.value);
-                  onClearSelection();
-                  return;
-                }
-                setFilter(option.value);
+        ) : null}
+        <div className='flex items-center gap-2'>
+          <label className='relative min-w-0 flex-1'>
+            <Search
+              size={14}
+              aria-hidden='true'
+              className='pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground'
+            />
+            <span className='sr-only'>Search skills</span>
+            <input
+              type='search'
+              value={searchQuery}
+              onChange={event => {
+                setSearchQuery(event.target.value);
                 onClearSelection();
                 setSelectionAnchorId(null);
               }}
-              className={cn(
-                'rig-pressable shrink-0 rounded-full px-2.5 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                (
-                  managementView
-                    ? managementView === option.value
-                    : filter === option.value
-                )
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
+              placeholder='Search skills…'
+              className='h-8 w-full rounded-md border border-border/70 bg-background pl-8 pr-2 text-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring'
+            />
+          </label>
+          {!showingHidden ? (
+            <button
+              type='button'
+              onClick={switchView}
+              aria-label={`Hidden skills (${hiddenSkills.length})`}
+              title='Hidden skills'
+              className='inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
-              {option.label}
+              <EyeOff size={14} />
+              <span className='tabular-nums'>{hiddenSkills.length}</span>
             </button>
-          ))}
-        </fieldset>
-
+          ) : null}
+        </div>
+        {showingHidden ? (
+          <p className='px-1 text-xs leading-5 text-muted-foreground'>
+            Hidden only in Rig. Previously archived files can also be recovered
+            here.
+          </p>
+        ) : null}
         {error ? (
-          <div className='rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive'>
-            <p className='font-medium'>Some locations could not be read</p>
-            <p className='mt-0.5 line-clamp-2 opacity-80'>{error}</p>
-          </div>
+          <p role='alert' className='px-1 text-xs text-destructive'>
+            Some folders couldn’t be read: {error}
+          </p>
         ) : null}
       </div>
-
-      <ScrollArea className='min-h-0 min-w-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block [&_[data-radix-scroll-area-viewport]>div]:w-full [&_[data-radix-scroll-area-viewport]>div]:max-w-full'>
-        <div className='min-w-0 space-y-1 p-2'>
-          {visibleSkills.length === 0 ? (
-            <div className='m-2 rounded-xl border border-dashed p-5 text-center text-sm text-muted-foreground'>
-              {deferredSearchQuery
+      <ScrollArea className='min-h-0 min-w-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block'>
+        <div className='min-w-0 px-2 py-2'>
+          {isLoading ? (
+            <output className='px-3 py-5 text-xs text-muted-foreground'>
+              Loading skills…
+            </output>
+          ) : folders.length === 0 ? (
+            <p className='px-3 py-8 text-center text-xs text-muted-foreground'>
+              {query
                 ? 'No skills match your search.'
-                : managementView === 'archived'
-                  ? 'No disabled skills.'
-                  : managementView === 'updates'
-                    ? isCheckingUpdates
-                      ? 'Checking tracked sources…'
-                      : unavailableUpdateCount > 0
-                        ? 'Updates could not be verified. GitHub temporarily refused the check, often because its anonymous API limit was reached. Try again later.'
-                        : 'No updates available.'
-                    : managementView === 'review'
-                      ? 'No skills need review.'
-                      : 'No skills match this view.'}
-            </div>
+                : showingHidden
+                  ? 'No hidden skills.'
+                  : 'No skills found. Add a project to get started.'}
+            </p>
           ) : null}
-
-          {visibleSkills.map(skill => {
-            const skillIdentity = getSkillIdentity(skill);
-            const isSelected = selectedSkillIds.has(skillIdentity);
-            const isFocused = selectedSkill
-              ? getSkillIdentity(selectedSkill) === skillIdentity
-              : false;
-            const usage = usageByName.get(skill.name);
-            const tendency = tendencyByName.get(skill.name);
-            const count = usage?.count ?? 0;
-            const duplicateLocationCount =
-              (skill.isArchived
-                ? archivedSkillNameCounts
-                : activeSkillNameCounts
-              ).get(skill.name) ?? 0;
-            const actionSkills =
-              isSelected && selectedVisibleSkills.length > 0
-                ? selectedVisibleSkills
-                : [skill];
-            const isRemovingSkill = actionSkills.some(actionSkill =>
-              removingSkillIds.has(getSkillIdentity(actionSkill)),
-            );
-            const isChangingArchiveState = actionSkills.some(actionSkill =>
-              changingSkillIds.has(getSkillIdentity(actionSkill)),
-            );
-            const reviewReasons = getSkillReviewReasons({
-              skill,
-              duplicateNames: duplicateSkillNames,
-            });
-            const updateStatus = updateByPath.get(
-              normalizeFilePath(getSkillFilePath(skill)),
-            );
-
-            return (
-              <ContextMenu key={skillIdentity}>
-                <ContextMenuTrigger asChild>
-                  <button
-                    type='button'
-                    aria-pressed={isSelected}
-                    onClick={event => handleSkillClick(event, skill)}
-                    onContextMenu={() => {
-                      if (!isSelected) {
-                        setSelectionAnchorId(skillIdentity);
-                        onSelectionChange([skill], skill);
-                      }
-                    }}
-                    className={cn(
-                      'rig-pressable group flex w-full min-w-0 max-w-full items-center gap-3 rounded-xl border px-3 py-3 text-left',
-                      'hover:bg-accent hover:text-accent-foreground',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isFocused
-                        ? 'border-foreground/20 bg-background text-foreground shadow-sm ring-1 ring-inset ring-foreground/5'
-                        : isSelected
-                          ? 'border-blue-500/20 bg-blue-500/7 text-foreground'
-                          : 'border-transparent bg-transparent',
-                      isRemovingSkill && 'pointer-events-none opacity-60',
-                    )}
-                  >
-                    <SkillUsageSparkline values={tendency?.series ?? []} />
-
-                    <span className='min-w-0 flex-1 overflow-hidden'>
-                      <span className='flex min-w-0 items-center gap-1.5'>
-                        <span className='truncate text-sm font-medium'>
-                          {skill.name}
-                        </span>
-                        {!skill.isValid ? (
-                          <Badge
-                            variant='destructive'
-                            className='h-5 px-1.5 text-[10px]'
-                          >
-                            Invalid
-                          </Badge>
-                        ) : null}
-                        {duplicateLocationCount > 1 &&
-                        managementView !== 'review' ? (
-                          <DuplicateSkillIndicator
-                            locationCount={duplicateLocationCount}
-                          />
-                        ) : null}
-                        {updateStatus?.state === 'updateAvailable' ? (
-                          <SkillUpdateIndicator source={updateStatus.source} />
-                        ) : null}
-                      </span>
-
-                      <span className='mt-1 line-clamp-1 text-xs text-muted-foreground'>
-                        {skill.description || skill.relativePath}
-                      </span>
-                      {managementView === 'review' ? (
-                        <span className='mt-1 flex flex-wrap gap-1 text-[10px]'>
-                          {reviewReasons.map(reason => (
-                            <span
-                              key={reason}
-                              className='rounded-full bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-300'
-                            >
-                              {formatReviewReason(
-                                reason,
-                                duplicateLocationCount,
-                                skill,
-                              )}
-                            </span>
-                          ))}
-                        </span>
-                      ) : null}
-                      <span className='mt-1 flex min-w-0 items-center gap-1.5 text-[10px] text-muted-foreground/80'>
-                        {managementView === 'archived' ? (
-                          <span className='rounded-full bg-muted px-1.5 py-0.5 font-medium text-muted-foreground'>
-                            Disabled · kept on disk
-                          </span>
-                        ) : null}
-                        <span className='inline-flex shrink-0 items-center gap-1'>
-                          <SkillProviderIcon
-                            sourceId={getSkillSourceId(skill)}
-                            size={12}
-                          />
-                          {getSkillSourceLabel(skill)}
-                        </span>
-                        <span aria-hidden='true'>·</span>
-                        <span className='shrink-0'>
-                          {formatTokenEstimate(
-                            estimateSkillTokens(skill.content),
-                          )}
-                        </span>
-                        {managementView === 'updates' && updateStatus ? (
-                          <>
-                            <span aria-hidden='true'>·</span>
-                            <span className='truncate'>
-                              {updateStatus.source}
-                            </span>
-                          </>
-                        ) : null}
-                      </span>
-                    </span>
-
-                    <span
-                      className={cn(
-                        'shrink-0 text-xs font-light tabular-nums',
-                        isFocused
-                          ? 'font-medium text-foreground'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {skill.isArchived ? '—' : count}
-                      {!skill.isArchived ? (
-                        <span className='text-muted-foreground'>×</span>
-                      ) : null}
-                    </span>
-                  </button>
-                </ContextMenuTrigger>
-
-                <ContextMenuContent alignOffset={4} className='w-52'>
-                  <ContextMenuItem
-                    onSelect={() => setSkillsPendingShare(actionSkills)}
-                  >
-                    <Share2 />
-                    {actionSkills.length === 1
-                      ? 'Share skill'
-                      : `Share ${actionSkills.length} skills`}
-                  </ContextMenuItem>
-                  <ContextMenuSeparator />
-                  {skill.isArchived ? (
-                    <>
-                      <ContextMenuItem
-                        disabled={isChangingArchiveState}
-                        onSelect={() => onRestoreSkills(actionSkills)}
-                      >
-                        <Power />
-                        {actionSkills.length === 1
-                          ? 'Enable skill'
-                          : `Enable ${actionSkills.length} skills`}
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuItem
-                        variant='destructive'
-                        disabled={isRemovingSkill}
-                        onSelect={() => setSkillsPendingRemoval(actionSkills)}
-                      >
-                        <Trash2 />
-                        {actionSkills.length === 1
-                          ? 'Delete skill'
-                          : `Delete ${actionSkills.length} skills`}
-                      </ContextMenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <ContextMenuItem
-                        disabled={isChangingArchiveState}
-                        onSelect={() => onArchiveSkills(actionSkills)}
-                      >
-                        <PowerOff />
-                        {actionSkills.length === 1
-                          ? 'Disable skill'
-                          : `Disable ${actionSkills.length} skills`}
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuItem
-                        variant='destructive'
-                        disabled={isRemovingSkill}
-                        onSelect={() => setSkillsPendingRemoval(actionSkills)}
-                      >
-                        <Trash2 />
-                        {actionSkills.length === 1
-                          ? 'Delete skill'
-                          : `Delete ${actionSkills.length} skills`}
-                      </ContextMenuItem>
-                    </>
-                  )}
-                </ContextMenuContent>
-              </ContextMenu>
-            );
-          })}
+          {folders.map(folder => (
+            <FolderGroup
+              key={folder.id}
+              folder={folder}
+              depth={0}
+              collapsedIds={effectiveCollapsedIds}
+              onToggle={toggleFolder}
+              renderSkill={renderSkill}
+            />
+          ))}
         </div>
       </ScrollArea>
-
-      <div className='flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2 text-[11px] text-muted-foreground'>
-        <span className='truncate'>
-          ~{formatCompactNumber(libraryHealth.totalEstimatedTokens)} tokens in
-          discoverable instructions
-        </span>
-        <span className='shrink-0'>
-          {selectedVisibleSkills.length > 1
-            ? `${selectedVisibleSkills.length} selected`
-            : managementView === 'archived'
-              ? `${archivedSkills.length} disabled`
-              : managementView === 'updates'
-                ? unavailableUpdateCount > 0 && updateCount === 0
-                  ? `${unavailableUpdateCount} unverified`
-                  : `${updateCount} updates`
-                : managementView === 'review'
-                  ? `${libraryHealth.reviewCount} to review`
-                  : `${skills.length} skills`}
-        </span>
-      </div>
-
       <AlertDialog
         open={skillsPendingRemoval.length > 0}
-        onOpenChange={isOpen => {
-          if (!isOpen) setSkillsPendingRemoval([]);
+        onOpenChange={open => {
+          if (!open) setSkillsPendingRemoval([]);
         }}
       >
         <AlertDialogContent>
@@ -753,29 +374,21 @@ export const SkillList = ({
             <AlertDialogTitle>
               Delete{' '}
               {skillsPendingRemoval.length === 1
-                ? 'skill'
+                ? `“${skillsPendingRemoval[0]?.name}”`
                 : `${skillsPendingRemoval.length} skills`}
               ?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete
-              {skillsPendingRemoval.length === 1
-                ? ' '
-                : ' the selected skills, including '}
-              <span className='font-medium text-foreground'>
-                {formatSkillNames(skillsPendingRemoval)}
-              </span>{' '}
-              from disk. This action cannot be undone.
+              This permanently deletes the skill folders from disk. To keep the
+              files, use Hide from Rig instead.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className='bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20'
               onClick={() => {
-                if (skillsPendingRemoval.length > 0) {
-                  onRemoveSkills(skillsPendingRemoval);
-                }
+                onRemoveSkills(skillsPendingRemoval);
+                setSkillsPendingRemoval([]);
               }}
             >
               Delete
@@ -783,124 +396,83 @@ export const SkillList = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       <ShareSkillsDialog
         skills={skillsPendingShare}
-        updateStatuses={skillUpdates}
         open={skillsPendingShare.length > 0}
-        onOpenChange={isOpen => {
-          if (!isOpen) setSkillsPendingShare([]);
+        onOpenChange={open => {
+          if (!open) setSkillsPendingShare([]);
         }}
       />
     </div>
   );
 };
 
-const ManagementShortcut = ({
-  label,
-  count,
-  tooltip,
-  onClick,
+const FolderGroup = ({
+  folder,
+  depth,
+  collapsedIds,
+  onToggle,
+  renderSkill,
 }: {
-  label: string;
-  count: number | string;
-  tooltip: string;
-  onClick: () => void;
-}) => (
-  <Tooltip delayDuration={300}>
-    <TooltipTrigger asChild>
+  folder: SkillFolder;
+  depth: number;
+  collapsedIds: ReadonlySet<string>;
+  onToggle: (folder: SkillFolder) => void;
+  renderSkill: (skill: Skill) => ReactNode;
+}) => {
+  const contentId = useId();
+  const expanded = !collapsedIds.has(folder.id);
+  return (
+    <section className={depth === 0 ? 'mb-2' : 'min-w-0'}>
       <button
         type='button'
-        onClick={onClick}
-        aria-label={`${label}: ${count}`}
-        className='rig-pressable inline-flex min-h-6 shrink-0 items-baseline gap-1 rounded-md px-1 py-1 text-[11px] leading-4 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        aria-expanded={expanded}
+        aria-controls={contentId}
+        onClick={() => onToggle(folder)}
+        title={folder.path || 'Global skills'}
+        className={cn(
+          'flex min-h-8 w-full items-center gap-1.5 rounded-md px-2 text-left text-xs outline-none hover:bg-foreground/[0.035] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+          depth === 0 ? 'font-medium text-foreground' : 'text-muted-foreground',
+        )}
       >
-        <span>{label}</span>
-        <span className='font-medium tabular-nums text-foreground/75'>
-          {count}
+        <ChevronRight
+          size={13}
+          aria-hidden='true'
+          className={cn('shrink-0', expanded && 'rotate-90')}
+        />
+        {depth === 0 ? (
+          <Folder
+            size={13}
+            aria-hidden='true'
+            className='shrink-0 text-muted-foreground'
+          />
+        ) : null}
+        <span className='truncate'>{folder.label}</span>
+        <span className='ml-auto pl-2 text-[11px] font-normal tabular-nums text-muted-foreground'>
+          {folder.count}
         </span>
       </button>
-    </TooltipTrigger>
-    <TooltipContent side='bottom' sideOffset={6} className='max-w-64 leading-5'>
-      {tooltip}
-    </TooltipContent>
-  </Tooltip>
-);
-
-const DuplicateSkillIndicator = ({
-  locationCount,
-}: {
-  locationCount: number;
-}) => (
-  <Tooltip delayDuration={300}>
-    <TooltipTrigger asChild>
-      <span
-        className='inline-flex shrink-0 text-amber-500'
-        role='img'
-        aria-label={`Duplicate skill name found in ${locationCount} locations`}
+      <div
+        id={contentId}
+        hidden={!expanded}
+        className={depth < 4 ? 'ml-3' : undefined}
       >
-        <TriangleAlert size={13} />
-      </span>
-    </TooltipTrigger>
-    <TooltipContent side='right' sideOffset={6} className='max-w-64 leading-5'>
-      <p className='font-medium'>Duplicate skill name</p>
-      <p className='mt-0.5 opacity-80'>
-        Found in {locationCount} locations. Activity is grouped by name, so
-        calls from these copies may appear together.
-      </p>
-    </TooltipContent>
-  </Tooltip>
-);
-
-const SkillUpdateIndicator = ({ source }: { source: string }) => (
-  <Tooltip delayDuration={300}>
-    <TooltipTrigger asChild>
-      <Badge
-        variant='outline'
-        tabIndex={0}
-        className='h-5 shrink-0 border-blue-500/25 bg-blue-500/8 px-1.5 text-[10px] text-blue-700 dark:text-blue-300'
-      >
-        Update
-      </Badge>
-    </TooltipTrigger>
-    <TooltipContent side='right' sideOffset={6} className='max-w-64 leading-5'>
-      <p className='font-medium'>Newer remote files detected</p>
-      <p className='mt-0.5 opacity-80'>
-        Tracked from {source}. This check did not change your local skill.
-      </p>
-    </TooltipContent>
-  </Tooltip>
-);
-
-const formatTokenEstimate = (tokens: number) =>
-  `~${formatCompactNumber(tokens)} tokens`;
-
-const formatReviewReason = (
-  reason: string,
-  duplicateLocationCount: number,
-  skill: Skill,
-) => {
-  if (reason === 'Invalid file') return 'Invalid';
-  if (reason === 'Duplicate name') {
-    return `Duplicate · ${duplicateLocationCount}`;
-  }
-  if (reason === 'Large instructions') {
-    return `Large · ${formatTokenEstimate(estimateSkillTokens(skill.content))}`;
-  }
-  return reason;
-};
-
-const formatCompactNumber = (value: number) =>
-  new Intl.NumberFormat(undefined, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value);
-
-const formatSkillNames = (skills: Skill[]) => {
-  const visibleNames = skills.slice(0, 3).map(skill => skill.name);
-  const remainingCount = skills.length - visibleNames.length;
-
-  return remainingCount > 0
-    ? `${visibleNames.join(', ')} and ${remainingCount} more`
-    : visibleNames.join(', ');
+        {expanded ? (
+          <>
+            {folder.skills.map(renderSkill)}
+            {folder.folders.map(child => (
+              <FolderGroup
+                key={child.id}
+                folder={child}
+                depth={depth + 1}
+                collapsedIds={collapsedIds}
+                onToggle={onToggle}
+                renderSkill={renderSkill}
+              />
+            ))}
+          </>
+        ) : null}
+      </div>
+    </section>
+  );
 };

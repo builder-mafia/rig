@@ -83,6 +83,51 @@ mod tests {
     use super::*;
 
     #[test]
+    fn scans_the_full_project_including_nested_and_custom_skill_folders() {
+        let directory = std::env::temp_dir().join(format!(
+            "rig-nested-scan-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        for relative in [
+            ".agents/skills/first",
+            "packages/web/.claude/skills/nested",
+            "custom/group/third",
+            "node_modules/ignored",
+            ".git/ignored",
+            ".archive/ignored",
+            "target/ignored",
+        ] {
+            let path = directory.join(relative);
+            fs::create_dir_all(&path).unwrap();
+            fs::write(
+                path.join("SKILL.md"),
+                "---\nname: example\ndescription: Test\n---\nInstructions",
+            )
+            .unwrap();
+        }
+        let root = repository_provider_root(ImportedSkillRoot {
+            id: "project".into(),
+            path: directory.to_string_lossy().into_owned(),
+            label: "Project".into(),
+        });
+        let skills = super::super::scanner::list_skills_from_root(&root).unwrap();
+        assert_eq!(skills.len(), 3);
+        assert!(skills.iter().all(|skill| skill.scope_id == root.path));
+        assert!(skills
+            .iter()
+            .any(|skill| skill.relative_path == "packages/web/.claude/skills/nested"));
+        assert!(skills
+            .iter()
+            .any(|skill| skill.relative_path == "custom/group/third"));
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
     fn keeps_readable_label_as_first_root_id() {
         assert_eq!(unique_root_id("rig", "/work/rig", &[]), "rig");
     }
@@ -177,76 +222,22 @@ fn skill_roots_file_path(app: &AppHandle) -> Result<PathBuf, SkillRootImportErro
     Ok(app_data_dir.join(SKILL_ROOTS_FILE_NAME))
 }
 
-struct ProviderRootTemplate {
-    provider: SkillProvider,
-    id_suffix: &'static str,
-    label: &'static str,
-    relative_path: &'static str,
-}
-
-const PROVIDER_ROOT_TEMPLATES: &[ProviderRootTemplate] = &[
-    ProviderRootTemplate {
-        provider: SkillProvider::Agents,
-        id_suffix: "agents",
-        label: "Agents",
-        relative_path: ".agents/skills",
-    },
-    ProviderRootTemplate {
-        provider: SkillProvider::Claude,
-        id_suffix: "claude",
-        label: "Claude",
-        relative_path: ".claude/skills",
-    },
-    ProviderRootTemplate {
-        provider: SkillProvider::OpenCode,
-        id_suffix: "opencode",
-        label: "OpenCode",
-        relative_path: ".opencode/skills",
-    },
-    ProviderRootTemplate {
-        provider: SkillProvider::Hermes,
-        id_suffix: "hermes",
-        label: "Hermes",
-        relative_path: ".hermes/skills",
-    },
-    ProviderRootTemplate {
-        provider: SkillProvider::Cursor,
-        id_suffix: "cursor",
-        label: "Cursor",
-        relative_path: ".cursor/skills",
-    },
-];
-
+// Scan the entire selected project so nested packages and custom skill folders
+// are included, not only a fixed list of provider directories at its root.
 fn repository_provider_root(root: ImportedSkillRoot) -> SkillRoot {
-    repository_provider_roots(root)
-        .into_iter()
-        .next()
-        .expect("repository provider templates should not be empty")
+    SkillRoot {
+        id: root.id,
+        exists: PathBuf::from(&root.path).exists(),
+        path: root.path.clone(),
+        label: root.label.clone(),
+        kind: SkillRootKind::Repository,
+        provider: SkillProvider::Repository,
+        scope_id: root.path,
+        scope_label: root.label,
+        scope_kind: SkillScopeKind::Repository,
+    }
 }
 
 fn repository_provider_roots(root: ImportedSkillRoot) -> Vec<SkillRoot> {
-    let repo_path = PathBuf::from(&root.path);
-    let scope_label = repo_path
-        .file_name()
-        .map(|name| name.to_string_lossy().to_string())
-        .unwrap_or_else(|| root.label.clone());
-
-    PROVIDER_ROOT_TEMPLATES
-        .iter()
-        .map(|template| {
-            let path = repo_path.join(template.relative_path);
-
-            SkillRoot {
-                id: format!("repo-{}-{}", root.id, template.id_suffix),
-                path: path.to_string_lossy().to_string(),
-                label: template.label.to_string(),
-                exists: path.exists(),
-                kind: SkillRootKind::Repository,
-                provider: template.provider.clone(),
-                scope_id: root.path.clone(),
-                scope_label: scope_label.clone(),
-                scope_kind: SkillScopeKind::Repository,
-            }
-        })
-        .collect()
+    vec![repository_provider_root(root)]
 }
