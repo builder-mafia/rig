@@ -43,12 +43,15 @@ import {
   type SkillFolder,
 } from '../skillTree';
 import type { Skill } from '../types';
+import { getHiddenSkillKey, getHidingFolder } from '../useHiddenSkills';
 import { getSkillIdentity } from '../useRemoveSkill';
 import { ShareSkillsDialog } from './ShareSkillDialog';
 
 export interface SkillListProps {
   skills: Skill[];
   hiddenSkills: Skill[];
+  hiddenFolderPaths: ReadonlySet<string>;
+  onFolderVisibilityChange: (path: string, hidden: boolean) => void;
   selectedSkillIds: ReadonlySet<string>;
   isLoading: boolean;
   error: string | null;
@@ -65,6 +68,8 @@ export interface SkillListProps {
 export const SkillList = ({
   skills,
   hiddenSkills,
+  hiddenFolderPaths,
+  onFolderVisibilityChange,
   selectedSkillIds,
   isLoading,
   error,
@@ -180,6 +185,9 @@ export const SkillList = ({
   const renderSkill = (skill: Skill) => {
     const id = getSkillIdentity(skill);
     const isSelected = selectedSkillIds.has(id);
+    const hidingFolder = showingHidden
+      ? getHidingFolder(getHiddenSkillKey(skill), hiddenFolderPaths)
+      : undefined;
     const actionSkills =
       isSelected && selectedVisibleSkills.length
         ? selectedVisibleSkills
@@ -246,13 +254,28 @@ export const SkillList = ({
             <>
               <ContextMenuItem
                 onSelect={() =>
-                  showingHidden
-                    ? onShowSkills(actionSkills)
-                    : onHideSkills(actionSkills)
+                  hidingFolder
+                    ? onFolderVisibilityChange(hidingFolder, false)
+                    : showingHidden
+                      ? onShowSkills(
+                          actionSkills.filter(
+                            candidate =>
+                              !getHidingFolder(
+                                getHiddenSkillKey(candidate),
+                                hiddenFolderPaths,
+                              ),
+                          ),
+                        )
+                      : onHideSkills(actionSkills)
                 }
+                title={hidingFolder}
               >
                 {showingHidden ? <Eye /> : <EyeOff />}
-                {showingHidden ? 'Show in Rig' : 'Hide from Rig'}
+                {hidingFolder
+                  ? 'Show containing folder in Rig'
+                  : showingHidden
+                    ? 'Show in Rig'
+                    : 'Hide from Rig'}
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem
@@ -359,6 +382,9 @@ export const SkillList = ({
               collapsedIds={effectiveCollapsedIds}
               onToggle={toggleFolder}
               renderSkill={renderSkill}
+              showingHidden={showingHidden}
+              hiddenFolderPaths={hiddenFolderPaths}
+              onFolderVisibilityChange={onFolderVisibilityChange}
             />
           ))}
         </div>
@@ -413,17 +439,30 @@ const FolderGroup = ({
   collapsedIds,
   onToggle,
   renderSkill,
+  showingHidden,
+  hiddenFolderPaths,
+  onFolderVisibilityChange,
 }: {
   folder: SkillFolder;
   depth: number;
   collapsedIds: ReadonlySet<string>;
   onToggle: (folder: SkillFolder) => void;
   renderSkill: (skill: Skill) => ReactNode;
+  showingHidden: boolean;
+  hiddenFolderPaths: ReadonlySet<string>;
+  onFolderVisibilityChange: (path: string, hidden: boolean) => void;
 }) => {
   const contentId = useId();
   const expanded = !collapsedIds.has(folder.id);
-  return (
-    <section className={depth === 0 ? 'mb-2' : 'min-w-0'}>
+  const hidingFolder = getHidingFolder(folder.path, hiddenFolderPaths);
+  const actionPath = showingHidden ? hidingFolder : folder.path;
+  const actionLabel = showingHidden
+    ? hidingFolder === folder.path
+      ? 'Show folder in Rig'
+      : 'Show parent folder in Rig'
+    : 'Hide folder from Rig';
+  const header = (
+    <div className='group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]'>
       <button
         type='button'
         aria-expanded={expanded}
@@ -431,7 +470,7 @@ const FolderGroup = ({
         onClick={() => onToggle(folder)}
         title={folder.path || 'Global skills'}
         className={cn(
-          'flex min-h-8 w-full items-center gap-1.5 rounded-md px-2 text-left text-xs outline-none hover:bg-foreground/[0.035] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+          'flex min-h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
           depth === 0 ? 'font-medium text-foreground' : 'text-muted-foreground',
         )}
       >
@@ -452,6 +491,39 @@ const FolderGroup = ({
           {folder.count}
         </span>
       </button>
+      {actionPath ? (
+        <button
+          type='button'
+          aria-label={`${actionLabel}: ${actionPath}`}
+          title={`${actionLabel}: ${actionPath}`}
+          onClick={() => onFolderVisibilityChange(actionPath, !showingHidden)}
+          className='mr-1 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(hover:hover)]:opacity-0 group-hover/folder:opacity-100 focus-visible:opacity-100'
+        >
+          {showingHidden ? <Eye size={13} /> : <EyeOff size={13} />}
+        </button>
+      ) : null}
+    </div>
+  );
+  return (
+    <section className={depth === 0 ? 'mb-2' : 'min-w-0'}>
+      {actionPath ? (
+        <ContextMenu>
+          <ContextMenuTrigger asChild>{header}</ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem
+              title={actionPath}
+              onSelect={() =>
+                onFolderVisibilityChange(actionPath, !showingHidden)
+              }
+            >
+              {showingHidden ? <Eye /> : <EyeOff />}
+              {actionLabel}
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      ) : (
+        header
+      )}
       <div
         id={contentId}
         hidden={!expanded}
@@ -468,6 +540,9 @@ const FolderGroup = ({
                 collapsedIds={collapsedIds}
                 onToggle={onToggle}
                 renderSkill={renderSkill}
+                showingHidden={showingHidden}
+                hiddenFolderPaths={hiddenFolderPaths}
+                onFolderVisibilityChange={onFolderVisibilityChange}
               />
             ))}
           </>

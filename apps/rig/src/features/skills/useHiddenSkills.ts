@@ -4,8 +4,28 @@ import { getSkillFilePath } from './insights';
 import type { Skill } from './types';
 
 export const HIDDEN_SKILLS_KEY = 'rig:hidden-skills:v1';
+export const HIDDEN_FOLDERS_KEY = 'rig:hidden-folders:v1';
+const normalizePath = (path: string) =>
+  path.replaceAll('\\', '/').replace(/\/+$/, '');
 export const getHiddenSkillKey = (skill: Skill) =>
-  getSkillFilePath(skill).replaceAll('\\', '/');
+  normalizePath(getSkillFilePath(skill));
+
+// Match directory boundaries, so hiding /tools never hides /tools-extra.
+export const getHidingFolder = (
+  path: string,
+  folders: ReadonlySet<string>,
+): string | undefined => {
+  const normalizedPath = normalizePath(path);
+  let parent: string | undefined;
+  for (const folder of folders) {
+    if (
+      (normalizedPath === folder || normalizedPath.startsWith(`${folder}/`)) &&
+      (parent === undefined || folder.length < parent.length)
+    )
+      parent = folder;
+  }
+  return parent;
+};
 
 export const parseHiddenSkills = (value: string | null): string[] => {
   try {
@@ -25,11 +45,12 @@ export const parseHiddenSkills = (value: string | null): string[] => {
   }
 };
 
-// Visibility is a Rig preference. Never rename or move the underlying skill.
-export const useHiddenSkills = () => {
+const useHiddenPaths = (storageKey: string) => {
   const [paths, setPaths] = useState<string[]>(() => {
     try {
-      return parseHiddenSkills(window.localStorage.getItem(HIDDEN_SKILLS_KEY));
+      return parseHiddenSkills(window.localStorage.getItem(storageKey)).map(
+        normalizePath,
+      );
     } catch {
       return [];
     }
@@ -37,15 +58,15 @@ export const useHiddenSkills = () => {
   const currentPaths = useRef(paths);
   const hiddenPaths = useMemo(() => new Set(paths), [paths]);
 
-  const setSkillsHidden = (skills: Skill[], hidden: boolean) => {
+  const setHidden = (changedPaths: string[], hidden: boolean) => {
     const next = new Set(currentPaths.current);
-    for (const skill of skills) {
-      if (hidden) next.add(getHiddenSkillKey(skill));
-      else next.delete(getHiddenSkillKey(skill));
+    for (const path of changedPaths) {
+      if (hidden) next.add(normalizePath(path));
+      else next.delete(normalizePath(path));
     }
     try {
       const nextPaths = [...next];
-      window.localStorage.setItem(HIDDEN_SKILLS_KEY, JSON.stringify(nextPaths));
+      window.localStorage.setItem(storageKey, JSON.stringify(nextPaths));
       currentPaths.current = nextPaths;
       setPaths(nextPaths);
       return true;
@@ -54,5 +75,19 @@ export const useHiddenSkills = () => {
       return false;
     }
   };
-  return { hiddenPaths, setSkillsHidden };
+  return { hiddenPaths, setHidden };
+};
+
+// Visibility is a Rig preference. Never rename or move the underlying files.
+export const useHiddenSkills = () => {
+  const skills = useHiddenPaths(HIDDEN_SKILLS_KEY);
+  const folders = useHiddenPaths(HIDDEN_FOLDERS_KEY);
+  return {
+    hiddenPaths: skills.hiddenPaths,
+    hiddenFolderPaths: folders.hiddenPaths,
+    setSkillsHidden: (changedSkills: Skill[], hidden: boolean) =>
+      skills.setHidden(changedSkills.map(getHiddenSkillKey), hidden),
+    setFolderHidden: (path: string, hidden: boolean) =>
+      folders.setHidden([path], hidden),
+  };
 };

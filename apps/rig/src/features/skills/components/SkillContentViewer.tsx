@@ -35,6 +35,8 @@ import { SkillHistoryPanel } from './SkillHistoryPanel';
 interface SkillContentViewerProps {
   skill: Skill | null;
   isHidden: boolean;
+  hiddenFolderPath?: string;
+  onShowFolder?: (path: string) => void;
   onBack: () => void;
   onHideSkill: (skill: Skill) => void;
   onShowSkill: (skill: Skill) => void;
@@ -73,6 +75,8 @@ const tabs: { value: InspectorTab; label: string }[] = [
 const SkillInspector = ({
   skill,
   isHidden,
+  hiddenFolderPath,
+  onShowFolder,
   onBack,
   onHideSkill,
   onShowSkill,
@@ -154,12 +158,21 @@ const SkillInspector = ({
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        title={hiddenFolderPath}
                         onSelect={() =>
-                          isHidden ? onShowSkill(skill) : onHideSkill(skill)
+                          hiddenFolderPath && onShowFolder
+                            ? onShowFolder(hiddenFolderPath)
+                            : isHidden
+                              ? onShowSkill(skill)
+                              : onHideSkill(skill)
                         }
                       >
                         {isHidden ? <Eye /> : <EyeOff />}
-                        {isHidden ? 'Show in Rig' : 'Hide from Rig'}
+                        {hiddenFolderPath
+                          ? 'Show containing folder in Rig'
+                          : isHidden
+                            ? 'Show in Rig'
+                            : 'Hide from Rig'}
                       </DropdownMenuItem>
                     </>
                   ) : null}
