@@ -7,39 +7,46 @@ const OPEN_APP_UPDATE_EVENT: &str = "open-app-update";
 const CHECK_FOR_UPDATES_MENU_ID: &str = "check-for-updates";
 
 #[cfg(target_os = "macos")]
-fn setup_macos_menu(app: &tauri::App) -> tauri::Result<()> {
+fn setup_macos_menu(app: &tauri::AppHandle, korean: bool) -> tauri::Result<()> {
     use tauri::menu::{AboutMetadata, MenuBuilder, SubmenuBuilder};
 
+    let text = |en, ko| if korean { ko } else { en };
     let app_menu = SubmenuBuilder::new(app, "Rig")
-        .about(Some(AboutMetadata::default()))
+        .about_with_text(
+            text("About Rig", "Rig 정보"),
+            Some(AboutMetadata::default()),
+        )
         .separator()
-        .text(CHECK_FOR_UPDATES_MENU_ID, "Check for Updates...")
+        .text(
+            CHECK_FOR_UPDATES_MENU_ID,
+            text("Check for Updates...", "업데이트 확인…"),
+        )
         .separator()
-        .services()
+        .services_with_text(text("Services", "서비스"))
         .separator()
-        .hide()
-        .hide_others()
-        .show_all()
+        .hide_with_text(text("Hide Rig", "Rig 가리기"))
+        .hide_others_with_text(text("Hide Others", "다른 항목 가리기"))
+        .show_all_with_text(text("Show All", "모두 보기"))
         .separator()
-        .quit()
+        .quit_with_text(text("Quit Rig", "Rig 종료"))
         .build()?;
 
-    let edit_menu = SubmenuBuilder::new(app, "Edit")
-        .undo()
-        .redo()
+    let edit_menu = SubmenuBuilder::new(app, text("Edit", "편집"))
+        .undo_with_text(text("Undo", "실행 취소"))
+        .redo_with_text(text("Redo", "실행 복귀"))
         .separator()
-        .cut()
-        .copy()
-        .paste()
-        .select_all()
+        .cut_with_text(text("Cut", "잘라내기"))
+        .copy_with_text(text("Copy", "복사"))
+        .paste_with_text(text("Paste", "붙여넣기"))
+        .select_all_with_text(text("Select All", "모두 선택"))
         .build()?;
 
-    let window_menu = SubmenuBuilder::new(app, "Window")
-        .minimize()
-        .maximize()
-        .fullscreen()
+    let window_menu = SubmenuBuilder::new(app, text("Window", "윈도우"))
+        .minimize_with_text(text("Minimize", "최소화"))
+        .maximize_with_text(text("Zoom", "확대/축소"))
+        .fullscreen_with_text(text("Enter Full Screen", "전체 화면 시작"))
         .separator()
-        .close_window()
+        .close_window_with_text(text("Close Window", "윈도우 닫기"))
         .build()?;
 
     let menu = MenuBuilder::new(app)
@@ -50,6 +57,18 @@ fn setup_macos_menu(app: &tauri::App) -> tauri::Result<()> {
 
     app.set_menu(menu)?;
 
+    Ok(())
+}
+
+#[tauri::command]
+async fn set_app_language(app: tauri::AppHandle, locale: String) -> Result<(), String> {
+    if locale != "en" && locale != "ko" {
+        return Err("Unsupported language".into());
+    }
+    #[cfg(target_os = "macos")]
+    setup_macos_menu(&app, locale == "ko").map_err(|error| error.to_string())?;
+    #[cfg(not(target_os = "macos"))]
+    let _ = app;
     Ok(())
 }
 
@@ -87,11 +106,12 @@ pub fn run() {
             app.manage(update::state::PendingUpdate(Mutex::new(None)));
 
             #[cfg(target_os = "macos")]
-            setup_macos_menu(app)?;
+            setup_macos_menu(app.handle(), false)?;
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            set_app_language,
             update::commands::fetch_update,
             update::commands::install_update,
             skills::commands::copy_skill,

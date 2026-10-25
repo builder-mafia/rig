@@ -5,12 +5,14 @@ import posthog from 'posthog-js';
 import { importSkillRoot } from './api';
 import type { SkillRoot } from './types';
 import { skillRootsQueryKey } from './useSkillRoots';
+import { useI18n } from '@/lib/preferences';
 
 export const useImportSkillRoot = ({
   onImported,
 }: {
   onImported: (root: SkillRoot) => void;
 }) => {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -39,7 +41,11 @@ export const useImportSkillRoot = ({
   });
 
   const importFromFolder = async () => {
-    const selectedPath = await open({ directory: true, multiple: false });
+    const selectedPath = await open({
+      title: t('Choose a project folder to show its skills'),
+      directory: true,
+      multiple: false,
+    });
 
     if (typeof selectedPath !== 'string') {
       return;

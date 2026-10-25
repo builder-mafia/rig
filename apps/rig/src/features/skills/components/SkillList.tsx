@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +83,8 @@ export const SkillList = ({
   showingHidden,
   onShowingHiddenChange,
 }: SkillListProps) => {
+  const { t } = useI18n();
+
   const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
   const [skillsPendingShare, setSkillsPendingShare] = useState<Skill[]>([]);
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(
@@ -176,9 +179,9 @@ export const SkillList = ({
   const copyInstructions = async (skill: Skill) => {
     try {
       await navigator.clipboard.writeText(skill.content);
-      toast.success('Instructions copied');
+      toast.success(t('Instructions copied'));
     } catch {
-      toast.error('Couldn’t copy skill instructions. Try again.');
+      toast.error(t('Couldn’t copy skill instructions. Try again.'));
     }
   };
 
@@ -224,12 +227,12 @@ export const SkillList = ({
                 </span>
                 {!skill.isValid ? (
                   <span className='shrink-0 text-[10px] text-destructive'>
-                    Invalid
+                    {t('Invalid')}
                   </span>
                 ) : null}
                 {skill.isArchived ? (
                   <span className='shrink-0 text-[10px] text-muted-foreground'>
-                    Archived file
+                    {t('Archived file')}
                   </span>
                 ) : null}
               </span>
@@ -242,13 +245,13 @@ export const SkillList = ({
         <ContextMenuContent className='w-52'>
           <ContextMenuItem onSelect={() => void copyInstructions(skill)}>
             <Clipboard />
-            Copy instructions
+            {t('Copy instructions')}
           </ContextMenuItem>
           <ContextMenuItem onSelect={() => setSkillsPendingShare(actionSkills)}>
             <Share2 />
             {actionSkills.length === 1
-              ? 'Share skill'
-              : `Share ${actionSkills.length} skills`}
+              ? t('Share skill')
+              : t('Share {count} skills', { count: actionSkills.length })}
           </ContextMenuItem>
           {!actionSkills.some(candidate => candidate.isArchived) ? (
             <>
@@ -272,10 +275,10 @@ export const SkillList = ({
               >
                 {showingHidden ? <Eye /> : <EyeOff />}
                 {hidingFolder
-                  ? 'Show containing folder in Rig'
+                  ? t('Show containing folder in Rig')
                   : showingHidden
-                    ? 'Show in Rig'
-                    : 'Hide from Rig'}
+                    ? t('Show in Rig')
+                    : t('Hide from Rig')}
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem
@@ -285,8 +288,8 @@ export const SkillList = ({
               >
                 <Trash2 />
                 {actionSkills.length === 1
-                  ? 'Delete skill…'
-                  : `Delete ${actionSkills.length} skills…`}
+                  ? t('Delete skill…')
+                  : t('Delete {count} skills…', { count: actionSkills.length })}
               </ContextMenuItem>
             </>
           ) : null}
@@ -303,12 +306,12 @@ export const SkillList = ({
             <button
               type='button'
               onClick={switchView}
-              aria-label='Back to skills'
+              aria-label={t('Back to skills')}
               className='rounded p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
               <ArrowLeft size={14} />
             </button>
-            <h1 className='text-sm font-medium'>Hidden</h1>
+            <h1 className='text-sm font-medium'>{t('Hidden')}</h1>
             <span className='ml-auto text-xs tabular-nums text-muted-foreground'>
               {hiddenSkills.length}
             </span>
@@ -321,7 +324,7 @@ export const SkillList = ({
               aria-hidden='true'
               className='pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground'
             />
-            <span className='sr-only'>Search skills</span>
+            <span className='sr-only'>{t('Search skills')}</span>
             <input
               type='search'
               value={searchQuery}
@@ -330,7 +333,7 @@ export const SkillList = ({
                 onClearSelection();
                 setSelectionAnchorId(null);
               }}
-              placeholder='Search skills…'
+              placeholder={t('Search skills…')}
               className='h-8 w-full rounded-md border border-border/70 bg-background pl-8 pr-2 text-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring'
             />
           </label>
@@ -338,8 +341,10 @@ export const SkillList = ({
             <button
               type='button'
               onClick={switchView}
-              aria-label={`Hidden skills (${hiddenSkills.length})`}
-              title='Hidden skills'
+              aria-label={t('Hidden skills ({count})', {
+                count: hiddenSkills.length,
+              })}
+              title={t('Hidden skills')}
               className='inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             >
               <EyeOff size={14} />
@@ -349,13 +354,15 @@ export const SkillList = ({
         </div>
         {showingHidden ? (
           <p className='px-1 text-xs leading-5 text-muted-foreground'>
-            Hidden only in Rig. Previously archived files can also be recovered
-            here.
+            {t(
+              'Hidden only in Rig. Previously archived files can also be recovered here.',
+            )}
           </p>
         ) : null}
         {error ? (
           <p role='alert' className='px-1 text-xs text-destructive'>
-            Some folders couldn’t be read: {error}
+            {t('Some folders couldn’t be read:')}
+            {error}
           </p>
         ) : null}
       </div>
@@ -363,15 +370,15 @@ export const SkillList = ({
         <div className='min-w-0 px-2 py-2'>
           {isLoading ? (
             <output className='px-3 py-5 text-xs text-muted-foreground'>
-              Loading skills…
+              {t('Loading skills…')}
             </output>
           ) : folders.length === 0 ? (
             <p className='px-3 py-8 text-center text-xs text-muted-foreground'>
               {query
-                ? 'No skills match your search.'
+                ? t('No skills match your search.')
                 : showingHidden
-                  ? 'No hidden skills.'
-                  : 'No skills found. Add a project to get started.'}
+                  ? t('No hidden skills.')
+                  : t('No skills found. Add a project to get started.')}
             </p>
           ) : null}
           {folders.map(folder => (
@@ -398,26 +405,29 @@ export const SkillList = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete{' '}
               {skillsPendingRemoval.length === 1
-                ? `“${skillsPendingRemoval[0]?.name}”`
-                : `${skillsPendingRemoval.length} skills`}
-              ?
+                ? t('Delete “{name}”?', {
+                    name: skillsPendingRemoval[0]?.name ?? '',
+                  })
+                : t('Delete {count} skills?', {
+                    count: skillsPendingRemoval.length,
+                  })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently deletes the skill folders from disk. To keep the
-              files, use Hide from Rig instead.
+              {t(
+                'This permanently deletes the skill folders from disk. To keep the files, use Hide from Rig instead.',
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 onRemoveSkills(skillsPendingRemoval);
                 setSkillsPendingRemoval([]);
               }}
             >
-              Delete
+              {t('Delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -452,15 +462,17 @@ const FolderGroup = ({
   hiddenFolderPaths: ReadonlySet<string>;
   onFolderVisibilityChange: (path: string, hidden: boolean) => void;
 }) => {
+  const { t } = useI18n();
+
   const contentId = useId();
   const expanded = !collapsedIds.has(folder.id);
   const hidingFolder = getHidingFolder(folder.path, hiddenFolderPaths);
   const actionPath = showingHidden ? hidingFolder : folder.path;
   const actionLabel = showingHidden
     ? hidingFolder === folder.path
-      ? 'Show folder in Rig'
-      : 'Show parent folder in Rig'
-    : 'Hide folder from Rig';
+      ? t('Show folder in Rig')
+      : t('Show parent folder in Rig')
+    : t('Hide folder from Rig');
   const header = (
     <div className='group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]'>
       <button
@@ -468,7 +480,7 @@ const FolderGroup = ({
         aria-expanded={expanded}
         aria-controls={contentId}
         onClick={() => onToggle(folder)}
-        title={folder.path || 'Global skills'}
+        title={folder.path || t('Global skills')}
         className={cn(
           'flex min-h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md px-2 text-left text-xs outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
           depth === 0 ? 'font-medium text-foreground' : 'text-muted-foreground',
@@ -486,7 +498,9 @@ const FolderGroup = ({
             className='shrink-0 text-muted-foreground'
           />
         ) : null}
-        <span className='truncate'>{folder.label}</span>
+        <span className='truncate'>
+          {folder.id === 'global' ? t('Global') : folder.label}
+        </span>
         <span className='ml-auto pl-2 text-[11px] font-normal tabular-nums text-muted-foreground'>
           {folder.count}
         </span>

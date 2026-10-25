@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Effect } from 'effect';
@@ -9,6 +10,8 @@ export const useRemoveSkill = ({
 }: {
   onRemoved?: (skill: Skill) => void;
 } = {}) => {
+  const { t } = useI18n();
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -20,13 +23,13 @@ export const useRemoveSkill = ({
       skills.forEach(skill => onRemoved?.(skill));
       toast.success(
         skills.length === 1
-          ? `${skills[0].name} skill removed`
-          : `${skills.length} skills removed`,
+          ? t('{name} skill removed', { name: skills[0].name })
+          : t('{count} skills removed', { count: skills.length }),
         {
           description:
             skills.length === 1
-              ? 'The skill folder was deleted from disk.'
-              : 'The selected skill folders were deleted from disk.',
+              ? t('The skill folder was deleted from disk.')
+              : t('The selected skill folders were deleted from disk.'),
         },
       );
     },
@@ -40,8 +43,8 @@ export const useRemoveSkill = ({
 
       toast.error(
         skills.length === 1
-          ? `Failed to remove ${skills[0].name}`
-          : `Failed to remove all ${skills.length} skills`,
+          ? t('Failed to remove {name}', { name: skills[0].name })
+          : t('Failed to remove all {count} skills', { count: skills.length }),
         {
           description: deletionError?.message ?? getErrorMessage(error),
         },

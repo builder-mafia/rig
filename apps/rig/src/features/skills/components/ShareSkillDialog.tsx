@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import {
   Button,
   Dialog,
@@ -18,6 +19,8 @@ export const ShareSkillDialog = ({
   skill: Skill;
   updateStatus?: SkillUpdateStatus;
 }) => {
+  const { t } = useI18n();
+
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<'source' | 'prompt' | null>(null);
   const sourceCommand = updateStatus
@@ -33,8 +36,8 @@ export const ShareSkillDialog = ({
     } catch {
       toast.error(
         kind === 'source'
-          ? 'Couldn’t copy the npx command.'
-          : 'Couldn’t copy the install prompt.',
+          ? t('Couldn’t copy the npx command.')
+          : t('Couldn’t copy the install prompt.'),
       );
     }
   };
@@ -47,14 +50,14 @@ export const ShareSkillDialog = ({
         className='rig-pressable inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-background px-2 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       >
         <Share2 size={13} />
-        <span className='hidden sm:inline'>Share</span>
+        <span className='hidden sm:inline'>{t('Share')}</span>
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className='sm:max-w-xl'>
+        <DialogContent closeLabel={t('Close')} className='sm:max-w-xl'>
           <DialogHeader>
-            <DialogTitle>Share {skill.name}</DialogTitle>
+            <DialogTitle>{t('Share {name}', { name: skill.name })}</DialogTitle>
             <DialogDescription>
-              Choose how to install this skill.
+              {t('Choose how to install this skill.')}
             </DialogDescription>
           </DialogHeader>
 
@@ -64,9 +67,11 @@ export const ShareSkillDialog = ({
                 <div className='flex items-start gap-3'>
                   <Terminal size={17} className='mt-0.5 shrink-0' />
                   <div className='min-w-0 flex-1'>
-                    <h3 className='text-sm font-semibold'>Install with npx</h3>
+                    <h3 className='text-sm font-semibold'>
+                      {t('Install with npx')}
+                    </h3>
                     <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                      Copy the command and run it in a terminal.
+                      {t('Copy the command and run it in a terminal.')}
                     </p>
                     <code className='mt-3 block overflow-x-auto rounded-lg bg-muted px-3 py-2 text-[11px]'>
                       {sourceCommand}
@@ -80,8 +85,8 @@ export const ShareSkillDialog = ({
                     >
                       {copied === 'source' ? <Check /> : <Clipboard />}
                       {copied === 'source'
-                        ? 'Command copied'
-                        : 'Copy npx command'}
+                        ? t('Command copied')
+                        : t('Copy npx command')}
                     </Button>
                   </div>
                 </div>
@@ -92,10 +97,13 @@ export const ShareSkillDialog = ({
               <div className='flex items-start gap-3'>
                 <Bot size={17} className='mt-0.5 shrink-0' />
                 <div className='min-w-0 flex-1'>
-                  <h3 className='text-sm font-semibold'>Install with AI</h3>
+                  <h3 className='text-sm font-semibold'>
+                    {t('Install with AI')}
+                  </h3>
                   <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                    Copy the prompt and paste it into ChatGPT, Claude, Codex, or
-                    another coding assistant.
+                    {t(
+                      'Copy the prompt and paste it into ChatGPT, Claude, Codex, or another coding assistant.',
+                    )}
                   </p>
                   <Button
                     type='button'
@@ -106,8 +114,8 @@ export const ShareSkillDialog = ({
                   >
                     {copied === 'prompt' ? <Check /> : <Clipboard />}
                     {copied === 'prompt'
-                      ? 'Prompt copied'
-                      : 'Copy install prompt'}
+                      ? t('Prompt copied')
+                      : t('Copy install prompt')}
                   </Button>
                 </div>
               </div>
@@ -130,6 +138,8 @@ export const ShareSkillsDialog = ({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
+  const { t } = useI18n();
+
   const [copied, setCopied] = useState<'source' | 'prompt' | null>(null);
   const sourcesByName = new Map(
     updateStatuses.map(status => [status.name, status.source]),
@@ -148,19 +158,21 @@ export const ShareSkillsDialog = ({
     } catch {
       toast.error(
         kind === 'source'
-          ? 'Couldn’t copy the npx commands.'
-          : 'Couldn’t copy the install prompt.',
+          ? t('Couldn’t copy the npx commands.')
+          : t('Couldn’t copy the install prompt.'),
       );
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-xl'>
+      <DialogContent closeLabel={t('Close')} className='sm:max-w-xl'>
         <DialogHeader>
-          <DialogTitle>Share {skills.length} skills</DialogTitle>
+          <DialogTitle>
+            {t('Share {count} skills', { count: skills.length })}
+          </DialogTitle>
           <DialogDescription>
-            Choose how to install these skills.
+            {t('Choose how to install these skills.')}
           </DialogDescription>
         </DialogHeader>
 
@@ -170,12 +182,17 @@ export const ShareSkillsDialog = ({
               <div className='flex items-start gap-3'>
                 <Terminal size={17} className='mt-0.5 shrink-0' />
                 <div className='min-w-0 flex-1'>
-                  <h3 className='text-sm font-semibold'>Install with npx</h3>
+                  <h3 className='text-sm font-semibold'>
+                    {t('Install with npx')}
+                  </h3>
                   <p className='mt-1 text-xs leading-5 text-muted-foreground'>
                     {sourceCommands.length < skills.length
-                      ? `Available for ${sourceCommands.length} of ${skills.length} selected skills. `
+                      ? t('Available for {count} of {total} selected skills.', {
+                          count: sourceCommands.length,
+                          total: skills.length,
+                        })
                       : null}
-                    Copy the commands and run them in a terminal.
+                    {t('Copy the commands and run them in a terminal.')}
                   </p>
                   <Button
                     type='button'
@@ -187,9 +204,13 @@ export const ShareSkillsDialog = ({
                     {copied === 'source' ? <Check /> : <Clipboard />}
                     {copied === 'source'
                       ? sourceCommands.length === 1
-                        ? 'Command copied'
-                        : 'Commands copied'
-                      : `Copy ${sourceCommands.length} npx command${sourceCommands.length === 1 ? '' : 's'}`}
+                        ? t('Command copied')
+                        : t('Commands copied')
+                      : sourceCommands.length === 1
+                        ? t('Copy npx command')
+                        : t('Copy {count} npx commands', {
+                            count: sourceCommands.length,
+                          })}
                   </Button>
                 </div>
               </div>
@@ -200,10 +221,13 @@ export const ShareSkillsDialog = ({
             <div className='flex items-start gap-3'>
               <Bot size={17} className='mt-0.5 shrink-0' />
               <div className='min-w-0 flex-1'>
-                <h3 className='text-sm font-semibold'>Install with AI</h3>
+                <h3 className='text-sm font-semibold'>
+                  {t('Install with AI')}
+                </h3>
                 <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                  Copy the prompt and paste it into ChatGPT, Claude, Codex, or
-                  another coding assistant.
+                  {t(
+                    'Copy the prompt and paste it into ChatGPT, Claude, Codex, or another coding assistant.',
+                  )}
                 </p>
                 <Button
                   type='button'
@@ -214,8 +238,8 @@ export const ShareSkillsDialog = ({
                 >
                   {copied === 'prompt' ? <Check /> : <Clipboard />}
                   {copied === 'prompt'
-                    ? 'Prompt copied'
-                    : 'Copy install prompt'}
+                    ? t('Prompt copied')
+                    : t('Copy install prompt')}
                 </Button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { parseDiffFromFile } from '@pierre/diffs';
 import { FileDiff } from '@pierre/diffs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { usePreferences } from '@/lib/preferences';
 
 export const SkillDiff = ({
   before,
@@ -9,7 +10,7 @@ export const SkillDiff = ({
   before: string;
   after: string;
 }) => {
-  const [themeType, setThemeType] = useState<'light' | 'dark'>('light');
+  const { resolvedTheme: themeType } = usePreferences();
   const fileDiff = useMemo(
     () =>
       parseDiffFromFile(
@@ -18,16 +19,6 @@ export const SkillDiff = ({
       ),
     [after, before],
   );
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const syncTheme = () =>
-      setThemeType(root.classList.contains('dark') ? 'dark' : 'light');
-    syncTheme();
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div className='overflow-hidden rounded-xl border bg-card text-xs [&_[data-diffs]]:font-mono'>
