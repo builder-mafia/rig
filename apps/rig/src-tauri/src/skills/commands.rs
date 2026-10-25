@@ -1,33 +1,24 @@
 use std::fs;
 use std::path::{Component, Path};
 
-use super::archive::{
-    archive_skill_at_path, list_archived_skills_from_root, restore_skill_at_path,
-};
+use super::archive::{list_archived_skills_from_root, restore_skill_at_path};
 use super::history::{
     list_skill_versions_at_path, read_skill_version_at_path, restore_skill_version_at_path,
     update_global_skill, SkillHistoryError, SkillUpdateResult, SkillVersionDetail,
     SkillVersionSummary,
 };
 use super::models::{
-    BucketType, Skill, SkillArchiveError, SkillCopyError, SkillCopyErrorCode, SkillDeletionError,
+    Skill, SkillArchiveError, SkillCopyError, SkillCopyErrorCode, SkillDeletionError,
     SkillDeletionErrorCode, SkillListingError, SkillProvider, SkillRoot, SkillRootDefinition,
-    SkillRootImportError, SkillRootKind, SkillScopeKind, SkillUsage, SkillUsageError,
-    SkillUsageEvent, SkillUsageSeries, WindowType,
+    SkillRootImportError, SkillRootKind, SkillScopeKind,
 };
 use super::root_store::{
     import_skill_root_from_path, list_imported_skill_roots, remove_imported_skill_root,
 };
 use super::scanner::list_skills_from_root;
 use super::updates::{check_global_skill_updates, SkillUpdateStatus};
-use super::usage::{
-    list_skill_usage_events_from_log, list_skill_usage_tendencies_from_log,
-    list_skill_usages_from_log,
-};
 use crate::skills::fs::expand_path;
 use crate::skills::models::SkillListingErrorCode;
-
-const SKILL_USAGE_LOG_PATH: &str = "~/.rig/usage.jsonl";
 
 #[tauri::command]
 pub async fn check_skill_updates(force: Option<bool>) -> Vec<SkillUpdateStatus> {
@@ -67,9 +58,18 @@ pub fn restore_skill_version(
 
 pub const SKILL_ROOT_DEFINITIONS: &[SkillRootDefinition] = &[
     SkillRootDefinition {
+        id: "global-codex",
+        path: "~/.codex/skills",
+        label: "Codex",
+        provider: SkillProvider::Agents,
+        scope_id: "global",
+        scope_label: "Global",
+        scope_kind: SkillScopeKind::Global,
+    },
+    SkillRootDefinition {
         id: "global-agents",
         path: "~/.agents/skills",
-        label: "Agents",
+        label: "Codex",
         provider: SkillProvider::Agents,
         scope_id: "global",
         scope_label: "Global",
@@ -332,14 +332,6 @@ pub fn list_archived_skills(root_path: String) -> Result<Vec<Skill>, SkillListin
 }
 
 #[tauri::command]
-pub fn archive_skill(root_path: String, relative_path: String) -> Result<(), SkillArchiveError> {
-    archive_skill_at_path(
-        &expand_path(root_path.as_str()),
-        Path::new(relative_path.as_str()),
-    )
-}
-
-#[tauri::command]
 pub fn restore_skill(root_path: String, relative_path: String) -> Result<(), SkillArchiveError> {
     restore_skill_at_path(
         &expand_path(root_path.as_str()),
@@ -418,37 +410,6 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
         code: SkillDeletionErrorCode::DeleteFailed,
         message: format!("Failed to remove skill: {}", error),
     })
-}
-
-#[tauri::command]
-pub fn list_skill_usages(window: Option<WindowType>) -> Result<Vec<SkillUsage>, SkillUsageError> {
-    let path = expand_path(SKILL_USAGE_LOG_PATH);
-
-    list_skill_usages_from_log(&path, window.unwrap_or(WindowType::Day))
-}
-
-#[tauri::command]
-pub fn list_skill_usage_events(
-    skill_name: String,
-    limit: Option<usize>,
-) -> Result<Vec<SkillUsageEvent>, SkillUsageError> {
-    let path = expand_path(SKILL_USAGE_LOG_PATH);
-
-    list_skill_usage_events_from_log(&path, skill_name.as_str(), limit.unwrap_or(20))
-}
-
-#[tauri::command]
-pub fn list_skill_usages_tendency(
-    window: Option<WindowType>,
-    bucket_type: Option<BucketType>,
-) -> Result<Vec<SkillUsageSeries>, SkillUsageError> {
-    let path = expand_path(SKILL_USAGE_LOG_PATH);
-
-    list_skill_usage_tendencies_from_log(
-        &path,
-        window.unwrap_or(WindowType::Week),
-        bucket_type.unwrap_or(BucketType::Hour),
-    )
 }
 
 #[cfg(test)]

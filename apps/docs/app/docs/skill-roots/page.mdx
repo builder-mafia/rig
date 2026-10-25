@@ -4,21 +4,31 @@ Rig discovers skills by scanning skill roots for files named `SKILL.md`.
 
 ## Default Roots
 
-The `Global` repository view combines these default roots:
+The `Global` accordion in **All skills** groups these default roots:
 
 | Label | Path |
 | --- | --- |
-| Agents Global Skills | `~/.agents/skills` |
+| Codex | `~/.agents/skills`, `~/.codex/skills` |
 | OpenCode Global Skills | `~/.config/opencode/skills` |
-| Claude Global Skills | `~/.claude/skills` |
+| Claude | `~/.claude/skills` |
+| Hermes | `~/.hermes/skills` |
+| Cursor | `~/.cursor/skills` |
 
 Missing default folders are ignored so you can use only the agent tools you have installed.
 
 ## Imported Roots
 
-Use `Import repository...` to add any local directory as a repository-specific skill root. Rig stores imported roots in the app data directory and checks whether each path still exists when the app opens.
+Use **Add project** to scan a local directory recursively, including skills in nested packages and custom folders. Expand folder accordions to browse the results. Rig stores imported roots in the app data directory and checks whether each path still exists when the app opens.
 
-If an imported folder is deleted or moved, Rig removes it from the selector and returns you to `Global`.
+If an imported folder is deleted or moved, Rig removes it from the selector and returns you to **All skills**.
+
+Dependency, build, Git, backup, and legacy archive folders are excluded from the active library.
+
+## Hide Skills
+
+Right-click a skill and choose **Hide from Rig**. This only saves a local Rig preference; files stay where your agents can use them. Open **Hidden** and choose **Show in Rig** to show it again.
+
+Files physically archived by older versions remain listed as **Archived file**. Use **Restore file** to move one back when needed.
 
 ## Skill File Requirements
 

@@ -15,7 +15,7 @@ export const metadata = {
     template: '%s | Rig Docs',
   },
   description:
-    'Official documentation for Rig, a local-first desktop app for organizing agent SKILL files and tracking usage.',
+    'Official documentation for Rig, a local-first desktop app for organizing, copying, and sharing agent SKILL files.',
   icons: {
     icon: appIcon.src,
     shortcut: appIcon.src,

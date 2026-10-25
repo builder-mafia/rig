@@ -8,12 +8,12 @@ import {
   RepositorySelector,
 } from '@/features/skills/components/RepositorySelector';
 import { SkillRoot } from '@/features/skills/components/SkillRoot';
+import { useSkillSourceVisibility } from '@/features/skills/skillSources';
 import type { SkillRoot as SkillRootModel } from '@/features/skills/types';
 import { useImportSkillRoot } from '@/features/skills/useImportSkillRoot';
 import { useRemoveSkillRoot } from '@/features/skills/useRemoveSkillRoot';
 import { useSkillRepositorySelection } from '@/features/skills/useSkillRepositorySelection';
 import { useSkillRoots } from '@/features/skills/useSkillRoots';
-import { useSkillSourceVisibility } from '@/features/skills/skillSources';
 import { HeaderLayout } from '@/layouts/HeaderLayout';
 
 export const Root = () => {
@@ -86,13 +86,14 @@ export const Root = () => {
             size='icon'
             aria-label='Open settings'
             onClick={() => setIsSettingsOpen(true)}
-            className='rig-pressable ml-auto rounded-full border bg-background/80 shadow-xs'
+            className='ml-auto size-8 rounded-md text-muted-foreground'
           >
             <Settings size={16} />
           </Button>
         </div>
       </HeaderLayout>
       <SkillRoot
+        key={repositorySelection.selectedRepositoryId}
         roots={repositorySelection.visibleRoots}
         hiddenSkillSourceIds={hiddenSourceIds}
       />

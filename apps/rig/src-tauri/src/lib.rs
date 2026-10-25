@@ -1,6 +1,5 @@
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
-mod plugins;
 mod skills;
 mod update;
 
@@ -95,11 +94,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             update::commands::fetch_update,
             update::commands::install_update,
-            plugins::commands::install_plugin_target,
-            plugins::commands::list_plugin_targets,
             skills::commands::copy_skill,
             skills::commands::import_skill_root,
-            skills::commands::archive_skill,
             skills::commands::check_skill_updates,
             skills::commands::update_skill,
             skills::commands::list_skill_versions,
@@ -108,9 +104,6 @@ pub fn run() {
             skills::commands::list_archived_skills,
             skills::commands::list_skill_roots,
             skills::commands::list_skills,
-            skills::commands::list_skill_usage_events,
-            skills::commands::list_skill_usages,
-            skills::commands::list_skill_usages_tendency,
             skills::commands::remove_skill,
             skills::commands::remove_skill_root,
             skills::commands::restore_skill,

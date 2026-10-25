@@ -50,7 +50,9 @@ export const useRemoveSkill = ({
   });
 
   const removingSkillIds = new Set(
-    (mutation.variables ?? []).map(getSkillIdentity),
+    (mutation.isPending ? (mutation.variables ?? []) : []).map(
+      getSkillIdentity,
+    ),
   );
 
   return {

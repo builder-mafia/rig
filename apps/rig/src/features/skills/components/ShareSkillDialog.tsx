@@ -44,7 +44,7 @@ export const ShareSkillDialog = ({
       <button
         type='button'
         onClick={() => setOpen(true)}
-        className='rig-pressable inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg border bg-background px-2 text-xs font-medium shadow-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        className='rig-pressable inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-background px-2 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       >
         <Share2 size={13} />
         <span className='hidden sm:inline'>Share</span>
@@ -121,12 +121,12 @@ export const ShareSkillDialog = ({
 
 export const ShareSkillsDialog = ({
   skills,
-  updateStatuses,
+  updateStatuses = [],
   open,
   onOpenChange,
 }: {
   skills: Skill[];
-  updateStatuses: SkillUpdateStatus[];
+  updateStatuses?: SkillUpdateStatus[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {

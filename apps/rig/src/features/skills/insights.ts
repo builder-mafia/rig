@@ -46,7 +46,7 @@ export const matchesSkillSearch = (skill: Skill, query: string) => {
 
   if (!normalizedQuery) return true;
 
-  return [skill.name, skill.description, skill.relativePath, skill.content]
+  return [skill.name, skill.description, getSkillFilePath(skill), skill.content]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()

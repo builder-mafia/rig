@@ -1,17 +1,6 @@
-import {
-  cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@allin/ui';
-import {
-  AppWindow,
-  BarChart3,
-  Bot,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
-import { appPaths, type AppPath } from './navigation';
+import { cn, Tooltip, TooltipContent, TooltipTrigger } from '@allin/ui';
+import { AppWindow, Bot, type LucideIcon, Sparkles } from 'lucide-react';
+import { type AppPath, appPaths } from './navigation';
 
 interface NavigationRailProps {
   currentPath: AppPath;
@@ -42,12 +31,6 @@ const navigationItems: Array<{
     description: 'Installed apps and settings',
     icon: AppWindow,
   },
-  {
-    path: appPaths.dashboard,
-    label: 'Dashboard',
-    description: 'Skill usage analytics',
-    icon: BarChart3,
-  },
 ];
 
 export const NavigationRail = ({
@@ -75,7 +58,8 @@ export const NavigationRail = ({
                   className={cn(
                     'flex size-10 items-center justify-center rounded-xl text-muted-foreground',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    !isSelected && 'hover:bg-accent hover:text-accent-foreground',
+                    !isSelected &&
+                      'hover:bg-accent hover:text-accent-foreground',
                     isSelected &&
                       'border-1 border-blue-300 bg-blue-300/20 text-blue-500',
                   )}

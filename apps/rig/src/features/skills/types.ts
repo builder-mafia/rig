@@ -108,24 +108,6 @@ export const SkillRootImportErrorSchema = z.object({
   message: z.string(),
 });
 
-export const SkillUsageErrorCodeSchema = z.enum(['readFailed']);
-
-export const SkillUsageErrorSchema = z.object({
-  code: SkillUsageErrorCodeSchema,
-  message: z.string(),
-});
-
-export const WindowTypeSchema = z.enum([
-  'day',
-  'week',
-  'month',
-  'threeMonths',
-  'year',
-  'all',
-]);
-
-export const BucketTypeSchema = z.enum(['hour', 'day', 'month']);
-
 export const ProviderSkillSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -146,23 +128,6 @@ export const ProviderSkillSchema = z.object({
 });
 
 export const SkillSchema = ProviderSkillSchema;
-
-export const SkillUsageSchema = z.object({
-  name: z.string(),
-  count: z.number(),
-  lastUsedAt: z.string().nullable(),
-});
-
-export const SkillUsageEventSchema = z.object({
-  name: z.string(),
-  source: z.string(),
-  usedAt: z.string(),
-});
-
-export const SkillUsageSeriesSchema = z.object({
-  name: z.string(),
-  series: z.number().array(),
-});
 
 export const SkillUpdateStateSchema = z.enum([
   'current',
@@ -241,17 +206,9 @@ export type SkillRootImportErrorCode = z.infer<
 export type SkillRootImportError = z.infer<typeof SkillRootImportErrorSchema>;
 export type ProviderSkill = z.infer<typeof ProviderSkillSchema>;
 export type Skill = ProviderSkill;
-export type SkillUsageErrorCode = z.infer<typeof SkillUsageErrorCodeSchema>;
-export type SkillUsageError = z.infer<typeof SkillUsageErrorSchema>;
-export type WindowType = z.infer<typeof WindowTypeSchema>;
-export type BucketType = z.infer<typeof BucketTypeSchema>;
-export type SkillUsage = z.infer<typeof SkillUsageSchema>;
-export type SkillUsageEvent = z.infer<typeof SkillUsageEventSchema>;
-export type SkillUsageSeries = z.infer<typeof SkillUsageSeriesSchema>;
 export type SkillUpdateState = z.infer<typeof SkillUpdateStateSchema>;
 export type SkillUpdateStatus = z.infer<typeof SkillUpdateStatusSchema>;
 export type SkillVersionAction = z.infer<typeof SkillVersionActionSchema>;
 export type SkillVersionSummary = z.infer<typeof SkillVersionSummarySchema>;
 export type SkillVersionDetail = z.infer<typeof SkillVersionDetailSchema>;
 export type SkillHistoryError = z.infer<typeof SkillHistoryErrorSchema>;
-export type SkillManagementView = 'review' | 'updates' | 'archived';

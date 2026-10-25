@@ -13,10 +13,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  toast,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  toast,
 } from '@allin/ui';
 import {
   ChevronDown,
@@ -84,9 +84,7 @@ export const RepositorySelector = ({
     }
   };
 
-  const confirmRemoval = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  const confirmRemoval = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     if (!repositoryPendingRemoval) return;
 
@@ -142,7 +140,7 @@ export const RepositorySelector = ({
               }
               disabled={isImporting}
               onClick={onImportRepository}
-              className='rig-pressable flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-full border border-dashed bg-background/80 px-0 text-muted-foreground shadow-xs hover:border-solid hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-3'
+              className='flex h-8 w-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-dashed bg-background/80 px-0 text-muted-foreground hover:border-solid hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-3'
             >
               {isImporting ? (
                 <LoaderCircle size={15} className='animate-spin' />
@@ -225,13 +223,12 @@ const RepositoryPill = ({
   onCopyPath: () => void;
   onRequestRemoval: () => void;
 }) => (
-  <div
-    role='group'
+  <fieldset
     aria-label={`${root.scopeLabel} repository`}
     className={cn(
-      'flex h-9 max-w-56 shrink-0 items-stretch overflow-hidden rounded-full border shadow-xs',
+      'flex h-8 max-w-56 shrink-0 items-stretch overflow-hidden rounded-md border',
       isSelected
-        ? 'border-foreground bg-foreground text-background'
+        ? 'border-border bg-foreground/[0.06] text-foreground'
         : 'border-border bg-background/80 text-foreground',
       !root.exists && 'border-amber-500/30 text-amber-700 dark:text-amber-300',
     )}
@@ -255,7 +252,7 @@ const RepositoryPill = ({
           title='Repository options'
           className={cn(
             'rig-pressable flex w-8 shrink-0 items-center justify-center border-l hover:bg-muted/60 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-            isSelected ? 'border-background/20' : 'border-border',
+            'border-border/60',
           )}
         >
           <ChevronDown size={13} />
@@ -273,7 +270,7 @@ const RepositoryPill = ({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  </div>
+  </fieldset>
 );
 
 const RepositoryButton = ({
@@ -295,9 +292,9 @@ const RepositoryButton = ({
     aria-pressed={isSelected}
     onClick={onClick}
     className={cn(
-      'rig-pressable flex h-9 max-w-48 shrink-0 items-center gap-2 rounded-full border px-3 text-sm font-medium shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex h-8 max-w-48 shrink-0 items-center gap-2 rounded-md border px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       isSelected
-        ? 'border-foreground bg-foreground text-background'
+        ? 'border-border bg-foreground/[0.06] text-foreground'
         : 'border-border bg-background/80 text-foreground hover:bg-muted',
     )}
   >
@@ -309,6 +306,7 @@ const RepositoryButton = ({
 export { GLOBAL_REPOSITORY_ID };
 
 export const getImportedRepositoryId = (root: SkillRoot) => {
+  if (root.provider === 'repository') return root.id;
   const match = root.id.match(
     /^repo-(.+)-(agents|claude|opencode|hermes|cursor)$/,
   );
