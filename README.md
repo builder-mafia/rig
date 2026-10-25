@@ -30,7 +30,7 @@ locations.
   accordions that include nested packages and custom skill folders.
 - **Search instructions** — find skills by name, description, content, or path.
   Matching folders open automatically while searching.
-- **Hide only in Rig** — hide individual skills or provider sources without
+- **Hide only in Rig** — hide individual skills, folders, or provider sources without
   moving files or changing agent discovery. Open **Hidden** to show them again.
 - **Read and share** — inspect rendered instructions, source, and file details;
   right-click to copy instructions or share an installation prompt.

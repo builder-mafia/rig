@@ -6,7 +6,12 @@ import { isSkillSourceVisible, type SkillSourceId } from '../skillSources';
 import type { Skill, SkillRoot as SkillRootModel } from '../types';
 import { useFetchArchivedSkills } from '../useFetchArchivedSkills';
 import { useFetchSkills } from '../useFetchSkills';
-import { getHiddenSkillKey, useHiddenSkills } from '../useHiddenSkills';
+import { abbreviateHomePath } from '../skillTree';
+import {
+  getHiddenSkillKey,
+  getHidingFolder,
+  useHiddenSkills,
+} from '../useHiddenSkills';
 import { getSkillIdentity, useRemoveSkill } from '../useRemoveSkill';
 import { useRestoreArchivedSkill } from '../useSkillArchive';
 import { SkillContentViewer } from './SkillContentViewer';
@@ -21,7 +26,8 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [showingHidden, setShowingHidden] = useState(false);
-  const { hiddenPaths, setSkillsHidden } = useHiddenSkills();
+  const { hiddenPaths, hiddenFolderPaths, setSkillsHidden, setFolderHidden } =
+    useHiddenSkills();
   const { skills, isLoading, error } = useFetchSkills(roots);
   const { archivedSkills, error: archiveError } = useFetchArchivedSkills(roots);
   const sourceSkills = useMemo(
@@ -31,19 +37,33 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   );
   const visibleSkills = useMemo(
     () =>
-      sourceSkills.filter(skill => !hiddenPaths.has(getHiddenSkillKey(skill))),
-    [sourceSkills, hiddenPaths],
+      sourceSkills.filter(skill => {
+        const path = getHiddenSkillKey(skill);
+        return (
+          !hiddenPaths.has(path) && !getHidingFolder(path, hiddenFolderPaths)
+        );
+      }),
+    [sourceSkills, hiddenPaths, hiddenFolderPaths],
   );
   const hiddenSkills = useMemo(
     () => [
-      ...sourceSkills.filter(skill =>
-        hiddenPaths.has(getHiddenSkillKey(skill)),
-      ),
+      ...sourceSkills.filter(skill => {
+        const path = getHiddenSkillKey(skill);
+        return (
+          hiddenPaths.has(path) || getHidingFolder(path, hiddenFolderPaths)
+        );
+      }),
       ...archivedSkills.filter(skill =>
         isSkillSourceVisible(skill, hiddenSkillSourceIds),
       ),
     ],
-    [sourceSkills, hiddenPaths, archivedSkills, hiddenSkillSourceIds],
+    [
+      sourceSkills,
+      hiddenPaths,
+      hiddenFolderPaths,
+      archivedSkills,
+      hiddenSkillSourceIds,
+    ],
   );
   const currentSkills = showingHidden ? hiddenSkills : visibleSkills;
   const selectedSkill =
@@ -79,6 +99,19 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
       },
     );
   };
+  const changeFolderVisibility = (path: string, hidden: boolean) => {
+    if (!setFolderHidden(path, hidden)) return;
+    clearSelection();
+    toast.success(`Folder ${hidden ? 'hidden from' : 'shown in'} Rig`, {
+      description: hidden
+        ? `${abbreviateHomePath(path)} and its subfolders are hidden only in Rig.`
+        : `${abbreviateHomePath(path)} is visible. Individually hidden skills and folders stay hidden.`,
+      action: {
+        label: 'Undo',
+        onClick: () => setFolderHidden(path, !hidden),
+      },
+    });
+  };
 
   return (
     <div className='flex min-h-0 flex-1'>
@@ -86,6 +119,8 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
         <SkillList
           skills={visibleSkills}
           hiddenSkills={hiddenSkills}
+          hiddenFolderPaths={hiddenFolderPaths}
+          onFolderVisibilityChange={changeFolderVisibility}
           selectedSkillIds={selectedIdSet}
           isLoading={isLoading}
           error={error || archiveError ? String(error ?? archiveError) : null}
@@ -107,6 +142,15 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
           skill={selectedSkill}
           onBack={clearSelection}
           isHidden={showingHidden}
+          hiddenFolderPath={
+            selectedSkill && !selectedSkill.isArchived
+              ? getHidingFolder(
+                  getHiddenSkillKey(selectedSkill),
+                  hiddenFolderPaths,
+                )
+              : undefined
+          }
+          onShowFolder={path => changeFolderVisibility(path, false)}
           onHideSkill={skill => changeVisibility([skill], true)}
           onShowSkill={skill => changeVisibility([skill], false)}
           onRestoreArchivedSkill={restoreSkill}
