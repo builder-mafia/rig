@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
 import { useMemo, useRef, useState } from 'react';
 import { getSkillFilePath } from './insights';
@@ -46,6 +47,8 @@ export const parseHiddenSkills = (value: string | null): string[] => {
 };
 
 const useHiddenPaths = (storageKey: string) => {
+  const { t } = useI18n();
+
   const [paths, setPaths] = useState<string[]>(() => {
     try {
       return parseHiddenSkills(window.localStorage.getItem(storageKey)).map(
@@ -71,7 +74,7 @@ const useHiddenPaths = (storageKey: string) => {
       setPaths(nextPaths);
       return true;
     } catch {
-      toast.error('Couldn’t save skill visibility. Try again.');
+      toast.error(t('Couldn’t save skill visibility. Try again.'));
       return false;
     }
   };

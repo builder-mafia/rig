@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/lib/preferences';
+
 import {
   Button,
   Dialog,
@@ -15,27 +17,31 @@ import posthog from 'posthog-js';
 import { useAppUpdate } from '../useAppUpdate';
 
 export const AppUpdateDialog = () => {
+  const { t } = useI18n();
+
   const appUpdate = useAppUpdate();
   const isBusy = appUpdate.isChecking || appUpdate.isInstalling;
 
   return (
     <Dialog open={appUpdate.isOpen} onOpenChange={appUpdate.setIsOpen}>
-      <DialogContent showCloseButton={!isBusy}>
+      <DialogContent closeLabel={t('Close')} showCloseButton={!isBusy}>
         <DialogHeader>
-          <DialogTitle>{getTitle(appUpdate.status)}</DialogTitle>
-          <DialogDescription>{getDescription(appUpdate)}</DialogDescription>
+          <DialogTitle>{t(getTitle(appUpdate.status))}</DialogTitle>
+          <DialogDescription>{t(getDescription(appUpdate))}</DialogDescription>
         </DialogHeader>
 
         {appUpdate.update != null && appUpdate.status === 'available' ? (
           <div className='rounded-lg border bg-muted/40 p-3 text-sm'>
             <div className='flex items-center justify-between gap-3'>
-              <span className='text-muted-foreground'>Current version</span>
+              <span className='text-muted-foreground'>
+                {t('Current version')}
+              </span>
               <span className='font-mono'>
                 {appUpdate.update.currentVersion}
               </span>
             </div>
             <div className='mt-2 flex items-center justify-between gap-3'>
-              <span className='text-muted-foreground'>New version</span>
+              <span className='text-muted-foreground'>{t('New version')}</span>
               <span className='font-mono font-medium'>
                 {appUpdate.update.version}
               </span>
@@ -58,7 +64,7 @@ export const AppUpdateDialog = () => {
                 disabled={isBusy}
                 onClick={() => appUpdate.setIsOpen(false)}
               >
-                Later
+                {t('Later')}
               </Button>
               <Button
                 type='button'
@@ -72,7 +78,7 @@ export const AppUpdateDialog = () => {
                 }}
               >
                 {appUpdate.isInstalling ? <Spinner /> : null}
-                Update now
+                {t('Update now')}
               </Button>
             </>
           ) : (
@@ -83,7 +89,7 @@ export const AppUpdateDialog = () => {
                 disabled={isBusy}
                 onClick={() => appUpdate.setIsOpen(false)}
               >
-                Close
+                {t('Close')}
               </Button>
               <Button
                 type='button'
@@ -91,7 +97,7 @@ export const AppUpdateDialog = () => {
                 onClick={() => appUpdate.checkForUpdate({ openWhenNone: true })}
               >
                 {appUpdate.isChecking ? <Spinner /> : <RefreshCw />}
-                Check again
+                {t('Check again')}
               </Button>
             </>
           )}

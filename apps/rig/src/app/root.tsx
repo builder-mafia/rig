@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import { Button, toast } from '@allin/ui';
 import { Settings } from 'lucide-react';
 import { useState } from 'react';
@@ -17,6 +18,8 @@ import { useSkillRoots } from '@/features/skills/useSkillRoots';
 import { HeaderLayout } from '@/layouts/HeaderLayout';
 
 export const Root = () => {
+  const { t } = useI18n();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { hiddenSourceIds, setSourceVisible } = useSkillSourceVisibility();
 
@@ -39,31 +42,42 @@ export const Root = () => {
       if (wasSelected) {
         repositorySelection.selectRepository(GLOBAL_REPOSITORY_ID);
       }
-      const removalToastId = toast.success(`“${root.label}” removed from Rig`, {
-        description: 'The folder and its files were not deleted.',
-        duration: 10_000,
-        action: {
-          label: 'Undo',
-          onClick: () => {
-            void importSkillRoot
-              .importFromPath(root.scopeId, wasSelected)
-              .then(() => {
-                toast.dismiss(removalToastId);
-                toast.success(`“${root.label}” restored`);
-              })
-              .catch(() =>
-                toast.error(`Couldn’t restore “${root.label}”`, {
-                  description: 'Add the repository again with the + button.',
-                }),
-              );
+      const removalToastId = toast.success(
+        t('“{name}” removed from Rig', { name: root.label }),
+        {
+          description: t('The folder and its files were not deleted.'),
+          duration: 10_000,
+          action: {
+            label: t('Undo'),
+            onClick: () => {
+              void importSkillRoot
+                .importFromPath(root.scopeId, wasSelected)
+                .then(() => {
+                  toast.dismiss(removalToastId);
+                  toast.success(t('“{name}” restored', { name: root.label }));
+                })
+                .catch(() =>
+                  toast.error(
+                    t('Couldn’t restore “{name}”', { name: root.label }),
+                    {
+                      description: t(
+                        'Add the repository again with the + button.',
+                      ),
+                    },
+                  ),
+                );
+            },
           },
         },
-      });
+      );
       return true;
     } catch {
-      toast.error(`Couldn’t remove “${root.label}” from Rig`, {
-        description: 'Nothing changed. Try again.',
-      });
+      toast.error(
+        t('Couldn’t remove “{name}” from Rig', { name: root.label }),
+        {
+          description: t('Nothing changed. Try again.'),
+        },
+      );
       return false;
     }
   };
@@ -84,7 +98,7 @@ export const Root = () => {
             type='button'
             variant='ghost'
             size='icon'
-            aria-label='Open settings'
+            aria-label={t('Open settings')}
             onClick={() => setIsSettingsOpen(true)}
             className='ml-auto size-8 rounded-md text-muted-foreground'
           >

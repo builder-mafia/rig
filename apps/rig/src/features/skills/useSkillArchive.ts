@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Effect } from 'effect';
@@ -10,18 +11,21 @@ export const useRestoreArchivedSkill = ({
 }: {
   onRestored?: (skill: Skill) => void;
 } = {}) => {
+  const { t } = useI18n();
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (skill: Skill) => Effect.runPromise(restoreSkillApi(skill)),
     onSuccess: (_, skill) => {
       onRestored?.(skill);
-      toast.success(`${skill.name} restored`, {
-        description:
+      toast.success(t('{name} restored', { name: skill.name }), {
+        description: t(
           'The file is back in its original folder and available to agents.',
+        ),
       });
     },
     onError: error =>
-      toast.error('Couldn’t restore the archived file.', {
+      toast.error(t('Couldn’t restore the archived file.'), {
         description: String(error),
       }),
     onSettled: () =>

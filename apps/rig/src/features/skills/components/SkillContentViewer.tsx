@@ -1,3 +1,5 @@
+import { useI18n } from '@/lib/preferences';
+import { translate, type Locale, type Message } from '@/lib/translations';
 import {
   Badge,
   cn,
@@ -45,13 +47,15 @@ interface SkillContentViewerProps {
 }
 
 export const SkillContentViewer = (props: SkillContentViewerProps) => {
+  const { t } = useI18n();
+
   if (!props.skill)
     return (
       <div className='flex h-full items-center justify-center px-8'>
         <div className='text-center'>
-          <h1 className='text-base font-medium'>Select a skill</h1>
+          <h1 className='text-base font-medium'>{t('Select a skill')}</h1>
           <p className='mt-1.5 text-sm text-muted-foreground'>
-            Browse folders or search to read its instructions.
+            {t('Browse folders or search to read its instructions.')}
           </p>
         </div>
       </div>
@@ -66,7 +70,7 @@ export const SkillContentViewer = (props: SkillContentViewerProps) => {
 };
 
 type InspectorTab = 'rendered' | 'source' | 'history';
-const tabs: { value: InspectorTab; label: string }[] = [
+const tabs: { value: InspectorTab; label: Message }[] = [
   { value: 'rendered', label: 'Instructions' },
   { value: 'source', label: 'Source' },
   { value: 'history', label: 'History' },
@@ -83,6 +87,8 @@ const SkillInspector = ({
   onRestoreArchivedSkill,
   isRestoring,
 }: SkillContentViewerProps & { skill: Skill }) => {
+  const { t, locale } = useI18n();
+
   const [activeTab, setActiveTab] = useState<InspectorTab>(
     skill.isValid ? 'rendered' : 'source',
   );
@@ -91,12 +97,20 @@ const SkillInspector = ({
   const availableTabs = tabs.filter(
     tab => tab.value !== 'history' || !skill.isArchived,
   );
-  const copy = async (value: string, label: string) => {
+  const copy = async (value: string, kind: 'instructions' | 'path') => {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied`);
+      toast.success(
+        t(kind === 'instructions' ? 'Instructions copied' : 'File path copied'),
+      );
     } catch {
-      toast.error(`Couldn’t copy ${label.toLowerCase()}.`);
+      toast.error(
+        t(
+          kind === 'instructions'
+            ? 'Couldn’t copy instructions.'
+            : 'Couldn’t copy file path.',
+        ),
+      );
     }
   };
 
@@ -110,7 +124,7 @@ const SkillInspector = ({
             className='mb-2 -ml-2 inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden'
           >
             <ArrowLeft size={14} />
-            Skills
+            {t('Skills')}
           </button>
           <div className='flex min-w-0 items-start gap-3'>
             <div className='min-w-0 flex-1'>
@@ -119,14 +133,16 @@ const SkillInspector = ({
                   {skill.name}
                 </h1>
                 {!skill.isValid ? (
-                  <Badge variant='destructive'>Invalid</Badge>
+                  <Badge variant='destructive'>{t('Invalid')}</Badge>
                 ) : null}
                 {isHidden && !skill.isArchived ? (
-                  <span className='text-xs text-muted-foreground'>Hidden</span>
+                  <span className='text-xs text-muted-foreground'>
+                    {t('Hidden')}
+                  </span>
                 ) : null}
               </div>
               <p className='mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground'>
-                {skill.description || 'No description provided.'}
+                {skill.description || t('No description provided.')}
               </p>
             </div>
             <div className='flex shrink-0 items-center gap-1'>
@@ -135,7 +151,7 @@ const SkillInspector = ({
                 <DropdownMenuTrigger asChild>
                   <button
                     type='button'
-                    aria-label='More skill actions'
+                    aria-label={t('More skill actions')}
                     className='inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   >
                     <MoreHorizontal size={16} />
@@ -143,16 +159,14 @@ const SkillInspector = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className='w-48'>
                   <DropdownMenuItem
-                    onSelect={() => void copy(skill.content, 'Instructions')}
+                    onSelect={() => void copy(skill.content, 'instructions')}
                   >
                     <Clipboard />
-                    Copy instructions
+                    {t('Copy instructions')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => void copy(path, 'File path')}
-                  >
+                  <DropdownMenuItem onSelect={() => void copy(path, 'path')}>
                     <Clipboard />
-                    Copy file path
+                    {t('Copy file path')}
                   </DropdownMenuItem>
                   {!skill.isArchived ? (
                     <>
@@ -169,10 +183,10 @@ const SkillInspector = ({
                       >
                         {isHidden ? <Eye /> : <EyeOff />}
                         {hiddenFolderPath
-                          ? 'Show containing folder in Rig'
+                          ? t('Show containing folder in Rig')
                           : isHidden
-                            ? 'Show in Rig'
-                            : 'Hide from Rig'}
+                            ? t('Show in Rig')
+                            : t('Hide from Rig')}
                       </DropdownMenuItem>
                     </>
                   ) : null}
@@ -184,7 +198,7 @@ const SkillInspector = ({
             <div
               ref={tabListRef}
               role='tablist'
-              aria-label='Skill content view'
+              aria-label={t('Skill content view')}
               className='flex gap-5'
               onKeyDown={event => {
                 const enabledTabs = availableTabs.filter(
@@ -231,7 +245,7 @@ const SkillInspector = ({
                       : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
-                  {tab.label}
+                  {t(tab.label)}
                 </button>
               ))}
             </div>
@@ -239,10 +253,10 @@ const SkillInspector = ({
               <PopoverTrigger asChild>
                 <button
                   type='button'
-                  aria-label='Show skill details'
+                  aria-label={t('Show skill details')}
                   className='mb-1 h-7 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                 >
-                  Details
+                  {t('Details')}
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -250,11 +264,11 @@ const SkillInspector = ({
                 className='skill-details-popover w-[min(360px,calc(100vw-2rem))] p-3'
               >
                 <dl className='grid grid-cols-[60px_minmax(0,1fr)] gap-3 text-xs'>
-                  <dt className='text-muted-foreground'>Location</dt>
+                  <dt className='text-muted-foreground'>{t('Location')}</dt>
                   <dd>
                     <button
                       type='button'
-                      onClick={() => void copy(path, 'File path')}
+                      onClick={() => void copy(path, 'path')}
                       title={path}
                       className='w-full break-all rounded text-left font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                     >
@@ -263,8 +277,8 @@ const SkillInspector = ({
                   </dd>
                   {skill.updatedAt ? (
                     <>
-                      <dt className='text-muted-foreground'>Modified</dt>
-                      <dd>{formatRelativeTime(skill.updatedAt)}</dd>
+                      <dt className='text-muted-foreground'>{t('Modified')}</dt>
+                      <dd>{formatRelativeTime(skill.updatedAt, locale)}</dd>
                     </>
                   ) : null}
                 </dl>
@@ -278,9 +292,9 @@ const SkillInspector = ({
           {skill.isArchived ? (
             <div className='mb-5 rounded-md border border-border/60 p-3 text-xs leading-5'>
               <p>
-                This file was moved to an archive by an earlier version of Rig.
-                Restore it to its original folder to make it available to agents
-                again.
+                {t(
+                  'This file was moved to an archive by an earlier version of Rig. Restore it to its original folder to make it available to agents again.',
+                )}
               </p>
               <button
                 type='button'
@@ -288,7 +302,7 @@ const SkillInspector = ({
                 onClick={() => onRestoreArchivedSkill(skill)}
                 className='mt-2 rounded border px-2 py-1 font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
               >
-                {isRestoring ? 'Restoring…' : 'Restore file'}
+                {isRestoring ? t('Restoring…') : t('Restore file')}
               </button>
             </div>
           ) : null}
@@ -311,7 +325,7 @@ const SkillInspector = ({
             ) : activeTab === 'source' ? (
               <pre className='overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-muted/35 p-4 font-mono text-[13px] leading-6'>
                 <code>
-                  {skill.content || 'This skill has no readable content.'}
+                  {skill.content || t('This skill has no readable content.')}
                 </code>
               </pre>
             ) : (
@@ -325,7 +339,7 @@ const SkillInspector = ({
 };
 
 export const SkillMarkdown = ({ content }: { content: string }) => (
-  <article className='prose prose-neutral max-w-[76ch] dark:prose-invert prose-headings:tracking-[-0.02em] prose-a:text-blue-600 prose-pre:overflow-x-auto'>
+  <article className='prose prose-neutral max-w-[76ch] dark:prose-invert prose-headings:tracking-[-0.02em] prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-pre:overflow-x-auto'>
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[
@@ -338,7 +352,7 @@ export const SkillMarkdown = ({ content }: { content: string }) => (
   </article>
 );
 
-const formatRelativeTime = (value: string) => {
+const formatRelativeTime = (value: string, locale: Locale) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
@@ -353,12 +367,12 @@ const formatRelativeTime = (value: string) => {
 
   for (const [unit, seconds] of units) {
     if (Math.abs(diffSeconds) >= seconds) {
-      return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(
+      return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(
         Math.round(diffSeconds / seconds),
         unit,
       );
     }
   }
 
-  return 'just now';
+  return translate(locale)('just now');
 };

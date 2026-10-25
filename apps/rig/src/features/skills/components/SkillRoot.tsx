@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
 import { useMemo, useState } from 'react';
 import { ContentLayout } from '@/layouts/ContentLayout';
@@ -23,6 +24,8 @@ interface SkillRootProps {
 }
 
 export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
+  const { t } = useI18n();
+
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [showingHidden, setShowingHidden] = useState(false);
@@ -87,11 +90,16 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
     if (!setSkillsHidden(changedSkills, hidden)) return;
     clearSelection();
     toast.success(
-      `${changedSkills.length === 1 ? changedSkills[0].name : `${changedSkills.length} skills`} ${hidden ? 'hidden from' : 'shown in'} Rig`,
+      t(hidden ? '{name} hidden from Rig' : '{name} shown in Rig', {
+        name:
+          changedSkills.length === 1
+            ? changedSkills[0].name
+            : t('{count} skills', { count: changedSkills.length }),
+      }),
       {
-        description: 'Skill files and agent access are unchanged.',
+        description: t('Skill files and agent access are unchanged.'),
         action: {
-          label: 'Undo',
+          label: t('Undo'),
           onClick: () => {
             setSkillsHidden(changedSkills, !hidden);
           },
@@ -102,15 +110,23 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   const changeFolderVisibility = (path: string, hidden: boolean) => {
     if (!setFolderHidden(path, hidden)) return;
     clearSelection();
-    toast.success(`Folder ${hidden ? 'hidden from' : 'shown in'} Rig`, {
-      description: hidden
-        ? `${abbreviateHomePath(path)} and its subfolders are hidden only in Rig.`
-        : `${abbreviateHomePath(path)} is visible. Individually hidden skills and folders stay hidden.`,
-      action: {
-        label: 'Undo',
-        onClick: () => setFolderHidden(path, !hidden),
+    toast.success(
+      t(hidden ? 'Folder hidden from Rig' : 'Folder shown in Rig'),
+      {
+        description: hidden
+          ? t('{path} and its subfolders are hidden only in Rig.', {
+              path: abbreviateHomePath(path),
+            })
+          : t(
+              '{path} is visible. Individually hidden skills and folders stay hidden.',
+              { path: abbreviateHomePath(path) },
+            ),
+        action: {
+          label: t('Undo'),
+          onClick: () => setFolderHidden(path, !hidden),
+        },
       },
-    });
+    );
   };
 
   return (

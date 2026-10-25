@@ -1,3 +1,5 @@
+import type { Message } from '@/lib/translations';
+import { useI18n } from '@/lib/preferences';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +28,19 @@ import { getSkillIdentity } from '../useRemoveSkill';
 import { SkillDiff } from './SkillDiff';
 
 export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
+  const { t, locale } = useI18n();
+
   const queryClient = useQueryClient();
   const identity = getSkillIdentity(skill);
+  const versionLabel = (action: string) => {
+    const labels: Record<string, Message> = {
+      beforeUpdate: 'Before update',
+      updated: 'After update',
+      beforeRestore: 'Before restore',
+      restored: 'Restored previous version',
+    };
+    return t(labels[action] ?? 'Saved version');
+  };
   const [requestedVersionId, setRequestedVersionId] = useState<string | null>(
     null,
   );
@@ -67,12 +80,14 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
           queryKey: ['skill-versions', identity],
         }),
       ]);
-      toast.success('Previous version restored', {
-        description: 'Rig saved the version you replaced as a recovery point.',
+      toast.success(t('Previous version restored'), {
+        description: t(
+          'Rig saved the version you replaced as a recovery point.',
+        ),
       });
     },
     onError: error =>
-      toast.error('Could not restore this version', {
+      toast.error(t('Could not restore this version'), {
         description: getHistoryErrorMessage(error),
       }),
   });
@@ -81,7 +96,7 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
     return (
       <div className='flex items-center gap-2 py-8 text-sm text-muted-foreground'>
         <LoaderCircle size={16} className='animate-spin' />
-        Loading version history…
+        {t('Loading version history…')}
       </div>
     );
   }
@@ -98,10 +113,13 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
     return (
       <div className='rounded-2xl border border-dashed px-6 py-10 text-center'>
         <Clock3 className='mx-auto text-muted-foreground' size={22} />
-        <h2 className='mt-3 text-sm font-semibold'>No Rig versions yet</h2>
+        <h2 className='mt-3 text-sm font-semibold'>
+          {t('No Rig versions yet')}
+        </h2>
         <p className='mx-auto mt-1 max-w-md text-sm leading-6 text-muted-foreground'>
-          Rig records a recoverable version before and after it updates or
-          restores this skill. External file changes are not silently tracked.
+          {t(
+            'Rig records a recoverable version before and after it updates or restores this skill. External file changes are not silently tracked.',
+          )}
         </p>
       </div>
     );
@@ -114,8 +132,10 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
       <div className='grid min-h-[420px] gap-5 lg:grid-cols-[220px_minmax(0,1fr)]'>
         <aside>
           <div className='mb-2 flex items-center justify-between gap-3'>
-            <h2 className='text-sm font-semibold'>Rig versions</h2>
-            <span className='text-xs text-muted-foreground'>Local only</span>
+            <h2 className='text-sm font-semibold'>{t('Rig versions')}</h2>
+            <span className='text-xs text-muted-foreground'>
+              {t('Local only')}
+            </span>
           </div>
           <div className='overflow-hidden rounded-xl border bg-card'>
             {versions.map(version => (
@@ -132,16 +152,16 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
               >
                 <span className='flex items-center justify-between gap-2'>
                   <span className='truncate text-xs font-medium'>
-                    {version.label}
+                    {versionLabel(version.action)}
                   </span>
                   {version.action === 'restored' ? (
                     <Badge variant='outline' className='px-1.5 text-[9px]'>
-                      Restored
+                      {t('Restored')}
                     </Badge>
                   ) : null}
                 </span>
                 <span className='mt-1 block text-[11px] text-muted-foreground'>
-                  {formatVersionTime(version.createdAt)}
+                  {formatVersionTime(version.createdAt, locale)}
                 </span>
               </button>
             ))}
@@ -152,10 +172,13 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
           <div className='mb-3 flex min-h-8 items-center justify-between gap-4'>
             <div className='min-w-0'>
               <h2 className='truncate text-sm font-semibold'>
-                {selectedVersion?.label ?? 'Saved version'} → Current
+                {selectedVersion
+                  ? versionLabel(selectedVersion.action)
+                  : t('Saved version')}{' '}
+                → {t('Current')}
               </h2>
               <p className='mt-0.5 text-xs text-muted-foreground'>
-                Stacked diff · lines wrap to fit this window
+                {t('Stacked diff · lines wrap to fit this window')}
               </p>
             </div>
             <button
@@ -165,14 +188,14 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
               className='rig-pressable inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border bg-background px-2.5 text-xs font-medium shadow-xs hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40'
             >
               <RotateCcw size={13} />
-              {isCurrent ? 'Current' : 'Restore'}
+              {isCurrent ? t('Current') : t('Restore')}
             </button>
           </div>
 
           {detailQuery.isLoading ? (
             <div className='flex items-center gap-2 rounded-xl border p-5 text-sm text-muted-foreground'>
               <LoaderCircle size={16} className='animate-spin' />
-              Preparing diff…
+              {t('Preparing diff…')}
             </div>
           ) : detailQuery.error ? (
             <p className='rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive'>
@@ -195,16 +218,16 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore this version?</AlertDialogTitle>
+            <AlertDialogTitle>{t('Restore this version?')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Rig will save your current files as a recovery version, then
-              replace this skill with the selected snapshot. You can undo this
-              restore from History.
+              {t(
+                'Rig will save your current files as a recovery version, then replace this skill with the selected snapshot. You can undo this restore from History.',
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={restoreMutation.isPending}>
-              Cancel
+              {t('Cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={restoreMutation.isPending}
@@ -218,7 +241,7 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
               ) : (
                 <RotateCcw />
               )}
-              Restore version
+              {t('Restore version')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -227,10 +250,10 @@ export const SkillHistoryPanel = ({ skill }: { skill: Skill }) => {
   );
 };
 
-const formatVersionTime = (value: string) => {
+const formatVersionTime = (value: string, locale: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);

@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "Rig"
-version = "26.1026.1"
+version = "26.1026.2"
 dependencies = [
  "base64 0.22.1",
  "chrono",

@@ -1,3 +1,4 @@
+import { useI18n } from '@/lib/preferences';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +53,8 @@ export const RepositorySelector = ({
   onImportRepository,
   onRemoveRepository,
 }: RepositorySelectorProps) => {
+  const { t } = useI18n();
+
   const [repositoryPendingRemoval, setRepositoryPendingRemoval] =
     useState<SkillRoot | null>(null);
   const [removeFailed, setRemoveFailed] = useState(false);
@@ -78,9 +81,9 @@ export const RepositorySelector = ({
   const copyRepositoryPath = async (root: SkillRoot) => {
     try {
       await navigator.clipboard.writeText(root.scopeId);
-      toast.success('Repository path copied');
+      toast.success(t('Repository path copied'));
     } catch {
-      toast.error('Couldn’t copy the repository path.');
+      toast.error(t('Couldn’t copy the repository path.'));
     }
   };
 
@@ -107,14 +110,16 @@ export const RepositorySelector = ({
     <>
       <nav
         className='flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-        aria-label='Skill repositories'
+        aria-label={t('Skill repositories')}
       >
         <RepositoryButton
           buttonRef={allSkillsButtonRef}
           icon={<Layers3 size={14} />}
-          label='All skills'
+          label={t('All skills')}
           isSelected={selectedRepositoryId === GLOBAL_REPOSITORY_ID}
-          onClick={() => selectRepository(GLOBAL_REPOSITORY_ID, 'All skills')}
+          onClick={() =>
+            selectRepository(GLOBAL_REPOSITORY_ID, t('All skills'))
+          }
         />
 
         {repositoryRoots.map(root => (
@@ -136,7 +141,9 @@ export const RepositorySelector = ({
             <button
               type='button'
               aria-label={
-                isImporting ? 'Adding project folder' : 'Add project folder'
+                isImporting
+                  ? t('Adding project folder')
+                  : t('Add project folder')
               }
               disabled={isImporting}
               onClick={onImportRepository}
@@ -148,12 +155,12 @@ export const RepositorySelector = ({
                 <Plus size={16} />
               )}
               <span className='hidden text-sm font-medium sm:inline'>
-                {isImporting ? 'Adding…' : 'Add project'}
+                {isImporting ? t('Adding…') : t('Add project')}
               </span>
             </button>
           </TooltipTrigger>
           <TooltipContent side='bottom'>
-            Choose a project folder to show its skills
+            {t('Choose a project folder to show its skills')}
           </TooltipContent>
         </Tooltip>
       </nav>
@@ -170,27 +177,29 @@ export const RepositorySelector = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Remove “{repositoryPendingRemoval?.scopeLabel}” from Rig?
+              {t('Remove “{name}” from Rig?', {
+                name: repositoryPendingRemoval?.scopeLabel ?? '',
+              })}
             </AlertDialogTitle>
             <AlertDialogDescription className='space-y-3'>
               <span className='block'>
-                Rig will stop showing skills from this folder. The folder and
-                its files will stay on your computer, and you can add it again
-                anytime.
+                {t(
+                  'Rig will stop showing skills from this folder. The folder and its files will stay on your computer, and you can add it again anytime.',
+                )}
               </span>
               <span className='block break-all rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground'>
                 {repositoryPendingRemoval?.scopeId}
               </span>
               {removeFailed ? (
                 <span className='block text-destructive'>
-                  Nothing changed. Try again.
+                  {t('Nothing changed. Try again.')}
                 </span>
               ) : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel autoFocus disabled={isRemovingPendingRepository}>
-              Cancel
+              {t('Cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={isRemovingPendingRepository}
@@ -201,7 +210,9 @@ export const RepositorySelector = ({
               ) : (
                 <Unlink />
               )}
-              {isRemovingPendingRepository ? 'Removing…' : 'Remove from Rig'}
+              {isRemovingPendingRepository
+                ? t('Removing…')
+                : t('Remove from Rig')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -222,56 +233,60 @@ const RepositoryPill = ({
   onSelect: () => void;
   onCopyPath: () => void;
   onRequestRemoval: () => void;
-}) => (
-  <fieldset
-    aria-label={`${root.scopeLabel} repository`}
-    className={cn(
-      'flex h-8 max-w-56 shrink-0 items-stretch overflow-hidden rounded-md border',
-      isSelected
-        ? 'border-border bg-foreground/[0.06] text-foreground'
-        : 'border-border bg-background/80 text-foreground',
-      !root.exists && 'border-amber-500/30 text-amber-700 dark:text-amber-300',
-    )}
-  >
-    <button
-      type='button'
-      aria-pressed={isSelected}
-      title={root.scopeId}
-      onClick={onSelect}
-      className='rig-pressable flex min-w-0 items-center gap-2 py-1.5 pl-3 pr-2 text-sm font-medium hover:bg-muted/60 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring'
+}) => {
+  const { t } = useI18n();
+  return (
+    <fieldset
+      aria-label={t('{name} repository', { name: root.scopeLabel })}
+      className={cn(
+        'flex h-8 max-w-56 shrink-0 items-stretch overflow-hidden rounded-md border',
+        isSelected
+          ? 'border-border bg-foreground/[0.06] text-foreground'
+          : 'border-border bg-background/80 text-foreground',
+        !root.exists &&
+          'border-amber-500/30 text-amber-700 dark:text-amber-300',
+      )}
     >
-      <Folder size={14} className='shrink-0' />
-      <span className='truncate'>{root.scopeLabel}</span>
-    </button>
+      <button
+        type='button'
+        aria-pressed={isSelected}
+        title={root.scopeId}
+        onClick={onSelect}
+        className='rig-pressable flex min-w-0 items-center gap-2 py-1.5 pl-3 pr-2 text-sm font-medium hover:bg-muted/60 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring'
+      >
+        <Folder size={14} className='shrink-0' />
+        <span className='truncate'>{root.scopeLabel}</span>
+      </button>
 
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type='button'
-          aria-label={`Options for ${root.scopeLabel}`}
-          title='Repository options'
-          className={cn(
-            'rig-pressable flex w-8 shrink-0 items-center justify-center border-l hover:bg-muted/60 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-            'border-border/60',
-          )}
-        >
-          <ChevronDown size={13} />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-52'>
-        <DropdownMenuItem onSelect={onCopyPath}>
-          <Copy />
-          Copy folder path
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={onRequestRemoval}>
-          <Unlink />
-          Remove from Rig…
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </fieldset>
-);
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type='button'
+            aria-label={t('Options for {name}', { name: root.scopeLabel })}
+            title={t('Repository options')}
+            className={cn(
+              'rig-pressable flex w-8 shrink-0 items-center justify-center border-l hover:bg-muted/60 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+              'border-border/60',
+            )}
+          >
+            <ChevronDown size={13} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align='end' className='w-52'>
+          <DropdownMenuItem onSelect={onCopyPath}>
+            <Copy />
+            {t('Copy folder path')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onRequestRemoval}>
+            <Unlink />
+            {t('Remove from Rig…')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </fieldset>
+  );
+};
 
 const RepositoryButton = ({
   buttonRef,

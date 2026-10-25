@@ -34,6 +34,8 @@ locations.
   moving files or changing agent discovery. Open **Hidden** to show them again.
 - **Read and share** — inspect rendered instructions, source, and file details;
   right-click to copy instructions or share an installation prompt.
+- **Language and appearance** — choose English or Korean and light, dark, or
+  system appearance in Settings. Preferences stay on this device.
 - **Manage in batches** — Command/Ctrl-click or Shift-click to select multiple
   skills, then share, hide, or delete them together.
 - **Restore existing versions** — inspect saved snapshots and readable diffs.
