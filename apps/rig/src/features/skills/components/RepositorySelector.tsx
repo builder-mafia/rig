@@ -1,4 +1,5 @@
 import { useI18n } from '@/lib/preferences';
+import { useSkillDropTarget, useSkillTransfer } from '../SkillTransferContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -235,8 +236,13 @@ const RepositoryPill = ({
   onRequestRemoval: () => void;
 }) => {
   const { t } = useI18n();
+  const transfer = useSkillTransfer();
+  const target = transfer?.repositoryTarget(root.scopeId) ?? null;
+  const { isDragOver, dropHandlers } = useSkillDropTarget(target);
   return (
     <fieldset
+      {...dropHandlers}
+      data-skill-drop-target={target?.path}
       aria-label={t('{name} repository', { name: root.scopeLabel })}
       className={cn(
         'flex h-8 max-w-56 shrink-0 items-stretch overflow-hidden rounded-md border',
@@ -245,6 +251,7 @@ const RepositoryPill = ({
           : 'border-border bg-background/80 text-foreground',
         !root.exists &&
           'border-amber-500/30 text-amber-700 dark:text-amber-300',
+        isDragOver && 'bg-accent ring-1 ring-inset ring-ring',
       )}
     >
       <button

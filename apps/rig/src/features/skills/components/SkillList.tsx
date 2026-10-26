@@ -47,6 +47,8 @@ import type { Skill } from '../types';
 import { getHiddenSkillKey, getHidingFolder } from '../useHiddenSkills';
 import { getSkillIdentity } from '../useRemoveSkill';
 import { ShareSkillsDialog } from './ShareSkillDialog';
+import { useSkillDropTarget, useSkillTransfer } from '../SkillTransferContext';
+import { createSkillTransfer, writeSkillTransfer } from '../skillTransfer';
 
 export interface SkillListProps {
   skills: Skill[];
@@ -84,6 +86,7 @@ export const SkillList = ({
   onShowingHiddenChange,
 }: SkillListProps) => {
   const { t } = useI18n();
+  const transfer = useSkillTransfer();
 
   const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
   const [skillsPendingShare, setSkillsPendingShare] = useState<Skill[]>([]);
@@ -158,6 +161,8 @@ export const SkillList = ({
     );
   };
   const toggleFolder = (folder: SkillFolder) => {
+    if (folder.path) transfer?.selectFolder(folder.path);
+    else transfer?.clearFolder();
     const toggle = (current: ReadonlySet<string>) => {
       const next = new Set(current);
       if (next.has(folder.id)) next.delete(folder.id);
@@ -203,6 +208,22 @@ export const SkillList = ({
         <ContextMenuTrigger asChild>
           <button
             type='button'
+            draggable={!skill.isArchived && !!transfer && !isRemoving}
+            onDragStart={event => {
+              const payload = createSkillTransfer(actionSkills);
+              if (!payload) {
+                event.preventDefault();
+                toast.error(
+                  t(
+                    'Select existing skill folders to copy. Restore archived files first.',
+                  ),
+                );
+                return;
+              }
+              writeSkillTransfer(event.dataTransfer, payload);
+              event.dataTransfer.effectAllowed = 'copy';
+              if (!isSelected) onSelectionChange([skill], skill);
+            }}
             aria-pressed={isSelected}
             title={getSkillFilePath(skill)}
             disabled={isRemoving}
@@ -214,7 +235,7 @@ export const SkillList = ({
               }
             }}
             className={cn(
-              'group flex w-full min-w-0 items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:opacity-50',
+              'group flex w-full min-w-0 select-none items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:opacity-50',
               isSelected
                 ? 'bg-foreground/[0.07] text-foreground'
                 : 'hover:bg-foreground/[0.035]',
@@ -473,8 +494,23 @@ const FolderGroup = ({
       ? t('Show folder in Rig')
       : t('Show parent folder in Rig')
     : t('Hide folder from Rig');
+  const transfer = useSkillTransfer();
+  const target = showingHidden
+    ? null
+    : (transfer?.folderTarget(folder.path) ?? null);
+  const { isDragOver, dropHandlers } = useSkillDropTarget(target);
   const header = (
-    <div className='group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]'>
+    <div
+      {...dropHandlers}
+      data-skill-drop-target={target?.path}
+      className={cn(
+        'group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]',
+        isDragOver && 'bg-accent ring-1 ring-inset ring-ring',
+        target &&
+          transfer?.target?.path === target.path &&
+          'bg-foreground/[0.04]',
+      )}
+    >
       <button
         type='button'
         aria-expanded={expanded}
