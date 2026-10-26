@@ -16,6 +16,10 @@ import { useRemoveSkillRoot } from '@/features/skills/useRemoveSkillRoot';
 import { useSkillRepositorySelection } from '@/features/skills/useSkillRepositorySelection';
 import { useSkillRoots } from '@/features/skills/useSkillRoots';
 import { HeaderLayout } from '@/layouts/HeaderLayout';
+import {
+  SkillTransferContext,
+  useSkillTransferController,
+} from '@/features/skills/SkillTransferContext';
 
 export const Root = () => {
   const { t } = useI18n();
@@ -28,6 +32,10 @@ export const Root = () => {
     roots,
     onRepositoryChange: () => undefined,
   });
+  const transfer = useSkillTransferController(
+    roots,
+    repositorySelection.selectedRepositoryId,
+  );
   const importSkillRoot = useImportSkillRoot({
     onImported: importedRoot =>
       repositorySelection.selectRepository(importedRoot.scopeId),
@@ -82,41 +90,46 @@ export const Root = () => {
     }
   };
   return (
-    <main className='rig-shell flex h-dvh flex-col overflow-hidden bg-background text-foreground'>
-      <HeaderLayout>
-        <div className='flex w-full items-center gap-2 px-3 sm:px-4'>
-          <RepositorySelector
-            roots={roots}
-            selectedRepositoryId={repositorySelection.selectedRepositoryId}
-            isImporting={importSkillRoot.isImporting}
-            onSelectRepository={repositorySelection.selectRepository}
-            onImportRepository={importSkillRoot.importFromFolder}
-            onRemoveRepository={removeRepository}
-            removingRepositoryId={removeSkillRoot.removingRootId}
-          />
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon'
-            aria-label={t('Open settings')}
-            onClick={() => setIsSettingsOpen(true)}
-            className='ml-auto size-8 rounded-md text-muted-foreground'
-          >
-            <Settings size={16} />
-          </Button>
-        </div>
-      </HeaderLayout>
-      <SkillRoot
-        key={repositorySelection.selectedRepositoryId}
-        roots={repositorySelection.visibleRoots}
-        hiddenSkillSourceIds={hiddenSourceIds}
-      />
-      <SettingsDialog
-        open={isSettingsOpen}
-        onOpenChange={setIsSettingsOpen}
-        hiddenSkillSourceIds={hiddenSourceIds}
-        onSkillSourceVisibilityChange={setSourceVisible}
-      />
-    </main>
+    <SkillTransferContext.Provider value={transfer}>
+      <main className='rig-shell flex h-dvh flex-col overflow-hidden bg-background text-foreground'>
+        <HeaderLayout>
+          <div className='flex w-full items-center gap-2 px-3 sm:px-4'>
+            <RepositorySelector
+              roots={roots}
+              selectedRepositoryId={repositorySelection.selectedRepositoryId}
+              isImporting={importSkillRoot.isImporting}
+              onSelectRepository={id => {
+                transfer.clearFolder();
+                repositorySelection.selectRepository(id);
+              }}
+              onImportRepository={importSkillRoot.importFromFolder}
+              onRemoveRepository={removeRepository}
+              removingRepositoryId={removeSkillRoot.removingRootId}
+            />
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon'
+              aria-label={t('Open settings')}
+              onClick={() => setIsSettingsOpen(true)}
+              className='ml-auto size-8 rounded-md text-muted-foreground'
+            >
+              <Settings size={16} />
+            </Button>
+          </div>
+        </HeaderLayout>
+        <SkillRoot
+          key={repositorySelection.selectedRepositoryId}
+          roots={repositorySelection.visibleRoots}
+          hiddenSkillSourceIds={hiddenSourceIds}
+        />
+        <SettingsDialog
+          open={isSettingsOpen}
+          onOpenChange={setIsSettingsOpen}
+          hiddenSkillSourceIds={hiddenSourceIds}
+          onSkillSourceVisibilityChange={setSourceVisible}
+        />
+      </main>
+    </SkillTransferContext.Provider>
   );
 };

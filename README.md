@@ -34,6 +34,9 @@ locations.
   moving files or changing agent discovery. Open **Hidden** to show them again.
 - **Read and share** — inspect rendered instructions, source, and file details;
   right-click to copy instructions or share an installation prompt.
+- **Copy between folders** — select skills and use Command/Ctrl+C and V, or drag
+  them onto a project or folder. Supporting files are copied too; existing skills
+  are preserved with a new `-copy` name when necessary.
 - **Language and appearance** — choose English or Korean and light, dark, or
   system appearance in Settings. Preferences stay on this device.
 - **Manage in batches** — Command/Ctrl-click or Shift-click to select multiple

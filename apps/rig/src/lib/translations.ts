@@ -1,5 +1,27 @@
 export type Locale = 'en' | 'ko';
 export const korean = {
+  'Skill copied to clipboard': '스킬을 클립보드에 복사했습니다',
+  'Copying skill…': '스킬 복사 중…',
+  'Skill copied': '스킬을 복제했습니다',
+  'Choose a project or folder to paste skills into.':
+    '스킬을 붙여 넣을 프로젝트나 폴더를 선택하세요.',
+  'Copying {count} skills…': '스킬 {count}개 복사 중…',
+  'Copied {count} skills': '스킬 {count}개를 복제했습니다',
+  'Copied {count} of {total} skills':
+    '스킬 {total}개 중 {count}개를 복제했습니다',
+  'Couldn’t copy skills': '스킬을 복제하지 못했습니다',
+  'Check the source files and folder permissions, then try again. Failed: {names}':
+    '원본 파일과 폴더 권한을 확인한 뒤 다시 시도하세요. 실패한 스킬: {names}',
+  'Select existing skill folders to copy. Restore archived files first.':
+    '복사할 스킬 폴더를 선택하세요. 보관된 파일은 먼저 복원해 주세요.',
+  '{count} skills copied to clipboard':
+    '스킬 {count}개를 클립보드에 복사했습니다',
+  'Select a project or folder, then paste to copy the skills there.':
+    '프로젝트나 폴더를 선택한 뒤 붙여 넣으면 해당 위치에 복제됩니다.',
+  'Couldn’t copy skills to the clipboard.':
+    '클립보드에 스킬을 복사하지 못했습니다.',
+  'This Rig clipboard data is invalid or unsupported.':
+    '유효하지 않거나 지원하지 않는 Rig 클립보드 데이터입니다.',
   Notifications: '알림',
   'Before update': '업데이트 전',
   'After update': '업데이트 후',

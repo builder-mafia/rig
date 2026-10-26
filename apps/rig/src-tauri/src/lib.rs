@@ -115,6 +115,7 @@ pub fn run() {
             update::commands::fetch_update,
             update::commands::install_update,
             skills::commands::copy_skill,
+            skills::transfer::copy_skill_to_folder,
             skills::commands::import_skill_root,
             skills::commands::check_skill_updates,
             skills::commands::update_skill,

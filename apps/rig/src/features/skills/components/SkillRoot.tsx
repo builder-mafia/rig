@@ -17,6 +17,11 @@ import { getSkillIdentity, useRemoveSkill } from '../useRemoveSkill';
 import { useRestoreArchivedSkill } from '../useSkillArchive';
 import { SkillContentViewer } from './SkillContentViewer';
 import { SkillList } from './SkillList';
+import {
+  useSkillClipboard,
+  useSkillDropTarget,
+  useSkillTransfer,
+} from '../SkillTransferContext';
 
 interface SkillRootProps {
   roots: SkillRootModel[];
@@ -25,6 +30,10 @@ interface SkillRootProps {
 
 export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   const { t } = useI18n();
+  const transfer = useSkillTransfer();
+  const { isDragOver, dropHandlers } = useSkillDropTarget(
+    transfer?.target ?? null,
+  );
 
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
@@ -75,6 +84,9 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   const selectedIdSet = useMemo(
     () => new Set(selectedSkillIds),
     [selectedSkillIds],
+  );
+  useSkillClipboard(
+    currentSkills.filter(skill => selectedIdSet.has(getSkillIdentity(skill))),
   );
   const clearSelection = () => {
     setSelectedSkillId(null);
@@ -130,7 +142,10 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   };
 
   return (
-    <div className='flex min-h-0 flex-1'>
+    <div
+      {...dropHandlers}
+      className={`flex min-h-0 flex-1 ${isDragOver ? 'ring-1 ring-inset ring-ring' : ''}`}
+    >
       <SidebarLayout className={selectedSkill ? 'max-md:hidden' : undefined}>
         <SkillList
           skills={visibleSkills}
