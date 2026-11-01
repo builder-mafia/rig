@@ -450,12 +450,19 @@ export class RemoveSkillError extends Data.TaggedError('RemoveSkillError')<{
 export const removeSkill = Effect.fn('removeSkill')(function* ({
   rootPath,
   relativePath,
+  preserveDirectory,
 }: {
   rootPath: string;
   relativePath: string;
+  preserveDirectory?: boolean;
 }) {
   yield* Effect.tryPromise({
-    try: () => invoke<void>('remove_skill', { rootPath, relativePath }),
+    try: () =>
+      invoke<void>('remove_skill', {
+        rootPath,
+        relativePath,
+        preserveDirectory,
+      }),
     catch: error => error,
   }).pipe(
     Effect.catchAll(error => {

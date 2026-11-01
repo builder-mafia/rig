@@ -134,6 +134,7 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
       <SidebarLayout className={selectedSkill ? 'max-md:hidden' : undefined}>
         <SkillList
           skills={visibleSkills}
+          allSkills={skills}
           hiddenSkills={hiddenSkills}
           hiddenFolderPaths={hiddenFolderPaths}
           onFolderVisibilityChange={changeFolderVisibility}

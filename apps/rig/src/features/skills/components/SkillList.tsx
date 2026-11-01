@@ -1,13 +1,5 @@
 import { useI18n } from '@/lib/preferences';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
@@ -51,9 +43,15 @@ import {
   buildMultiInstallPrompt,
 } from './ShareSkillDialog';
 import { CopySkillsDialog } from './CopySkillsDialog';
+import {
+  DeleteSkillsDialog,
+  type SkillRemovalRequest,
+} from './DeleteSkillsDialog';
+import { getSkillsInFolder, getUniqueActiveSkills } from '../skillRemoval';
 
 export interface SkillListProps {
   skills: Skill[];
+  allSkills?: Skill[];
   hiddenSkills: Skill[];
   hiddenFolderPaths: ReadonlySet<string>;
   onFolderVisibilityChange: (path: string, hidden: boolean) => void;
@@ -62,7 +60,7 @@ export interface SkillListProps {
   error: string | null;
   onSelectionChange: (skills: Skill[], focusedSkill: Skill | null) => void;
   onClearSelection: () => void;
-  onRemoveSkills: (skills: Skill[]) => void;
+  onRemoveSkills: (skills: Skill[], preserveFolderPath?: string) => void;
   removingSkillIds: ReadonlySet<string>;
   onHideSkills: (skills: Skill[]) => void;
   onShowSkills: (skills: Skill[]) => void;
@@ -72,6 +70,7 @@ export interface SkillListProps {
 
 export const SkillList = ({
   skills,
+  allSkills,
   hiddenSkills,
   hiddenFolderPaths,
   onFolderVisibilityChange,
@@ -89,7 +88,18 @@ export const SkillList = ({
 }: SkillListProps) => {
   const { t } = useI18n();
 
-  const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
+  const [removalRequest, setRemovalRequest] =
+    useState<SkillRemovalRequest | null>(null);
+  const removableSkills = allSkills ?? [...skills, ...hiddenSkills];
+  const requestFolderRemoval = (folder: SkillFolder) => {
+    const candidates = getSkillsInFolder(removableSkills, folder.path);
+    if (candidates.length > 0) {
+      setRemovalRequest({
+        skills: candidates,
+        folder: { label: folder.label, path: folder.path },
+      });
+    }
+  };
   const [skillsPendingCopy, setSkillsPendingCopy] = useState<Skill[]>([]);
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(
     null,
@@ -291,9 +301,13 @@ export const SkillList = ({
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem
-                disabled={isRemoving}
+                disabled={removingSkillIds.size > 0}
                 variant='destructive'
-                onSelect={() => setSkillsPendingRemoval(actionSkills)}
+                onSelect={() =>
+                  setRemovalRequest({
+                    skills: getUniqueActiveSkills(actionSkills),
+                  })
+                }
               >
                 <Trash2 />
                 {actionSkills.length === 1
@@ -397,6 +411,10 @@ export const SkillList = ({
               depth={0}
               collapsedIds={effectiveCollapsedIds}
               onToggle={toggleFolder}
+              onDeleteFolder={requestFolderRemoval}
+              deletionDisabled={
+                isLoading || !!error || removingSkillIds.size > 0
+              }
               renderSkill={renderSkill}
               showingHidden={showingHidden}
               hiddenFolderPaths={hiddenFolderPaths}
@@ -405,42 +423,13 @@ export const SkillList = ({
           ))}
         </div>
       </ScrollArea>
-      <AlertDialog
-        open={skillsPendingRemoval.length > 0}
-        onOpenChange={open => {
-          if (!open) setSkillsPendingRemoval([]);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {skillsPendingRemoval.length === 1
-                ? t('Delete “{name}”?', {
-                    name: skillsPendingRemoval[0]?.name ?? '',
-                  })
-                : t('Delete {count} skills?', {
-                    count: skillsPendingRemoval.length,
-                  })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t(
-                'This permanently deletes the skill folders from disk. To keep the files, use Hide instead.',
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                onRemoveSkills(skillsPendingRemoval);
-                setSkillsPendingRemoval([]);
-              }}
-            >
-              {t('Delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {removalRequest ? (
+        <DeleteSkillsDialog
+          request={removalRequest}
+          onConfirm={onRemoveSkills}
+          onClose={() => setRemovalRequest(null)}
+        />
+      ) : null}
       {skillsPendingCopy.length > 0 ? (
         <CopySkillsDialog
           skills={skillsPendingCopy}
@@ -456,6 +445,8 @@ const FolderGroup = ({
   depth,
   collapsedIds,
   onToggle,
+  onDeleteFolder,
+  deletionDisabled,
   renderSkill,
   showingHidden,
   hiddenFolderPaths,
@@ -465,6 +456,8 @@ const FolderGroup = ({
   depth: number;
   collapsedIds: ReadonlySet<string>;
   onToggle: (folder: SkillFolder) => void;
+  onDeleteFolder: (folder: SkillFolder) => void;
+  deletionDisabled: boolean;
   renderSkill: (skill: Skill) => ReactNode;
   showingHidden: boolean;
   hiddenFolderPaths: ReadonlySet<string>;
@@ -528,18 +521,29 @@ const FolderGroup = ({
   );
   return (
     <section className={depth === 0 ? 'mb-2' : 'min-w-0'}>
-      {actionPath ? (
+      {folder.path ? (
         <ContextMenu>
           <ContextMenuTrigger asChild>{header}</ContextMenuTrigger>
           <ContextMenuContent>
+            {actionPath ? (
+              <ContextMenuItem
+                title={actionPath}
+                onSelect={() =>
+                  onFolderVisibilityChange(actionPath, !showingHidden)
+                }
+              >
+                {showingHidden ? <Eye /> : <EyeOff />}
+                {actionLabel}
+              </ContextMenuItem>
+            ) : null}
+            {actionPath ? <ContextMenuSeparator /> : null}
             <ContextMenuItem
-              title={actionPath}
-              onSelect={() =>
-                onFolderVisibilityChange(actionPath, !showingHidden)
-              }
+              variant='destructive'
+              disabled={deletionDisabled}
+              onSelect={() => onDeleteFolder(folder)}
             >
-              {showingHidden ? <Eye /> : <EyeOff />}
-              {actionLabel}
+              <Trash2 />
+              {t('Delete all skills…')}
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -561,6 +565,8 @@ const FolderGroup = ({
                 depth={depth + 1}
                 collapsedIds={collapsedIds}
                 onToggle={onToggle}
+                onDeleteFolder={onDeleteFolder}
+                deletionDisabled={deletionDisabled}
                 renderSkill={renderSkill}
                 showingHidden={showingHidden}
                 hiddenFolderPaths={hiddenFolderPaths}

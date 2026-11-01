@@ -32,6 +32,11 @@ locations.
   Matching folders open automatically while searching.
 - **Hide only in Rig** — hide individual skills, folders, or provider sources without
   moving files or changing agent discovery. Open **Hidden** to show them again.
+- **Delete folder skills** — right-click a folder to delete all its detected skills,
+  including nested and hidden skills. Review the paths and count before confirming.
+  The red outline Delete button is focused for Enter; Cancel and Escape dismiss it.
+  The selected folder stays in place. A skill at the project or selected folder root
+  loses only its `SKILL.md`, preserving the other files there.
 - **Edit and share** — edit the full `SKILL.md` directly below its header. Changes
   save automatically, with Command/Ctrl+S for immediate saving. Share instructions
   or open the file in an installed Cursor, VSCode, WebStorm, Zed, or Finder.

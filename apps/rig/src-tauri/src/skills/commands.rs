@@ -225,15 +225,12 @@ pub fn restore_skill(root_path: String, relative_path: String) -> Result<(), Ski
 }
 
 #[tauri::command]
-pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), SkillDeletionError> {
+pub fn remove_skill(
+    root_path: String,
+    relative_path: String,
+    preserve_directory: Option<bool>,
+) -> Result<(), SkillDeletionError> {
     let root_path = expand_path(root_path.as_str());
-
-    if relative_path.is_empty() {
-        return Err(SkillDeletionError {
-            code: SkillDeletionErrorCode::OutsideRoot,
-            message: "Refusing to remove the skill root itself.".to_string(),
-        });
-    }
 
     let relative_path = Path::new(relative_path.as_str());
 
@@ -262,6 +259,17 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
         });
     }
 
+    let mut candidate = root_path.clone();
+    for component in relative_path.components() {
+        candidate.push(component);
+        if candidate.is_symlink() {
+            return Err(SkillDeletionError {
+                code: SkillDeletionErrorCode::OutsideRoot,
+                message: "Refusing to delete through a symbolic link.".to_string(),
+            });
+        }
+    }
+
     let skill_dir = root_path
         .join(relative_path)
         .canonicalize()
@@ -270,7 +278,7 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
             message: format!("Skill path does not exist: {}", error),
         })?;
 
-    if !skill_dir.starts_with(&root_path) || skill_dir == root_path {
+    if !skill_dir.starts_with(&root_path) {
         return Err(SkillDeletionError {
             code: SkillDeletionErrorCode::OutsideRoot,
             message: "Skill path must stay inside the selected root.".to_string(),
@@ -284,14 +292,27 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
         });
     }
 
-    if !skill_dir.join("SKILL.md").is_file() {
+    let skill_file = skill_dir.join("SKILL.md");
+    if skill_file.is_symlink() {
+        return Err(SkillDeletionError {
+            code: SkillDeletionErrorCode::OutsideRoot,
+            message: "Refusing to delete a symbolic-link skill file.".to_string(),
+        });
+    }
+    if !skill_file.is_file() {
         return Err(SkillDeletionError {
             code: SkillDeletionErrorCode::MissingSkillFile,
             message: "Skill directory does not contain SKILL.md.".to_string(),
         });
     }
 
-    fs::remove_dir_all(&skill_dir).map_err(|error| SkillDeletionError {
+    // A project/root or the folder being cleared must never be removed wholesale.
+    let result = if skill_dir == root_path || preserve_directory.unwrap_or(false) {
+        fs::remove_file(&skill_file)
+    } else {
+        fs::remove_dir_all(&skill_dir)
+    };
+    result.map_err(|error| SkillDeletionError {
         code: SkillDeletionErrorCode::DeleteFailed,
         message: format!("Failed to remove skill: {}", error),
     })
@@ -301,6 +322,80 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
 mod tests {
     use super::super::models::SkillCopyErrorCode;
     use super::*;
+
+    #[test]
+    fn removing_root_skill_preserves_project_and_other_skills() {
+        let root = make_test_sandbox("remove-root");
+        fs::write(root.join("SKILL.md"), "root skill").unwrap();
+        fs::write(root.join("README.md"), "project").unwrap();
+        fs::create_dir(root.join("child")).unwrap();
+        fs::write(root.join("child/SKILL.md"), "child").unwrap();
+        remove_skill(root.to_string_lossy().into(), "".into(), None).unwrap();
+        assert!(!root.join("SKILL.md").exists());
+        assert!(root.join("README.md").is_file());
+        assert!(root.join("child/SKILL.md").is_file());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn removing_folder_skills_preserves_selected_folder_and_siblings() {
+        let root = make_test_sandbox("remove-folder");
+        fs::create_dir_all(root.join("tools/child/references")).unwrap();
+        fs::write(root.join("tools/child/SKILL.md"), "child").unwrap();
+        fs::write(root.join("tools/child/references/details.md"), "details").unwrap();
+        fs::write(root.join("tools/SKILL.md"), "tools").unwrap();
+        fs::write(root.join("tools/README.md"), "keep").unwrap();
+        fs::create_dir(root.join("tools-other")).unwrap();
+        fs::write(root.join("tools-other/SKILL.md"), "sibling").unwrap();
+        let path = root.to_string_lossy().to_string();
+        remove_skill(path.clone(), "tools/child".into(), None).unwrap();
+        remove_skill(path, "tools".into(), Some(true)).unwrap();
+        assert!(!root.join("tools/child").exists());
+        assert!(!root.join("tools/SKILL.md").exists());
+        assert!(root.join("tools/README.md").is_file());
+        assert!(root.join("tools-other/SKILL.md").is_file());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn removing_skills_rejects_escape_and_non_skill_folders() {
+        let root = make_test_sandbox("remove-escape");
+        fs::create_dir(root.join("ordinary")).unwrap();
+        fs::write(root.join("ordinary/README.md"), "keep").unwrap();
+        for relative in ["../outside", "/tmp/outside"] {
+            let error =
+                remove_skill(root.to_string_lossy().into(), relative.into(), None).unwrap_err();
+            assert!(matches!(error.code, SkillDeletionErrorCode::OutsideRoot));
+        }
+        let error =
+            remove_skill(root.to_string_lossy().into(), "ordinary".into(), None).unwrap_err();
+        assert!(matches!(error.code, SkillDeletionErrorCode::MissingSkillFile));
+        assert!(root.join("ordinary/README.md").is_file());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn removing_skills_never_follows_directory_or_file_symlinks() {
+        use std::os::unix::fs::symlink;
+        let root = make_test_sandbox("remove-links");
+        fs::create_dir(root.join("original")).unwrap();
+        fs::write(root.join("original/SKILL.md"), "keep").unwrap();
+        symlink(root.join("original"), root.join("alias")).unwrap();
+        fs::create_dir(root.join("file-link")).unwrap();
+        symlink(
+            root.join("original/SKILL.md"),
+            root.join("file-link/SKILL.md"),
+        )
+        .unwrap();
+        for relative in ["alias", "file-link"] {
+            let error =
+                remove_skill(root.to_string_lossy().into(), relative.into(), None).unwrap_err();
+            assert!(matches!(error.code, SkillDeletionErrorCode::OutsideRoot));
+        }
+        assert!(root.join("original/SKILL.md").is_file());
+        fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn default_roots_include_hermes_global_provider_root() {
