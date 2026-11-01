@@ -33,7 +33,7 @@ fn valid_relative(path: &Path, allow_empty: bool) -> bool {
 
 fn source_directory(root: &str, relative: &str) -> Result<PathBuf, SkillCopyError> {
     let relative = Path::new(relative);
-    if !valid_relative(relative, false) {
+    if !valid_relative(relative, true) {
         return Err(error(
             SkillCopyErrorCode::OutsideRoot,
             "Choose a skill inside its source root.",
@@ -46,7 +46,7 @@ fn source_directory(root: &str, relative: &str) -> Result<PathBuf, SkillCopyErro
         .join(relative)
         .canonicalize()
         .map_err(|e| error(SkillCopyErrorCode::PathNotFound, e.to_string()))?;
-    if source == root || !source.starts_with(&root) {
+    if !source.starts_with(&root) {
         return Err(error(
             SkillCopyErrorCode::OutsideRoot,
             "Source skill must stay inside its root.",
@@ -64,7 +64,7 @@ fn source_directory(root: &str, relative: &str) -> Result<PathBuf, SkillCopyErro
             "Source folder has no SKILL.md.",
         ));
     }
-    // A pasted reference may be stale or forged. Never follow links out of a skill,
+    // A source reference may be stale or forged. Never follow links out of a skill,
     // or recurse into symlink cycles while copying its supporting files.
     for entry in walkdir::WalkDir::new(&source).follow_links(false) {
         let entry = entry.map_err(|e| error(SkillCopyErrorCode::CopyFailed, e.to_string()))?;
@@ -221,9 +221,15 @@ fn copy_skill_into_folder(
     )?;
     let name = Path::new(&source_relative_path)
         .file_name()
-        .unwrap()
+        .or_else(|| source.file_name())
+        .ok_or_else(|| {
+            error(
+                SkillCopyErrorCode::OutsideRoot,
+                "Source folder has no name.",
+            )
+        })?
         .to_string_lossy();
-    // Reserve the destination atomically so concurrent pastes never overwrite files.
+    // Reserve the destination atomically so concurrent copies never overwrite files.
     for suffix in 0..10_000 {
         let name = match suffix {
             0 => name.to_string(),
@@ -331,6 +337,24 @@ mod tests {
             fs::read_to_string(f.0.join("source/nested/review/SKILL.md")).unwrap(),
             "review instructions"
         );
+    }
+
+    #[test]
+    fn copies_a_skill_at_its_registered_root_into_a_custom_folder() {
+        let f = Fixture::new();
+        let result = copy_skill_into_folder(
+            f.0.join("source/nested/review").to_string_lossy().into(),
+            "".into(),
+            f.0.join("custom").to_string_lossy().into(),
+            "".into(),
+        )
+        .unwrap();
+        assert!(result.path.ends_with("custom/review"));
+        assert_eq!(
+            fs::read_to_string(Path::new(&result.path).join("references/guide.md")).unwrap(),
+            "supporting file"
+        );
+        assert!(f.0.join("source/nested/review/SKILL.md").exists());
     }
 
     #[test]

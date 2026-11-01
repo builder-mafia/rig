@@ -267,7 +267,7 @@ describe('compact skill list', () => {
     });
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Hide folder from Rig: /work/rig/packages/web',
+        name: 'Hide: /work/rig/packages/web',
       }),
     );
     expect(props.onFolderVisibilityChange).toHaveBeenCalledWith(
@@ -285,7 +285,7 @@ describe('compact skill list', () => {
     );
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Show parent folder in Rig: /work/rig/packages',
+        name: 'Show parent folder: /work/rig/packages',
       }),
     );
     expect(props.onFolderVisibilityChange).toHaveBeenLastCalledWith(
@@ -351,7 +351,7 @@ describe('folder visibility in the library', () => {
     );
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Hide folder from Rig: /work/rig/packages',
+        name: 'Hide: /work/rig/packages',
       }),
     );
     expect(
@@ -369,7 +369,7 @@ describe('folder visibility in the library', () => {
     ).toBeTruthy();
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Show folder in Rig: /work/rig/packages',
+        name: 'Show: /work/rig/packages',
       }),
     );
     expect(

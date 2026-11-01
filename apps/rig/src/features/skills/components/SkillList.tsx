@@ -20,7 +20,7 @@ import {
 import {
   ArrowLeft,
   ChevronRight,
-  Clipboard,
+  Copy,
   Eye,
   EyeOff,
   Folder,
@@ -46,9 +46,11 @@ import {
 import type { Skill } from '../types';
 import { getHiddenSkillKey, getHidingFolder } from '../useHiddenSkills';
 import { getSkillIdentity } from '../useRemoveSkill';
-import { ShareSkillsDialog } from './ShareSkillDialog';
-import { useSkillDropTarget, useSkillTransfer } from '../SkillTransferContext';
-import { createSkillTransfer, writeSkillTransfer } from '../skillTransfer';
+import {
+  buildInstallPrompt,
+  buildMultiInstallPrompt,
+} from './ShareSkillDialog';
+import { CopySkillsDialog } from './CopySkillsDialog';
 
 export interface SkillListProps {
   skills: Skill[];
@@ -86,10 +88,9 @@ export const SkillList = ({
   onShowingHiddenChange,
 }: SkillListProps) => {
   const { t } = useI18n();
-  const transfer = useSkillTransfer();
 
   const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
-  const [skillsPendingShare, setSkillsPendingShare] = useState<Skill[]>([]);
+  const [skillsPendingCopy, setSkillsPendingCopy] = useState<Skill[]>([]);
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(
     null,
   );
@@ -161,8 +162,6 @@ export const SkillList = ({
     );
   };
   const toggleFolder = (folder: SkillFolder) => {
-    if (folder.path) transfer?.selectFolder(folder.path);
-    else transfer?.clearFolder();
     const toggle = (current: ReadonlySet<string>) => {
       const next = new Set(current);
       if (next.has(folder.id)) next.delete(folder.id);
@@ -181,12 +180,18 @@ export const SkillList = ({
     onClearSelection();
   };
 
-  const copyInstructions = async (skill: Skill) => {
+  const share = async (skills: Skill[]) => {
     try {
-      await navigator.clipboard.writeText(skill.content);
-      toast.success(t('Instructions copied'));
+      await navigator.clipboard.writeText(
+        skills.length === 1
+          ? buildInstallPrompt(skills[0])
+          : buildMultiInstallPrompt(skills),
+      );
+      toast.success(t('Copied to clipboard'), { position: 'top-center' });
     } catch {
-      toast.error(t('Couldn’t copy skill instructions. Try again.'));
+      toast.error(t('Couldn’t copy the install prompt.'), {
+        position: 'top-center',
+      });
     }
   };
 
@@ -208,22 +213,6 @@ export const SkillList = ({
         <ContextMenuTrigger asChild>
           <button
             type='button'
-            draggable={!skill.isArchived && !!transfer && !isRemoving}
-            onDragStart={event => {
-              const payload = createSkillTransfer(actionSkills);
-              if (!payload) {
-                event.preventDefault();
-                toast.error(
-                  t(
-                    'Select existing skill folders to copy. Restore archived files first.',
-                  ),
-                );
-                return;
-              }
-              writeSkillTransfer(event.dataTransfer, payload);
-              event.dataTransfer.effectAllowed = 'copy';
-              if (!isSelected) onSelectionChange([skill], skill);
-            }}
             aria-pressed={isSelected}
             title={getSkillFilePath(skill)}
             disabled={isRemoving}
@@ -264,15 +253,18 @@ export const SkillList = ({
           </button>
         </ContextMenuTrigger>
         <ContextMenuContent className='w-52'>
-          <ContextMenuItem onSelect={() => void copyInstructions(skill)}>
-            <Clipboard />
-            {t('Copy instructions')}
+          <ContextMenuItem
+            disabled={
+              isRemoving || actionSkills.some(candidate => candidate.isArchived)
+            }
+            onSelect={() => setSkillsPendingCopy(actionSkills)}
+          >
+            <Copy />
+            {t('Copy')}
           </ContextMenuItem>
-          <ContextMenuItem onSelect={() => setSkillsPendingShare(actionSkills)}>
+          <ContextMenuItem onSelect={() => void share(actionSkills)}>
             <Share2 />
-            {actionSkills.length === 1
-              ? t('Share skill')
-              : t('Share {count} skills', { count: actionSkills.length })}
+            {t('Share')}
           </ContextMenuItem>
           {!actionSkills.some(candidate => candidate.isArchived) ? (
             <>
@@ -295,11 +287,7 @@ export const SkillList = ({
                 title={hidingFolder}
               >
                 {showingHidden ? <Eye /> : <EyeOff />}
-                {hidingFolder
-                  ? t('Show containing folder in Rig')
-                  : showingHidden
-                    ? t('Show in Rig')
-                    : t('Hide from Rig')}
+                {showingHidden ? t('Show') : t('Hide')}
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem
@@ -436,7 +424,7 @@ export const SkillList = ({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
-                'This permanently deletes the skill folders from disk. To keep the files, use Hide from Rig instead.',
+                'This permanently deletes the skill folders from disk. To keep the files, use Hide instead.',
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -453,13 +441,12 @@ export const SkillList = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <ShareSkillsDialog
-        skills={skillsPendingShare}
-        open={skillsPendingShare.length > 0}
-        onOpenChange={open => {
-          if (!open) setSkillsPendingShare([]);
-        }}
-      />
+      {skillsPendingCopy.length > 0 ? (
+        <CopySkillsDialog
+          skills={skillsPendingCopy}
+          onClose={() => setSkillsPendingCopy([])}
+        />
+      ) : null}
     </div>
   );
 };
@@ -489,28 +476,13 @@ const FolderGroup = ({
   const expanded = !collapsedIds.has(folder.id);
   const hidingFolder = getHidingFolder(folder.path, hiddenFolderPaths);
   const actionPath = showingHidden ? hidingFolder : folder.path;
-  const actionLabel = showingHidden
-    ? hidingFolder === folder.path
-      ? t('Show folder in Rig')
-      : t('Show parent folder in Rig')
-    : t('Hide folder from Rig');
-  const transfer = useSkillTransfer();
-  const target = showingHidden
-    ? null
-    : (transfer?.folderTarget(folder.path) ?? null);
-  const { isDragOver, dropHandlers } = useSkillDropTarget(target);
+  const actionLabel = showingHidden ? t('Show') : t('Hide');
+  const actionTitle =
+    showingHidden && hidingFolder !== folder.path
+      ? t('Show parent folder')
+      : actionLabel;
   const header = (
-    <div
-      {...dropHandlers}
-      data-skill-drop-target={target?.path}
-      className={cn(
-        'group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]',
-        isDragOver && 'bg-accent ring-1 ring-inset ring-ring',
-        target &&
-          transfer?.target?.path === target.path &&
-          'bg-foreground/[0.04]',
-      )}
-    >
+    <div className='group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]'>
       <button
         type='button'
         aria-expanded={expanded}
@@ -544,8 +516,8 @@ const FolderGroup = ({
       {actionPath ? (
         <button
           type='button'
-          aria-label={`${actionLabel}: ${actionPath}`}
-          title={`${actionLabel}: ${actionPath}`}
+          aria-label={`${actionTitle}: ${actionPath}`}
+          title={`${actionTitle}: ${actionPath}`}
           onClick={() => onFolderVisibilityChange(actionPath, !showingHidden)}
           className='mr-1 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(hover:hover)]:opacity-0 group-hover/folder:opacity-100 focus-visible:opacity-100'
         >

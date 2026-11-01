@@ -1,266 +1,64 @@
 import { useI18n } from '@/lib/preferences';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  toast,
-} from '@allin/ui';
-import { Bot, Check, Clipboard, Share2, Terminal } from 'lucide-react';
+import { toast } from '@allin/ui';
+import { Share2 } from 'lucide-react';
 import { useState } from 'react';
-import type { Skill, SkillUpdateStatus } from '../types';
+import type { Skill } from '../types';
 
-export const ShareSkillDialog = ({
+export const ShareSkillButton = ({
   skill,
-  updateStatus,
+  fileContent,
+  disabled = false,
 }: {
   skill: Skill;
-  updateStatus?: SkillUpdateStatus;
+  fileContent?: string;
+  disabled?: boolean;
 }) => {
   const { t } = useI18n();
-
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState<'source' | 'prompt' | null>(null);
-  const sourceCommand = updateStatus
-    ? buildSourceInstallCommand(updateStatus.source, skill.name)
-    : null;
-  const installPrompt = buildInstallPrompt(skill);
-
-  const copy = async (value: string, kind: 'source' | 'prompt') => {
+  const [copying, setCopying] = useState(false);
+  const copy = async () => {
+    if (copying) return;
+    setCopying(true);
     try {
-      await navigator.clipboard.writeText(value);
-      setCopied(kind);
-      window.setTimeout(() => setCopied(null), 1_500);
-    } catch {
-      toast.error(
-        kind === 'source'
-          ? t('Couldn’t copy the npx command.')
-          : t('Couldn’t copy the install prompt.'),
+      // Start the clipboard write in the click gesture; do not wait for autosave.
+      await navigator.clipboard.writeText(
+        buildInstallPrompt(skill, fileContent),
       );
+      toast.success(t('Copied to clipboard'), { position: 'top-center' });
+    } catch {
+      toast.error(t('Couldn’t copy the install prompt.'), {
+        position: 'top-center',
+      });
+    } finally {
+      setCopying(false);
     }
   };
-
   return (
-    <>
-      <button
-        type='button'
-        onClick={() => setOpen(true)}
-        className='rig-pressable inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-background px-2 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-      >
-        <Share2 size={13} />
-        <span className='hidden sm:inline'>{t('Share')}</span>
-      </button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent closeLabel={t('Close')} className='sm:max-w-xl'>
-          <DialogHeader>
-            <DialogTitle>{t('Share {name}', { name: skill.name })}</DialogTitle>
-            <DialogDescription>
-              {t('Choose how to install this skill.')}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='space-y-3'>
-            {sourceCommand ? (
-              <section className='rounded-xl border p-4'>
-                <div className='flex items-start gap-3'>
-                  <Terminal size={17} className='mt-0.5 shrink-0' />
-                  <div className='min-w-0 flex-1'>
-                    <h3 className='text-sm font-semibold'>
-                      {t('Install with npx')}
-                    </h3>
-                    <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                      {t('Copy the command and run it in a terminal.')}
-                    </p>
-                    <code className='mt-3 block overflow-x-auto rounded-lg bg-muted px-3 py-2 text-[11px]'>
-                      {sourceCommand}
-                    </code>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      size='sm'
-                      className='mt-3'
-                      onClick={() => copy(sourceCommand, 'source')}
-                    >
-                      {copied === 'source' ? <Check /> : <Clipboard />}
-                      {copied === 'source'
-                        ? t('Command copied')
-                        : t('Copy npx command')}
-                    </Button>
-                  </div>
-                </div>
-              </section>
-            ) : null}
-
-            <section className='rounded-xl border p-4'>
-              <div className='flex items-start gap-3'>
-                <Bot size={17} className='mt-0.5 shrink-0' />
-                <div className='min-w-0 flex-1'>
-                  <h3 className='text-sm font-semibold'>
-                    {t('Install with AI')}
-                  </h3>
-                  <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                    {t(
-                      'Copy the prompt and paste it into ChatGPT, Claude, Codex, or another coding assistant.',
-                    )}
-                  </p>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    className='mt-3'
-                    onClick={() => copy(installPrompt, 'prompt')}
-                  >
-                    {copied === 'prompt' ? <Check /> : <Clipboard />}
-                    {copied === 'prompt'
-                      ? t('Prompt copied')
-                      : t('Copy install prompt')}
-                  </Button>
-                </div>
-              </div>
-            </section>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
-
-export const ShareSkillsDialog = ({
-  skills,
-  updateStatuses = [],
-  open,
-  onOpenChange,
-}: {
-  skills: Skill[];
-  updateStatuses?: SkillUpdateStatus[];
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) => {
-  const { t } = useI18n();
-
-  const [copied, setCopied] = useState<'source' | 'prompt' | null>(null);
-  const sourcesByName = new Map(
-    updateStatuses.map(status => [status.name, status.source]),
-  );
-  const sourceCommands = skills.flatMap(skill => {
-    const source = sourcesByName.get(skill.name);
-    return source ? [buildSourceInstallCommand(source, skill.name)] : [];
-  });
-  const installPrompt = buildMultiInstallPrompt(skills);
-
-  const copy = async (value: string, kind: 'source' | 'prompt') => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(kind);
-      window.setTimeout(() => setCopied(null), 1_500);
-    } catch {
-      toast.error(
-        kind === 'source'
-          ? t('Couldn’t copy the npx commands.')
-          : t('Couldn’t copy the install prompt.'),
-      );
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent closeLabel={t('Close')} className='sm:max-w-xl'>
-        <DialogHeader>
-          <DialogTitle>
-            {t('Share {count} skills', { count: skills.length })}
-          </DialogTitle>
-          <DialogDescription>
-            {t('Choose how to install these skills.')}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className='space-y-3'>
-          {sourceCommands.length > 0 ? (
-            <section className='rounded-xl border p-4'>
-              <div className='flex items-start gap-3'>
-                <Terminal size={17} className='mt-0.5 shrink-0' />
-                <div className='min-w-0 flex-1'>
-                  <h3 className='text-sm font-semibold'>
-                    {t('Install with npx')}
-                  </h3>
-                  <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                    {sourceCommands.length < skills.length
-                      ? t('Available for {count} of {total} selected skills.', {
-                          count: sourceCommands.length,
-                          total: skills.length,
-                        })
-                      : null}
-                    {t('Copy the commands and run them in a terminal.')}
-                  </p>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    className='mt-3'
-                    onClick={() => copy(sourceCommands.join('\n'), 'source')}
-                  >
-                    {copied === 'source' ? <Check /> : <Clipboard />}
-                    {copied === 'source'
-                      ? sourceCommands.length === 1
-                        ? t('Command copied')
-                        : t('Commands copied')
-                      : sourceCommands.length === 1
-                        ? t('Copy npx command')
-                        : t('Copy {count} npx commands', {
-                            count: sourceCommands.length,
-                          })}
-                  </Button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          <section className='rounded-xl border p-4'>
-            <div className='flex items-start gap-3'>
-              <Bot size={17} className='mt-0.5 shrink-0' />
-              <div className='min-w-0 flex-1'>
-                <h3 className='text-sm font-semibold'>
-                  {t('Install with AI')}
-                </h3>
-                <p className='mt-1 text-xs leading-5 text-muted-foreground'>
-                  {t(
-                    'Copy the prompt and paste it into ChatGPT, Claude, Codex, or another coding assistant.',
-                  )}
-                </p>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  className='mt-3'
-                  onClick={() => copy(installPrompt, 'prompt')}
-                >
-                  {copied === 'prompt' ? <Check /> : <Clipboard />}
-                  {copied === 'prompt'
-                    ? t('Prompt copied')
-                    : t('Copy install prompt')}
-                </Button>
-              </div>
-            </div>
-          </section>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <button
+      type='button'
+      onClick={() => void copy()}
+      disabled={disabled || copying}
+      className='inline-flex h-9 shrink-0 items-center gap-2 rounded-md border border-border/60 bg-background px-3.5 text-sm font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40'
+    >
+      <Share2 size={16} />
+      <span>{t('Share')}</span>
+    </button>
   );
 };
 
 export const buildInstallPrompt = (
   skill: Pick<Skill, 'name' | 'description' | 'content'>,
+  rawFileContent?: string,
 ) => {
-  const fileContent = [
-    '---',
-    `name: ${JSON.stringify(skill.name)}`,
-    `description: ${JSON.stringify(skill.description ?? 'Shared from Rig')}`,
-    '---',
-    '',
-    skill.content,
-  ].join('\n');
+  const fileContent =
+    rawFileContent ??
+    [
+      '---',
+      `name: ${JSON.stringify(skill.name)}`,
+      `description: ${JSON.stringify(skill.description ?? 'Shared from Rig')}`,
+      '---',
+      '',
+      skill.content,
+    ].join('\n');
 
   return [
     `Install a global Agent Skill named "${skill.name}" for the agent environment on this computer.`,

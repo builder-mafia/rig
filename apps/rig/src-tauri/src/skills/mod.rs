@@ -1,5 +1,6 @@
 pub mod archive;
 pub mod commands;
+pub mod editor;
 pub mod fs;
 pub mod history;
 pub mod models;

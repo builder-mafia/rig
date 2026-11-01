@@ -32,11 +32,13 @@ locations.
   Matching folders open automatically while searching.
 - **Hide only in Rig** — hide individual skills, folders, or provider sources without
   moving files or changing agent discovery. Open **Hidden** to show them again.
-- **Read and share** — inspect rendered instructions, source, and file details;
-  right-click to copy instructions or share an installation prompt.
-- **Copy between folders** — select skills and use Command/Ctrl+C and V, or drag
-  them onto a project or folder. Supporting files are copied too; existing skills
-  are preserved with a new `-copy` name when necessary.
+- **Edit and share** — edit the full `SKILL.md` directly below its header. Changes
+  save automatically, with Command/Ctrl+S for immediate saving. Share instructions
+  or open the file in an installed Cursor, VSCode, WebStorm, Zed, or Finder.
+- **Copy between folders** — right-click selected skills and choose **Copy**.
+  Pick a detected project to copy into its `.agents/skills`, or **Custom** to
+  choose a folder. Confirm the destination before copying. Supporting files are
+  copied too; existing skills are preserved with a new `-copy` name when necessary.
 - **Language and appearance** — choose English or Korean and light, dark, or
   system appearance in Settings. Preferences stay on this device.
 - **Manage in batches** — Command/Ctrl-click or Shift-click to select multiple
@@ -46,8 +48,9 @@ locations.
 
 ## Local by default
 
-Rig reads skill files on your Mac. Hidden skills are stored as a local Rig
-preference; their files and availability to agents do not change. Files moved
+Rig reads and edits skill files on your Mac. External edits are checked before
+saving so a stale draft cannot silently replace another editor’s changes. Hidden
+skills are stored as a local Rig preference; their files and availability to agents do not change. Files moved
 into `.archive` by older versions remain recoverable from **Hidden** using
 **Restore file**. Restoring those legacy files moves them back to their original
 folders; new hide/show actions never move files.
