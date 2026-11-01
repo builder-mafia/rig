@@ -20,7 +20,7 @@ import {
 import {
   ArrowLeft,
   ChevronRight,
-  Clipboard,
+  Copy,
   Eye,
   EyeOff,
   Folder,
@@ -46,7 +46,11 @@ import {
 import type { Skill } from '../types';
 import { getHiddenSkillKey, getHidingFolder } from '../useHiddenSkills';
 import { getSkillIdentity } from '../useRemoveSkill';
-import { ShareSkillsDialog } from './ShareSkillDialog';
+import {
+  buildInstallPrompt,
+  buildMultiInstallPrompt,
+} from './ShareSkillDialog';
+import { CopySkillsDialog } from './CopySkillsDialog';
 
 export interface SkillListProps {
   skills: Skill[];
@@ -86,7 +90,7 @@ export const SkillList = ({
   const { t } = useI18n();
 
   const [skillsPendingRemoval, setSkillsPendingRemoval] = useState<Skill[]>([]);
-  const [skillsPendingShare, setSkillsPendingShare] = useState<Skill[]>([]);
+  const [skillsPendingCopy, setSkillsPendingCopy] = useState<Skill[]>([]);
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(
     null,
   );
@@ -176,12 +180,18 @@ export const SkillList = ({
     onClearSelection();
   };
 
-  const copyInstructions = async (skill: Skill) => {
+  const share = async (skills: Skill[]) => {
     try {
-      await navigator.clipboard.writeText(skill.content);
-      toast.success(t('Instructions copied'));
+      await navigator.clipboard.writeText(
+        skills.length === 1
+          ? buildInstallPrompt(skills[0])
+          : buildMultiInstallPrompt(skills),
+      );
+      toast.success(t('Copied to clipboard'), { position: 'top-center' });
     } catch {
-      toast.error(t('Couldn’t copy skill instructions. Try again.'));
+      toast.error(t('Couldn’t copy the install prompt.'), {
+        position: 'top-center',
+      });
     }
   };
 
@@ -214,7 +224,7 @@ export const SkillList = ({
               }
             }}
             className={cn(
-              'group flex w-full min-w-0 items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:opacity-50',
+              'group flex w-full min-w-0 select-none items-center rounded-md px-2.5 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:opacity-50',
               isSelected
                 ? 'bg-foreground/[0.07] text-foreground'
                 : 'hover:bg-foreground/[0.035]',
@@ -243,15 +253,18 @@ export const SkillList = ({
           </button>
         </ContextMenuTrigger>
         <ContextMenuContent className='w-52'>
-          <ContextMenuItem onSelect={() => void copyInstructions(skill)}>
-            <Clipboard />
-            {t('Copy instructions')}
+          <ContextMenuItem
+            disabled={
+              isRemoving || actionSkills.some(candidate => candidate.isArchived)
+            }
+            onSelect={() => setSkillsPendingCopy(actionSkills)}
+          >
+            <Copy />
+            {t('Copy')}
           </ContextMenuItem>
-          <ContextMenuItem onSelect={() => setSkillsPendingShare(actionSkills)}>
+          <ContextMenuItem onSelect={() => void share(actionSkills)}>
             <Share2 />
-            {actionSkills.length === 1
-              ? t('Share skill')
-              : t('Share {count} skills', { count: actionSkills.length })}
+            {t('Share')}
           </ContextMenuItem>
           {!actionSkills.some(candidate => candidate.isArchived) ? (
             <>
@@ -274,11 +287,7 @@ export const SkillList = ({
                 title={hidingFolder}
               >
                 {showingHidden ? <Eye /> : <EyeOff />}
-                {hidingFolder
-                  ? t('Show containing folder in Rig')
-                  : showingHidden
-                    ? t('Show in Rig')
-                    : t('Hide from Rig')}
+                {showingHidden ? t('Show') : t('Hide')}
               </ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuItem
@@ -415,7 +424,7 @@ export const SkillList = ({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(
-                'This permanently deletes the skill folders from disk. To keep the files, use Hide from Rig instead.',
+                'This permanently deletes the skill folders from disk. To keep the files, use Hide instead.',
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -432,13 +441,12 @@ export const SkillList = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <ShareSkillsDialog
-        skills={skillsPendingShare}
-        open={skillsPendingShare.length > 0}
-        onOpenChange={open => {
-          if (!open) setSkillsPendingShare([]);
-        }}
-      />
+      {skillsPendingCopy.length > 0 ? (
+        <CopySkillsDialog
+          skills={skillsPendingCopy}
+          onClose={() => setSkillsPendingCopy([])}
+        />
+      ) : null}
     </div>
   );
 };
@@ -468,11 +476,11 @@ const FolderGroup = ({
   const expanded = !collapsedIds.has(folder.id);
   const hidingFolder = getHidingFolder(folder.path, hiddenFolderPaths);
   const actionPath = showingHidden ? hidingFolder : folder.path;
-  const actionLabel = showingHidden
-    ? hidingFolder === folder.path
-      ? t('Show folder in Rig')
-      : t('Show parent folder in Rig')
-    : t('Hide folder from Rig');
+  const actionLabel = showingHidden ? t('Show') : t('Hide');
+  const actionTitle =
+    showingHidden && hidingFolder !== folder.path
+      ? t('Show parent folder')
+      : actionLabel;
   const header = (
     <div className='group/folder flex min-w-0 items-center rounded-md hover:bg-foreground/[0.035]'>
       <button
@@ -508,8 +516,8 @@ const FolderGroup = ({
       {actionPath ? (
         <button
           type='button'
-          aria-label={`${actionLabel}: ${actionPath}`}
-          title={`${actionLabel}: ${actionPath}`}
+          aria-label={`${actionTitle}: ${actionPath}`}
+          title={`${actionTitle}: ${actionPath}`}
           onClick={() => onFolderVisibilityChange(actionPath, !showingHidden)}
           className='mr-1 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(hover:hover)]:opacity-0 group-hover/folder:opacity-100 focus-visible:opacity-100'
         >

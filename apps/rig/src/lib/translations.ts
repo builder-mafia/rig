@@ -1,5 +1,60 @@
 export type Locale = 'en' | 'ko';
 export const korean = {
+  'Copied to clipboard': '클립보드에 복사되었습니다',
+  'Content updated': '내용이 수정되었습니다',
+  'Saving…': '저장 중…',
+  'Unsaved changes': '저장되지 않은 변경사항',
+  'Select a skill to edit its file.': '스킬을 선택해 파일을 수정하세요.',
+  'This file changed in another app.': '다른 앱에서 파일이 변경되었습니다.',
+  'This file changed in another app. Your edits are kept here.':
+    '다른 앱에서 파일이 변경되었습니다. 작성한 내용은 여기에 유지됩니다.',
+  'Couldn’t save changes.': '변경사항을 저장하지 못했습니다.',
+  'Couldn’t save changes. Your edits are kept here.':
+    '변경사항을 저장하지 못했습니다. 작성한 내용은 여기에 유지됩니다.',
+  'Couldn’t read this skill file.': '스킬 파일을 읽지 못했습니다.',
+  Retry: '다시 시도',
+  'Edits copied': '수정한 내용을 복사했습니다',
+  'Copy my edits': '수정한 내용 복사',
+  'Discard edits and reload': '수정 취소 후 다시 불러오기',
+  'Loading file…': '파일 불러오는 중…',
+  'Skill file content': '스킬 파일 내용',
+  'Changes save automatically. Press Command or Control+S to save now.':
+    '변경사항은 자동 저장됩니다. Command 또는 Control+S를 눌러 바로 저장하세요.',
+  'Restore this archived skill before editing.':
+    '보관된 스킬을 복원한 뒤 수정할 수 있습니다.',
+  'Couldn’t open {app}.': '{app}에서 열지 못했습니다.',
+  'Open in {app}': '{app}에서 열기',
+  Copy: '복사',
+  Hide: '숨기기',
+  Show: '표시',
+  'Show parent folder': '상위 폴더 표시',
+  Custom: '직접 선택',
+  Projects: '프로젝트',
+  'Copy to folder': '폴더에 복사',
+  'Confirm copy': '복사 확인',
+  'Copy “{name}” to this folder?': '이 폴더에 “{name}” 스킬을 복사할까요?',
+  'Copy {count} skills to this folder?':
+    '이 폴더에 스킬 {count}개를 복사할까요?',
+  Back: '뒤로',
+  'Copying…': '복사 중…',
+  'Choose a destination for “{name}”.': '“{name}”을 복사할 폴더를 선택하세요.',
+  'Choose a destination for {count} skills.':
+    '스킬 {count}개를 복사할 폴더를 선택하세요.',
+  'Choose a folder to copy skills into': '스킬을 복사할 폴더 선택',
+  'Couldn’t open the folder picker.': '폴더 선택 창을 열지 못했습니다.',
+  'Loading projects…': '프로젝트 불러오는 중…',
+  'Couldn’t load projects. Choose Custom to select a folder.':
+    '프로젝트를 불러오지 못했습니다. 직접 선택으로 폴더를 고르세요.',
+  'No projects found. Choose Custom to select a folder.':
+    '프로젝트가 없습니다. 직접 선택으로 폴더를 고르세요.',
+  'Copying {count} skills…': '스킬 {count}개 복사 중…',
+  'Skill copied': '스킬을 복사했습니다',
+  'Copied {count} skills': '스킬 {count}개를 복사했습니다',
+  'Copied {count} of {total} skills':
+    '스킬 {total}개 중 {count}개를 복사했습니다',
+  'Couldn’t copy skills': '스킬을 복사하지 못했습니다',
+  'Check the source files and folder permissions, then try again. Failed: {names}':
+    '원본 파일과 폴더 권한을 확인한 뒤 다시 시도하세요. 실패한 스킬: {names}',
   Notifications: '알림',
   'Before update': '업데이트 전',
   'After update': '업데이트 후',
@@ -98,8 +153,8 @@ export const korean = {
   'Delete {count} skills…': '스킬 {count}개 삭제…',
   'Delete “{name}”?': '‘{name}’을 삭제할까요?',
   'Delete {count} skills?': '스킬 {count}개를 삭제할까요?',
-  'This permanently deletes the skill folders from disk. To keep the files, use Hide from Rig instead.':
-    '스킬 폴더를 디스크에서 영구 삭제합니다. 파일을 보존하려면 ‘Rig에서 숨기기’를 사용하세요.',
+  'This permanently deletes the skill folders from disk. To keep the files, use Hide instead.':
+    '스킬 폴더를 디스크에서 영구 삭제합니다. 파일을 보존하려면 ‘숨기기’를 사용하세요.',
   '{name} skill removed': '{name} 스킬을 삭제했습니다',
   '{count} skills removed': '스킬 {count}개를 삭제했습니다',
   'Failed to remove {name}': '{name}을 삭제하지 못했습니다',

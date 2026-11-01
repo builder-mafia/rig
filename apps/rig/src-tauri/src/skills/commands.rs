@@ -8,9 +8,9 @@ use super::history::{
     SkillVersionSummary,
 };
 use super::models::{
-    Skill, SkillArchiveError, SkillCopyError, SkillCopyErrorCode, SkillDeletionError,
-    SkillDeletionErrorCode, SkillListingError, SkillProvider, SkillRoot, SkillRootDefinition,
-    SkillRootImportError, SkillRootKind, SkillScopeKind,
+    Skill, SkillArchiveError, SkillCopyError, SkillDeletionError, SkillDeletionErrorCode,
+    SkillListingError, SkillProvider, SkillRoot, SkillRootDefinition, SkillRootImportError,
+    SkillRootKind, SkillScopeKind,
 };
 use super::root_store::{
     import_skill_root_from_path, list_imported_skill_roots, remove_imported_skill_root,
@@ -180,32 +180,6 @@ pub fn list_skills(root: SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
     return list_skills_from_root(&root);
 }
 
-fn is_invalid_relative_path(path: &Path) -> bool {
-    path.as_os_str().is_empty()
-        || path.is_absolute()
-        || path
-            .components()
-            .any(|component| matches!(component, Component::ParentDir | Component::Prefix(_)))
-}
-
-fn copy_directory(source: &Path, target: &Path) -> std::io::Result<()> {
-    fs::create_dir_all(target)?;
-
-    for entry in fs::read_dir(source)? {
-        let entry = entry?;
-        let source_path = entry.path();
-        let target_path = target.join(entry.file_name());
-
-        if source_path.is_dir() {
-            copy_directory(&source_path, &target_path)?;
-        } else {
-            fs::copy(&source_path, &target_path)?;
-        }
-    }
-
-    Ok(())
-}
-
 #[tauri::command]
 pub fn copy_skill(
     source_root_path: String,
@@ -213,101 +187,12 @@ pub fn copy_skill(
     target_root_path: String,
     target_relative_path: String,
 ) -> Result<(), SkillCopyError> {
-    let source_root_path = expand_path(source_root_path.as_str())
-        .canonicalize()
-        .map_err(|error| SkillCopyError {
-            code: SkillCopyErrorCode::PathNotFound,
-            message: format!("Source skill root path does not exist: {}", error),
-        })?;
-
-    if !source_root_path.is_dir() {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::NotDirectory,
-            message: "Source skill root path is not a directory.".to_string(),
-        });
-    }
-
-    let source_relative_path = Path::new(source_relative_path.as_str());
-    let target_relative_path = Path::new(target_relative_path.as_str());
-
-    if is_invalid_relative_path(source_relative_path)
-        || is_invalid_relative_path(target_relative_path)
-    {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::OutsideRoot,
-            message: "Skill paths must stay inside their selected roots.".to_string(),
-        });
-    }
-
-    let source_skill_dir = source_root_path
-        .join(source_relative_path)
-        .canonicalize()
-        .map_err(|error| SkillCopyError {
-            code: SkillCopyErrorCode::PathNotFound,
-            message: format!("Source skill path does not exist: {}", error),
-        })?;
-
-    if !source_skill_dir.starts_with(&source_root_path) || source_skill_dir == source_root_path {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::OutsideRoot,
-            message: "Source skill path must stay inside the selected root.".to_string(),
-        });
-    }
-
-    if !source_skill_dir.is_dir() {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::NotDirectory,
-            message: "Source skill path is not a directory.".to_string(),
-        });
-    }
-
-    if !source_skill_dir.join("SKILL.md").is_file() {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::MissingSkillFile,
-            message: "Source skill directory does not contain SKILL.md.".to_string(),
-        });
-    }
-
-    let target_root_path = expand_path(target_root_path.as_str());
-    fs::create_dir_all(&target_root_path).map_err(|error| SkillCopyError {
-        code: SkillCopyErrorCode::CopyFailed,
-        message: format!("Failed to create target skill root: {}", error),
-    })?;
-
-    let target_root_path = target_root_path
-        .canonicalize()
-        .map_err(|error| SkillCopyError {
-            code: SkillCopyErrorCode::PathNotFound,
-            message: format!("Target skill root path does not exist: {}", error),
-        })?;
-
-    if !target_root_path.is_dir() {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::NotDirectory,
-            message: "Target skill root path is not a directory.".to_string(),
-        });
-    }
-
-    let target_skill_dir = target_root_path.join(target_relative_path);
-
-    if target_skill_dir.exists() {
-        return Err(SkillCopyError {
-            code: SkillCopyErrorCode::TargetExists,
-            message: "Target skill already exists.".to_string(),
-        });
-    }
-
-    if let Some(target_parent) = target_skill_dir.parent() {
-        fs::create_dir_all(target_parent).map_err(|error| SkillCopyError {
-            code: SkillCopyErrorCode::CopyFailed,
-            message: format!("Failed to create target skill parent directory: {}", error),
-        })?;
-    }
-
-    copy_directory(&source_skill_dir, &target_skill_dir).map_err(|error| SkillCopyError {
-        code: SkillCopyErrorCode::CopyFailed,
-        message: format!("Failed to copy skill: {}", error),
-    })
+    super::transfer::copy_exact(
+        &source_root_path,
+        &source_relative_path,
+        &target_root_path,
+        &target_relative_path,
+    )
 }
 
 #[tauri::command]
@@ -414,6 +299,7 @@ pub fn remove_skill(root_path: String, relative_path: String) -> Result<(), Skil
 
 #[cfg(test)]
 mod tests {
+    use super::super::models::SkillCopyErrorCode;
     use super::*;
 
     #[test]

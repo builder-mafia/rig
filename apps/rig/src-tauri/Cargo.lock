@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "Rig"
-version = "26.1026.2"
+version = "26.1026.3"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -13,6 +13,8 @@ dependencies = [
  "futures",
  "gray_matter",
  "log",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
  "open",
  "rand 0.8.5",
  "reqwest",

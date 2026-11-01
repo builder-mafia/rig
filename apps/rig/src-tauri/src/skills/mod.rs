@@ -1,9 +1,11 @@
 pub mod archive;
 pub mod commands;
+pub mod editor;
 pub mod fs;
 pub mod history;
 pub mod models;
 pub mod parser;
 pub mod root_store;
 pub mod scanner;
+pub mod transfer;
 pub mod updates;
