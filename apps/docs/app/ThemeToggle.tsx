@@ -3,8 +3,10 @@
 import { useMounted } from 'nextra/hooks';
 import { MoonIcon, SunIcon } from 'nextra/icons';
 import { useTheme } from 'nextra-theme-docs';
+import { useLanguage } from './LanguageProvider';
 
 export const ThemeToggle = () => {
+  const { t } = useLanguage();
   const { setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
 
@@ -17,7 +19,7 @@ export const ThemeToggle = () => {
   return (
     <button
       type='button'
-      aria-label='Toggle theme'
+      aria-label={t('Toggle theme')}
       className='x:cursor-pointer x:rounded x:p-2 x:transition-colors x:text-gray-600 x:hover:bg-gray-100 x:hover:text-gray-900 x:dark:text-gray-400 x:dark:hover:bg-neutral-800 x:dark:hover:text-gray-50'
       onClick={toggleTheme}
     >
