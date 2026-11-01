@@ -46,6 +46,100 @@ body:has(.rig-home) {
   animation: rig-product-enter 420ms var(--rig-ease-out) both;
 }
 
+.rig-preview {
+  --preview-background: #fff;
+  --preview-sidebar: #fafafa;
+  --preview-muted: #737373;
+  --preview-border: #e5e5e5;
+  --preview-selected: rgba(0, 0, 0, 0.065);
+  --preview-hover: rgba(0, 0, 0, 0.035);
+  background: var(--preview-background);
+  border-color: var(--preview-border);
+  color: #171717;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.06);
+}
+
+.dark .rig-preview {
+  --preview-background: #171717;
+  --preview-sidebar: #1d1d1d;
+  --preview-muted: #a3a3a3;
+  --preview-border: #333;
+  --preview-selected: rgba(255, 255, 255, 0.07);
+  --preview-hover: rgba(255, 255, 255, 0.035);
+  color: #fafafa;
+}
+
+.rig-preview * {
+  border-color: var(--preview-border);
+}
+
+.rig-preview-muted,
+.rig-preview-add {
+  color: var(--preview-muted);
+}
+
+.rig-preview-sidebar {
+  background: var(--preview-sidebar);
+}
+
+.rig-preview-project {
+  display: inline-flex;
+  height: 32px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--preview-border);
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.rig-preview-project[aria-pressed="true"],
+.rig-preview-skill[aria-pressed="true"] {
+  background: var(--preview-selected);
+}
+
+.rig-preview-search,
+.rig-preview-details > div {
+  background: var(--preview-background);
+}
+
+.rig-preview-tab {
+  color: var(--preview-muted);
+  border-bottom-color: transparent;
+}
+
+.rig-preview-tab[aria-selected="true"] {
+  color: inherit;
+  border-bottom-color: currentColor;
+}
+
+.rig-preview-code {
+  background: var(--preview-hover);
+}
+
+.rig-preview-folder > summary,
+.rig-preview-details > summary {
+  list-style: none;
+}
+
+.rig-preview-folder:not([open]) > summary > svg:first-child {
+  transform: rotate(-90deg);
+}
+
+.rig-preview :is(button, input, summary):focus-visible {
+  outline: 2px solid #5267f8;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rig-preview button:hover,
+  .rig-preview summary:hover {
+    background-color: var(--preview-hover);
+  }
+}
+
 .rig-pressable:active {
   transform: scale(0.98);
 }
@@ -62,20 +156,6 @@ body:has(.rig-home) {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 640px) {
-  .rig-product-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .rig-product-sidebar {
-    display: none;
-  }
-
-  .rig-product-content {
-    min-height: 430px;
   }
 }
 
