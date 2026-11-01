@@ -70,7 +70,6 @@ Rig checks GitHub Releases for signed application updates.
 ### 2. Choose skill sources
 
 Open **Settings → Skill sources** to choose which providers appear in Rig.
-No usage-tracking integration is needed.
 
 ## Skill locations
 
