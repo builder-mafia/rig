@@ -1,6 +1,20 @@
 export type Locale = 'en' | 'ko';
 export const korean = {
   'Copied to clipboard': '클립보드에 복사되었습니다',
+  'Delete all skills…': '스킬 전체 삭제…',
+  'Delete all {count} skills in “{name}”?':
+    '“{name}”의 스킬 {count}개를 모두 삭제할까요?',
+  'Skills to delete': '삭제할 스킬',
+  'This permanently deletes the listed skills and their supporting files. This cannot be undone.':
+    '목록의 스킬과 함께 포함된 파일을 영구 삭제합니다. 이 작업은 되돌릴 수 없습니다.',
+  'Includes skills in subfolders and hidden skills, regardless of search filters. The selected folder itself is kept.':
+    '검색 필터와 관계없이 하위 폴더와 숨긴 스킬까지 포함합니다. 선택한 폴더 자체는 유지됩니다.',
+  'For a skill directly in a project or selected folder, only SKILL.md is deleted; other files are kept.':
+    '프로젝트나 선택한 폴더 바로 아래에 있는 스킬은 SKILL.md만 삭제하며, 다른 파일은 유지됩니다.',
+  'Deleted {count} of {total} skills':
+    '스킬 {total}개 중 {count}개를 삭제했습니다',
+  'Failed: {names}. {error}': '실패한 스킬: {names}. {error}',
+  'A nested skill could not be deleted.': '하위 스킬을 삭제하지 못했습니다.',
   'Content updated': '내용이 수정되었습니다',
   'Saving…': '저장 중…',
   'Unsaved changes': '저장되지 않은 변경사항',

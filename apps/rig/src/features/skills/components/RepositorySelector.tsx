@@ -59,6 +59,8 @@ export const RepositorySelector = ({
     useState<SkillRoot | null>(null);
   const [removeFailed, setRemoveFailed] = useState(false);
   const allSkillsButtonRef = useRef<HTMLButtonElement>(null);
+  const removeButtonRef = useRef<HTMLButtonElement>(null);
+  const removalInFlight = useRef(false);
   const repositoryRoots = Array.from(
     new Map(
       roots
@@ -89,12 +91,21 @@ export const RepositorySelector = ({
 
   const confirmRemoval = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (!repositoryPendingRemoval) return;
+    if (!repositoryPendingRemoval || removalInFlight.current) return;
+    removalInFlight.current = true;
 
     setRemoveFailed(false);
     const removedSelectedRepository =
       selectedRepositoryId === repositoryPendingRemoval.scopeId;
-    const didRemove = await onRemoveRepository(repositoryPendingRemoval);
+    let didRemove = false;
+    try {
+      didRemove = await onRemoveRepository(repositoryPendingRemoval);
+    } catch {
+      setRemoveFailed(true);
+      return;
+    } finally {
+      removalInFlight.current = false;
+    }
     if (didRemove) {
       setRepositoryPendingRemoval(null);
       if (removedSelectedRepository) {
@@ -174,7 +185,12 @@ export const RepositorySelector = ({
           }
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent
+          onOpenAutoFocus={event => {
+            event.preventDefault();
+            removeButtonRef.current?.focus();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t('Remove “{name}” from Rig?', {
@@ -198,11 +214,20 @@ export const RepositorySelector = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel autoFocus disabled={isRemovingPendingRepository}>
+            <AlertDialogCancel disabled={isRemovingPendingRepository}>
               {t('Cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
+              ref={removeButtonRef}
+              variant='destructive-outline'
               disabled={isRemovingPendingRepository}
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  if (!event.repeat && !event.nativeEvent.isComposing)
+                    event.currentTarget.click();
+                }
+              }}
               onClick={confirmRemoval}
             >
               {isRemovingPendingRepository ? (
