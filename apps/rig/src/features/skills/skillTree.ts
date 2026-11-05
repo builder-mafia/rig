@@ -55,7 +55,9 @@ export const buildSkillTree = (skills: Skill[]): SkillFolder[] => {
     let path = rootPath;
     for (const [index, label] of segments.entries()) {
       if (rootLabel === '.' || index > 0) path = `${path}/${label}`;
-      const id = `${scopeId}:${path}`;
+      // Overlapping registered roots may show the same directory in distinct
+      // branches. Keep both the lookup and flat-row identity root-specific.
+      const id = JSON.stringify([scopeId, rootPath, path]);
       let child = folderById.get(id);
       if (!child) {
         child = { id, label, path, folders: [], skills: [], count: 0 };

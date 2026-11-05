@@ -24,6 +24,7 @@ import { useFetchSkills } from './useFetchSkills';
 import { useFetchArchivedSkills } from './useFetchArchivedSkills';
 import { getSkillIdentity } from './skillIdentity';
 import { matchesSkillSearch } from './insights';
+import { buildSkillTree, flattenSkillTree } from './skillTree';
 import type { Skill, SkillRoot } from './types';
 
 const invoke = vi.hoisted(() => vi.fn());
@@ -270,6 +271,18 @@ describe('document rendering and lifetime', () => {
 });
 
 describe('stable library results', () => {
+  it('keeps overlapping root branches separate with unique flat-row identities', () => {
+    const parent = skill('review', { relativePath: 'nested/review' });
+    const nested = skill('review', { rootPath: '/work/skills/nested' });
+    const tree = buildSkillTree([parent, nested]);
+    expect(tree[0].count).toBe(2);
+    expect(tree[0].folders).toHaveLength(2);
+    expect(tree[0].folders.map(folder => folder.count)).toEqual([1, 1]);
+    const rows = flattenSkillTree(tree, new Set());
+    expect(new Set(rows.map(row => `${row.kind}:${row.id}`)).size).toBe(
+      rows.length,
+    );
+  });
   it('preserves combined arrays and archive rows across unrelated renders', async () => {
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false } },
