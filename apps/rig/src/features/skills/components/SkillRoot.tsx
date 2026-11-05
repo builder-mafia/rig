@@ -1,6 +1,7 @@
 import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useStableEvent } from '@/lib/useStableEvent';
 import { ContentLayout } from '@/layouts/ContentLayout';
 import { SidebarLayout } from '@/layouts/SidebarLayout';
 import { isSkillSourceVisible, type SkillSourceId } from '../skillSources';
@@ -32,7 +33,11 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
   const { hiddenPaths, hiddenFolderPaths, setSkillsHidden, setFolderHidden } =
     useHiddenSkills();
   const { skills, isLoading, error } = useFetchSkills(roots);
-  const { archivedSkills, error: archiveError } = useFetchArchivedSkills(roots);
+  const {
+    archivedSkills,
+    isLoading: archivesLoading,
+    error: archiveError,
+  } = useFetchArchivedSkills(roots, showingHidden);
   const sourceSkills = useMemo(
     () =>
       skills.filter(skill => isSkillSourceVisible(skill, hiddenSkillSourceIds)),
@@ -76,58 +81,75 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
     () => new Set(selectedSkillIds),
     [selectedSkillIds],
   );
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectedSkillId(null);
-    setSelectedSkillIds([]);
-  };
+    setSelectedSkillIds(previous => (previous.length ? [] : previous));
+  }, []);
   const { removeSkills, removingSkillIds } = useRemoveSkill({
     onRemoved: clearSelection,
   });
   const { restoreSkill, isRestoring } = useRestoreArchivedSkill({
     onRestored: clearSelection,
   });
-  const changeVisibility = (changedSkills: Skill[], hidden: boolean) => {
-    if (!setSkillsHidden(changedSkills, hidden)) return;
-    clearSelection();
-    toast.success(
-      t(hidden ? '{name} hidden from Rig' : '{name} shown in Rig', {
-        name:
-          changedSkills.length === 1
-            ? changedSkills[0].name
-            : t('{count} skills', { count: changedSkills.length }),
-      }),
-      {
-        description: t('Skill files and agent access are unchanged.'),
-        action: {
-          label: t('Undo'),
-          onClick: () => {
-            setSkillsHidden(changedSkills, !hidden);
+  const changeVisibility = useStableEvent(
+    (changedSkills: Skill[], hidden: boolean) => {
+      if (!setSkillsHidden(changedSkills, hidden)) return;
+      clearSelection();
+      toast.success(
+        t(hidden ? '{name} hidden from Rig' : '{name} shown in Rig', {
+          name:
+            changedSkills.length === 1
+              ? changedSkills[0].name
+              : t('{count} skills', { count: changedSkills.length }),
+        }),
+        {
+          description: t('Skill files and agent access are unchanged.'),
+          action: {
+            label: t('Undo'),
+            onClick: () => {
+              setSkillsHidden(changedSkills, !hidden);
+            },
           },
         },
-      },
-    );
-  };
-  const changeFolderVisibility = (path: string, hidden: boolean) => {
-    if (!setFolderHidden(path, hidden)) return;
-    clearSelection();
-    toast.success(
-      t(hidden ? 'Folder hidden from Rig' : 'Folder shown in Rig'),
-      {
-        description: hidden
-          ? t('{path} and its subfolders are hidden only in Rig.', {
-              path: abbreviateHomePath(path),
-            })
-          : t(
-              '{path} is visible. Individually hidden skills and folders stay hidden.',
-              { path: abbreviateHomePath(path) },
-            ),
-        action: {
-          label: t('Undo'),
-          onClick: () => setFolderHidden(path, !hidden),
+      );
+    },
+  );
+  const changeFolderVisibility = useStableEvent(
+    (path: string, hidden: boolean) => {
+      if (!setFolderHidden(path, hidden)) return;
+      clearSelection();
+      toast.success(
+        t(hidden ? 'Folder hidden from Rig' : 'Folder shown in Rig'),
+        {
+          description: hidden
+            ? t('{path} and its subfolders are hidden only in Rig.', {
+                path: abbreviateHomePath(path),
+              })
+            : t(
+                '{path} is visible. Individually hidden skills and folders stay hidden.',
+                { path: abbreviateHomePath(path) },
+              ),
+          action: {
+            label: t('Undo'),
+            onClick: () => setFolderHidden(path, !hidden),
+          },
         },
-      },
-    );
-  };
+      );
+    },
+  );
+  const selectSkills = useCallback(
+    (selection: Skill[], focused: Skill | null) => {
+      setSelectedSkillIds(selection.map(getSkillIdentity));
+      setSelectedSkillId(focused ? getSkillIdentity(focused) : null);
+    },
+    [],
+  );
+  const hideSkills = useStableEvent((skills: Skill[]) =>
+    changeVisibility(skills, true),
+  );
+  const showSkills = useStableEvent((skills: Skill[]) =>
+    changeVisibility(skills, false),
+  );
 
   return (
     <div className='flex min-h-0 flex-1'>
@@ -139,17 +161,14 @@ export const SkillRoot = ({ roots, hiddenSkillSourceIds }: SkillRootProps) => {
           hiddenFolderPaths={hiddenFolderPaths}
           onFolderVisibilityChange={changeFolderVisibility}
           selectedSkillIds={selectedIdSet}
-          isLoading={isLoading}
+          isLoading={isLoading || (showingHidden && archivesLoading)}
           error={error || archiveError ? String(error ?? archiveError) : null}
-          onSelectionChange={(selection, focused) => {
-            setSelectedSkillIds(selection.map(getSkillIdentity));
-            setSelectedSkillId(focused ? getSkillIdentity(focused) : null);
-          }}
+          onSelectionChange={selectSkills}
           onClearSelection={clearSelection}
           onRemoveSkills={removeSkills}
           removingSkillIds={removingSkillIds}
-          onHideSkills={skills => changeVisibility(skills, true)}
-          onShowSkills={skills => changeVisibility(skills, false)}
+          onHideSkills={hideSkills}
+          onShowSkills={showSkills}
           showingHidden={showingHidden}
           onShowingHiddenChange={setShowingHidden}
         />

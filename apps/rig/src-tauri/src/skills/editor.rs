@@ -1,4 +1,6 @@
 use super::fs::expand_path;
+use super::models::SkillValidationError;
+use super::parser::parse_skill_file_content;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
@@ -31,6 +33,55 @@ fn io_error(cause: std::io::Error) -> DocumentError {
 pub struct SkillDocument {
     content: String,
     revision: String,
+    summary: SkillDocumentSummary,
+}
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SkillDocumentSummary {
+    name: String,
+    description: Option<String>,
+    content: String,
+    is_valid: bool,
+    validation_error: Option<SkillValidationError>,
+    updated_at: Option<String>,
+}
+fn document(content: String, path: &Path) -> SkillDocument {
+    let updated_at = path
+        .metadata()
+        .ok()
+        .and_then(|m| m.modified().ok())
+        .map(|modified| {
+            let datetime: chrono::DateTime<chrono::Utc> = modified.into();
+            datetime.to_rfc3339()
+        });
+    let summary = match parse_skill_file_content(&content) {
+        Ok(parsed) => SkillDocumentSummary {
+            name: parsed.name,
+            description: parsed.description,
+            content: parsed.content,
+            is_valid: true,
+            validation_error: None,
+            updated_at,
+        },
+        Err(validation_error) => SkillDocumentSummary {
+            name: path
+                .parent()
+                .and_then(|p| p.file_name())
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown-skill")
+                .to_string(),
+            description: None,
+            content: content.clone(),
+            is_valid: false,
+            validation_error: Some(validation_error),
+            updated_at,
+        },
+    };
+    SkillDocument {
+        revision: revision(&content),
+        content,
+        summary,
+    }
 }
 fn revision(content: &str) -> String {
     format!("{:x}", Sha256::digest(content.as_bytes()))
@@ -66,11 +117,9 @@ fn skill_file(root: &str, relative: &str) -> Result<PathBuf, DocumentError> {
     Ok(file)
 }
 fn read_document(root: &str, relative: &str) -> Result<SkillDocument, DocumentError> {
-    let content = fs::read_to_string(skill_file(root, relative)?).map_err(io_error)?;
-    Ok(SkillDocument {
-        revision: revision(&content),
-        content,
-    })
+    let path = skill_file(root, relative)?;
+    let content = fs::read_to_string(&path).map_err(io_error)?;
+    Ok(document(content, &path))
 }
 fn save_document(
     root: &str,
@@ -120,10 +169,7 @@ fn save_document(
         }
         result?;
     }
-    Ok(SkillDocument {
-        content: content.to_string(),
-        revision: revision(content),
-    })
+    Ok(document(content.to_string(), &path))
 }
 
 #[tauri::command]
@@ -314,6 +360,29 @@ mod tests {
         save_document(f.root(), "review", "", &current.revision).unwrap();
         assert_eq!(read_document(f.root(), "review").unwrap().content, "");
         assert_eq!(fs::read_dir(f.0.join("review")).unwrap().count(), 1);
+    }
+    #[test]
+    fn returns_canonical_summary_for_incremental_library_updates() {
+        let f = Fixture::new();
+        let before = read_document(f.root(), "review").unwrap();
+        let raw =
+            "---\nname: renamed\ndescription: New description\ncustom: keep\n---\n# New body\n";
+        let after = save_document(f.root(), "review", raw, &before.revision).unwrap();
+        assert_eq!(after.content, raw);
+        assert_eq!(after.summary.name, "renamed");
+        assert_eq!(
+            after.summary.description.as_deref(),
+            Some("New description")
+        );
+        assert_eq!(after.summary.content, "# New body");
+        assert!(after.summary.is_valid);
+        assert!(after.summary.updated_at.is_some());
+        let invalid =
+            save_document(f.root(), "review", "broken frontmatter", &after.revision).unwrap();
+        assert!(!invalid.summary.is_valid);
+        assert_eq!(invalid.summary.name, "review");
+        assert_eq!(invalid.summary.content, "broken frontmatter");
+        assert!(invalid.summary.validation_error.is_some());
     }
     #[test]
     fn supports_root_skills_but_rejects_traversal_and_missing_files() {

@@ -7,10 +7,12 @@ import type { Skill } from '../types';
 export const ShareSkillButton = ({
   skill,
   fileContent,
+  getFileContent,
   disabled = false,
 }: {
   skill: Skill;
   fileContent?: string;
+  getFileContent?: () => string;
   disabled?: boolean;
 }) => {
   const { t } = useI18n();
@@ -21,7 +23,7 @@ export const ShareSkillButton = ({
     try {
       // Start the clipboard write in the click gesture; do not wait for autosave.
       await navigator.clipboard.writeText(
-        buildInstallPrompt(skill, fileContent),
+        buildInstallPrompt(skill, getFileContent?.() ?? fileContent),
       );
       toast.success(t('Copied to clipboard'), { position: 'top-center' });
     } catch {

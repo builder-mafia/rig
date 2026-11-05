@@ -308,9 +308,10 @@ export const listSkills = Effect.fn('listSkills')(function* (root: SkillRoot) {
 
 export const listArchivedSkills = Effect.fn('listArchivedSkills')(function* (
   rootPath: string,
+  includeContent = true,
 ) {
   const result = yield* Effect.tryPromise({
-    try: () => invoke<unknown>('list_archived_skills', { rootPath }),
+    try: () => invoke<unknown>('list_archived_skills', { rootPath, includeContent }),
     catch: error => error,
   }).pipe(
     Effect.catchAll(error => {

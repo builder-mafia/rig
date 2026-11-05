@@ -54,7 +54,7 @@ jobs:
 
   rust:
     name: Rust tests
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     steps:
       - name: Check out repository
         uses: actions/checkout@v6

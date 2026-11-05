@@ -155,7 +155,16 @@ pub fn remove_skill_root(
 }
 
 #[tauri::command]
-pub fn list_skills(root: SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
+pub async fn list_skills(root: SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
+    tauri::async_runtime::spawn_blocking(move || list_skills_blocking(root))
+        .await
+        .map_err(|error| SkillListingError {
+            code: SkillListingErrorCode::ReadFailed,
+            message: error.to_string(),
+        })?
+}
+
+fn list_skills_blocking(root: SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
     let path = expand_path(root.path.as_str());
 
     if !path.exists() {
@@ -196,7 +205,24 @@ pub fn copy_skill(
 }
 
 #[tauri::command]
-pub fn list_archived_skills(root_path: String) -> Result<Vec<Skill>, SkillListingError> {
+pub async fn list_archived_skills(
+    root_path: String,
+    include_content: Option<bool>,
+) -> Result<Vec<Skill>, SkillListingError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        list_archived_skills_blocking(root_path, include_content.unwrap_or(true))
+    })
+    .await
+    .map_err(|error| SkillListingError {
+        code: SkillListingErrorCode::ReadFailed,
+        message: error.to_string(),
+    })?
+}
+
+fn list_archived_skills_blocking(
+    root_path: String,
+    include_content: bool,
+) -> Result<Vec<Skill>, SkillListingError> {
     let path = expand_path(root_path.as_str());
 
     if !path.exists() {
@@ -213,7 +239,7 @@ pub fn list_archived_skills(root_path: String) -> Result<Vec<Skill>, SkillListin
         });
     }
 
-    list_archived_skills_from_root(&path)
+    list_archived_skills_from_root(&path, include_content)
 }
 
 #[tauri::command]
@@ -369,7 +395,10 @@ mod tests {
         }
         let error =
             remove_skill(root.to_string_lossy().into(), "ordinary".into(), None).unwrap_err();
-        assert!(matches!(error.code, SkillDeletionErrorCode::MissingSkillFile));
+        assert!(matches!(
+            error.code,
+            SkillDeletionErrorCode::MissingSkillFile
+        ));
         assert!(root.join("ordinary/README.md").is_file());
         fs::remove_dir_all(root).unwrap();
     }

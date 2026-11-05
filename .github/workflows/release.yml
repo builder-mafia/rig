@@ -16,7 +16,8 @@ concurrency:
 jobs:
   release-macos:
     name: Sign, notarize, and release macOS
-    runs-on: macos-latest
+    # Use the stable Intel pool; Tauri explicitly targets Apple Silicon below.
+    runs-on: macos-15-intel
     steps:
       - name: Check out repository
         uses: actions/checkout@v6

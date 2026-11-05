@@ -41,16 +41,27 @@ export const getSkillFilePath = (
     .join(separator);
 };
 
+const searchText = new WeakMap<Skill, string>();
+
 export const matchesSkillSearch = (skill: Skill, query: string) => {
   const normalizedQuery = query.trim().toLowerCase();
 
   if (!normalizedQuery) return true;
 
-  return [skill.name, skill.description, getSkillFilePath(skill), skill.content]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-    .includes(normalizedQuery);
+  let text = searchText.get(skill);
+  if (text === undefined) {
+    text = [
+      skill.name,
+      skill.description,
+      getSkillFilePath(skill),
+      skill.content,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    searchText.set(skill, text);
+  }
+  return text.includes(normalizedQuery);
 };
 
 export const getSkillNameCounts = (skills: Skill[]) => {
