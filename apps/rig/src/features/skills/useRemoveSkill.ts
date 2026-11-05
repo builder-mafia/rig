@@ -2,7 +2,7 @@ import { useI18n } from '@/lib/preferences';
 import { toast } from '@allin/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Effect } from 'effect';
-import { useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   getSkillDirectory,
   getUniqueActiveSkills,
@@ -10,6 +10,8 @@ import {
 } from './skillRemoval';
 import { RemoveSkillError, removeSkill as removeSkillApi } from './api';
 import type { Skill, SkillDeletionError } from './types';
+import { getSkillIdentity } from './skillIdentity';
+export { getSkillIdentity } from './skillIdentity';
 
 export const useRemoveSkill = ({
   onRemoved,
@@ -106,17 +108,25 @@ export const useRemoveSkill = ({
     },
   });
 
-  const removingSkillIds = new Set(
-    (mutation.isPending ? (mutation.variables?.skills ?? []) : []).map(
-      getSkillIdentity,
-    ),
+  const removingSkillIds = useMemo(
+    () =>
+      new Set(
+        (mutation.isPending ? (mutation.variables?.skills ?? []) : []).map(
+          getSkillIdentity,
+        ),
+      ),
+    [mutation.isPending, mutation.variables],
   );
-  const removeSkills = (skills: Skill[], preserveFolderPath?: string) => {
-    const uniqueSkills = getUniqueActiveSkills(skills);
-    if (inFlight.current || uniqueSkills.length === 0) return;
-    inFlight.current = true;
-    mutation.mutate({ skills: uniqueSkills, preserveFolderPath });
-  };
+  const { mutate } = mutation;
+  const removeSkills = useCallback(
+    (skills: Skill[], preserveFolderPath?: string) => {
+      const uniqueSkills = getUniqueActiveSkills(skills);
+      if (inFlight.current || uniqueSkills.length === 0) return;
+      inFlight.current = true;
+      mutate({ skills: uniqueSkills, preserveFolderPath });
+    },
+    [mutate],
+  );
   return {
     removeSkill: (skill: Skill) => removeSkills([skill]),
     removeSkills,
@@ -124,12 +134,6 @@ export const useRemoveSkill = ({
     isRemoving: mutation.isPending,
   };
 };
-
-export const getSkillIdentity = (
-  skill: Pick<Skill, 'rootPath' | 'relativePath'> &
-    Partial<Pick<Skill, 'isArchived'>>,
-) =>
-  `${skill.rootPath}:${skill.relativePath}:${skill.isArchived ? 'archived' : 'active'}`;
 
 const getSkillDeletionError = (error: unknown) => {
   if (

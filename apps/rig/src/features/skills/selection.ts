@@ -25,9 +25,10 @@ export const getNextSkillSelection = ({
         Math.min(anchorIndex, clickedIndex),
         Math.max(anchorIndex, clickedIndex) + 1,
       );
+      const rangeSet = new Set(rangeIds);
 
       return modifiers.toggle
-        ? orderedIds.filter(id => selectedIds.has(id) || rangeIds.includes(id))
+        ? orderedIds.filter(id => selectedIds.has(id) || rangeSet.has(id))
         : rangeIds;
     }
   }

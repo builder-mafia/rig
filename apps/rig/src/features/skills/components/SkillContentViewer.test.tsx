@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { SkillMarkdown } from './SkillContentViewer';
+import { SkillMarkdown } from './SkillMarkdown';
 
 describe('SkillMarkdown', () => {
   it('renders GFM while excluding executable HTML', () => {

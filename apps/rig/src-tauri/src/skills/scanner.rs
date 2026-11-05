@@ -23,12 +23,25 @@ pub(super) const IGNORED_DIRECTORY_NAMES: &[&str] = &[
 ];
 
 pub fn list_skills_from_root(root: &SkillRoot) -> Result<Vec<Skill>, SkillListingError> {
+    list_skills_from_root_with_content(root, true)
+}
+
+pub(super) fn list_skills_from_root_with_content(
+    root: &SkillRoot,
+    include_content: bool,
+) -> Result<Vec<Skill>, SkillListingError> {
     let root_path = Path::new(root.path.as_str());
     let skill_files = collect_skill_files(root_path)?;
 
     Ok(skill_files
         .iter()
-        .map(|skill_file_path| build_skill_from_file(root, root_path, skill_file_path))
+        .map(|skill_file_path| {
+            let mut skill = build_skill_from_file(root, root_path, skill_file_path);
+            if !include_content {
+                skill.content = String::new();
+            }
+            skill
+        })
         .collect())
 }
 

@@ -17,15 +17,17 @@ export const getHidingFolder = (
   folders: ReadonlySet<string>,
 ): string | undefined => {
   const normalizedPath = normalizePath(path);
-  let parent: string | undefined;
-  for (const folder of folders) {
-    if (
-      (normalizedPath === folder || normalizedPath.startsWith(`${folder}/`)) &&
-      (parent === undefined || folder.length < parent.length)
-    )
-      parent = folder;
+  // Walk ancestors from the root to preserve the outermost hiding rule, with
+  // cost proportional to path depth instead of the number of hidden folders.
+  for (
+    let end = normalizedPath.indexOf('/');
+    end !== -1;
+    end = normalizedPath.indexOf('/', end + 1)
+  ) {
+    const ancestor = normalizedPath.slice(0, end);
+    if (folders.has(ancestor)) return ancestor;
   }
-  return parent;
+  return folders.has(normalizedPath) ? normalizedPath : undefined;
 };
 
 export const parseHiddenSkills = (value: string | null): string[] => {

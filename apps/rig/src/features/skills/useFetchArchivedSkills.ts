@@ -1,29 +1,39 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, type UseQueryResult } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { Effect } from 'effect';
 import { listArchivedSkills } from './api';
-import type { SkillRoot } from './types';
+import type { Skill, SkillRoot } from './types';
 
-export const useFetchArchivedSkills = (roots: SkillRoot[]) => {
-  const skillQueries = useQueries({
-    queries: roots.map(root => ({
-      queryKey: ['archived-skills', root.path],
-      queryFn: () => Effect.runPromise(listArchivedSkills(root.path)),
-    })),
-  });
+const combineArchivedSkills = (queries: UseQueryResult<Skill[]>[]) => ({
+  archivedSkills: queries.flatMap(query => query.data ?? []),
+  isLoading: queries.some(query => query.isLoading),
+  error: queries.find(query => query.error)?.error ?? null,
+});
 
-  return {
-    archivedSkills: skillQueries.flatMap((query, index) =>
-      (query.data ?? []).map(skill => ({
-        ...skill,
-        scopeId: roots[index].scopeId,
-        scopeLabel: roots[index].scopeLabel,
-        scopeKind: roots[index].scopeKind,
-        rootId: roots[index].id,
-        rootLabel: roots[index].label,
-        provider: roots[index].provider,
+export const useFetchArchivedSkills = (
+  roots: SkillRoot[],
+  includeContent = true,
+) => {
+  const queries = useMemo(
+    () =>
+      roots.map(root => ({
+        queryKey: ['archived-skills', root.path, includeContent],
+        queryFn: () =>
+          Effect.runPromise(listArchivedSkills(root.path, includeContent)),
+        // Full archive bodies are needed only while the Hidden view is mounted.
+        gcTime: includeContent ? 0 : 300_000,
+        select: (skills: Skill[]) =>
+          skills.map(skill => ({
+            ...skill,
+            scopeId: root.scopeId,
+            scopeLabel: root.scopeLabel,
+            scopeKind: root.scopeKind,
+            rootId: root.id,
+            rootLabel: root.label,
+            provider: root.provider,
+          })),
       })),
-    ),
-    isLoading: skillQueries.some(query => query.isLoading),
-    error: skillQueries.find(query => query.error)?.error ?? null,
-  };
+    [roots, includeContent],
+  );
+  return useQueries({ queries, combine: combineArchivedSkills });
 };
