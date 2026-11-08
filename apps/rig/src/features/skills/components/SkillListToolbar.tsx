@@ -46,6 +46,11 @@ export const SkillListToolbar = memo(function SkillListToolbar({
           <span className='sr-only'>{t('Search skills')}</span>
           <input
             type='search'
+            autoCapitalize='none'
+            autoCorrect='off'
+            autoComplete='off'
+            spellCheck={false}
+            {...{ writingsuggestions: 'false' }}
             value={searchQuery}
             onChange={event => {
               onSearchChange(event.target.value);

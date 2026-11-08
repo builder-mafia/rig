@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Rig",
-  "version": "26.1106.1",
+  "version": "26.1108.1",
   "identifier": "sh.rig.app",
   "build": {
     "frontendDist": "../out",
